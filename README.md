@@ -1,6 +1,7 @@
 # DTRA: Real-Time Continual 3D Manipulation via Two-Stage Docking and Elastic Snap-Back of Hypertube Rings
 
 [![Preprint PDF](https://img.shields.io/badge/Paper-DTRA%20Preprint%20%28PDF%29-b31b1b.svg)](paper_dtra/DTRA_Preprint.pdf)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24218483.svg)](https://doi.org/10.5281/zenodo.24218483)
 [![LaTeX Source](https://img.shields.io/badge/LaTeX-dtra__v21__preprint.tex-008080.svg)](paper_dtra/dtra_v21_preprint.tex)
 [![Spec](https://img.shields.io/badge/Spec-DTRA__v2__Spec.md-444444.svg)](docs/DTRA_v2_Spec.md)
 [![Prior Work: ABK-VLA](https://img.shields.io/badge/Prior%20Work-5Color%2Fabk--vla-2969d8.svg)](https://github.com/5Color/abk-vla)
@@ -117,13 +118,15 @@ python -m unittest discover -s tests -v
 If you find **DTRA** or our prior **ABK-VLA** foundation useful in your research, please cite:
 
 ```bibtex
-@article{son2026dtra,
+@misc{son2026dtra,
   author       = {Son, Seungjoon},
   title        = {DTRA: Real-Time Continual 3D Manipulation via Two-Stage Docking and Elastic Snap-Back of Hypertube Rings},
   year         = {2026},
   month        = nov,
-  journal      = {Preprint},
-  url          = {https://github.com/5Color/dtra}
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.24218483},
+  url          = {https://doi.org/10.5281/zenodo.24218483},
+  note         = {Repository: \url{https://github.com/5Color/dtra}}
 }
 
 @misc{son2026abkvla,
