@@ -418,11 +418,13 @@ class DenoisingFineHead(nn.Module):
         num_modes: int = 6,
         num_cp: int = 6,
         action_dim: int = 4,
+        conv_norm_scale: float = 1.3,
     ) -> None:
         super().__init__()
         self.num_modes = num_modes
         self.num_cp = num_cp
         self.action_dim = action_dim
+        self.conv_norm_scale = conv_norm_scale
         out_cp = num_modes * num_cp * action_dim
         self.man_net = nn.Sequential(
             nn.Linear(man_in, man_h),
@@ -459,7 +461,9 @@ class DenoisingFineHead(nn.Module):
         raw_man_cps = self.man_pts(hm).view(bsz, self.num_modes, self.num_cp, self.action_dim)
         sel = self.man_sel(hm)
 
-        res_feat = torch.cat([x_conv, f_st, z_dock_f], dim=-1)
+        f_st_res = F.normalize(f_st, p=2, dim=-1) * self.conv_norm_scale
+        z_res = F.normalize(z_dock_f, p=2, dim=-1) * self.conv_norm_scale
+        res_feat = torch.cat([x_conv, f_st_res, z_res], dim=-1)
         hr = self.res_net(res_feat)
         raw_res_cps = self.res_pts(hr).view(bsz, self.num_modes, self.num_cp, self.action_dim)
         return raw_man_cps, raw_res_cps, sel
@@ -684,12 +688,16 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
         fine_res_hidden: int = 192,
         conv_dropout_p: float = 0.30,
         conv_noise_sigma: float = 0.05,
-        res_scale: float = 0.22,
+        res_scale: float = 0.38,
+        conv_norm_scale: float = 1.3,
+        self_cov_weight: float = 0.08,
+        self_cov_target: float = 0.75,
         lambda_key_rep: float = 2.0,
         **kwargs,
     ) -> None:
         if disable_coarse_merge:
             kwargs["coarse_novelty_threshold"] = 1.01
+        kwargs.setdefault("eta_inertia", 0.50)
         super().__init__(**kwargs)
         self.vision_only = vision_only
         self.rigid_alpha_zero = rigid_alpha_zero
@@ -700,6 +708,9 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
         self.conv_dropout_p = conv_dropout_p
         self.conv_noise_sigma = conv_noise_sigma
         self.res_scale = res_scale
+        self.conv_norm_scale = conv_norm_scale
+        self.self_cov_weight = self_cov_weight
+        self.self_cov_target = self_cov_target
         self.lambda_key_rep = lambda_key_rep
         self.visual_key_extractor = HybridVisualKeyExtractor()
 
@@ -791,7 +802,7 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
                 d_key=self.d_key,
                 d_topo=self.d_topo,
                 d_embed=self.d_embed,
-                init_radius=0.45,
+                init_radius=0.55,
                 init_alpha=0.78,
                 init_tau=0.42,
                 head_module=c_head,
@@ -836,13 +847,14 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
                 num_modes=self.num_modes,
                 num_cp=self.num_cp,
                 action_dim=self.action_dim,
+                conv_norm_scale=self.conv_norm_scale,
             ).to(dev)
             f_node = HypertubeNode(
                 init_key=f_init_key,
                 d_key=self.d_key,
                 d_topo=self.d_topo,
                 d_embed=self.d_embed,
-                init_radius=0.25,
+                init_radius=0.35,
                 init_alpha=0.24,
                 init_tau=0.45,
                 head_module=f_head,
@@ -883,6 +895,42 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
             "total_fine": len(self.fine_tubes),
             "would_expand_fine_at_096": bool(len(self.fine_tubes) == 1 or f_max_sim < 0.96),
         }
+
+    @torch.no_grad()
+    def reanchor_active_fine_key(self, init_imgs: torch.Tensor, instruction: str) -> None:
+        """초기 학습된 Coarse 문맥(ctx_coarse)을 반영해 활성 Fine 튜브 키와 앵커를 재정렬."""
+        if not self._coarse_trainable or len(self.fine_tubes) == 0:
+            return
+        was_tr = self.training
+        self.eval()
+        dev = next(self.encoder.parameters()).device
+        c_idx = self._active_coarse_idx
+        f_idx = self._active_fine_idx
+        ex_imgs = init_imgs[:8].to(dev)
+        _, ex_keys = self.encode_visual_and_key(ex_imgs, [instruction] * len(ex_imgs))
+        empty_buf = torch.empty(0, device=dev)
+        _, _, z_dock_c, h_avg_c, _, _ = self._run_tube_stage(
+            self.coarse_tubes, ex_keys, empty_buf, empty_buf,
+            [c_idx], use_inertia=False, record_deformation=False,
+        )
+        _, ctx_coarse_ex = self.coarse_tubes[c_idx].head(torch.cat([z_dock_c, h_avg_c], dim=-1))
+        ex_fine_keys = F.normalize(ex_keys + 0.35 * ctx_coarse_ex, p=2, dim=-1)
+        prev_bank = (
+            F.normalize(torch.stack([t.key for t in self.fine_tubes[:f_idx]], dim=0), p=2, dim=-1)
+            if f_idx > 0
+            else None
+        )
+        lang_strength = 0.20 if self.vision_only else 1.00
+        f_new_key = _orthogonalize_key_against_bank(
+            ex_fine_keys, prev_bank, vis_strength=0.20, lang_strength=lang_strength, min_margin=0.08
+        )
+        f_node = self.fine_tubes[f_idx]
+        f_node.key.copy_(f_new_key)
+        f_node._key_anchor.copy_(f_new_key.detach())
+        self._cache_frozen_rings()
+        self.refresh_eval_caches()
+        if was_tr:
+            self.train()
 
     def _run_tube_stage(
         self,
@@ -969,7 +1017,7 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
         f_st = cond[:, self.feat_dim :]
 
         c_idx = self._active_coarse_idx
-        _, _, z_dock_c, h_avg_c, _, _ = self._run_tube_stage(
+        _, overlap_c, z_dock_c, h_avg_c, _, _ = self._run_tube_stage(
             self.coarse_tubes, x_mag, self.coarse_inertia, self.coarse_delta_z,
             [c_idx], use_inertia=False, record_deformation=False,
         )
@@ -997,19 +1045,20 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
         key_cos_max = torch.matmul(F.normalize(x_fine, p=2, dim=-1), f_bank.t()).max(dim=-1).values
         conf_gate = torch.clamp(key_cos_max, 0.0, 1.0)
 
-        # 학습 시 Conv4 특징 드롭아웃(p=0.3) + 약한 가우시안 노이즈(sigma=0.05) 주입
+        # Conv4 특징 L2 정규화 스케일 매칭 + 학습 시 드롭아웃(p=0.3) 및 노이즈(sigma=0.05) 주입
+        x_conv_scaled = F.normalize(x_conv, p=2, dim=-1) * self.conv_norm_scale
         if self.training and not deterministic:
-            x_conv_in = F.dropout(x_conv, p=self.conv_dropout_p, training=True)
+            x_conv_in = F.dropout(x_conv_scaled, p=self.conv_dropout_p, training=True)
             x_conv_in = x_conv_in + self.conv_noise_sigma * torch.randn_like(x_conv_in)
         else:
-            x_conv_in = x_conv
+            x_conv_in = x_conv_scaled
 
         raw_man_cps, raw_res_cps, sel = self.fine_tubes[f_idx].head(
             z_dock_f, h_avg_f, ctx_coarse, f_st, x_conv_in
         )
-        delta_man = (0.55 * overlap_f.unsqueeze(-1).unsqueeze(-1)) * torch.tanh(raw_man_cps)
-        p_manifold = torch.clamp(p_anchor.unsqueeze(1) + delta_man, 0.0, 1.0)
-        gate_scale = (self.res_scale * conf_gate.unsqueeze(-1) * overlap_f).unsqueeze(-1).unsqueeze(-1)
+        anchor_logit = torch.logit(p_anchor.clamp(1e-4, 1.0 - 1e-4)).unsqueeze(1)
+        p_manifold = torch.sigmoid(anchor_logit + raw_man_cps)
+        gate_scale = (self.res_scale * conf_gate).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
         delta_res = gate_scale * torch.tanh(raw_res_cps)
         cand_cps = torch.clamp(p_manifold + delta_res, 0.0, 1.0)
 
@@ -1055,7 +1104,17 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
                     F.normalize(self.coarse_tubes[c_idx]._key_anchor, p=2, dim=-1),
                 )
             )
-        return 0.85 * loss_win + 0.05 * loss_all + 0.10 * loss_gate + 0.05 * (l_topo_f + l_topo_c) + l_key_anchor
+        l_cov = self.self_cov_weight * F.relu(self.self_cov_target - overlap_f).mean()
+        if self._coarse_trainable:
+            l_cov = l_cov + self.self_cov_weight * F.relu(self.self_cov_target - overlap_c).mean()
+        return (
+            0.85 * loss_win
+            + 0.05 * loss_all
+            + 0.10 * loss_gate
+            + 0.05 * (l_topo_f + l_topo_c)
+            + l_key_anchor
+            + l_cov
+        )
 
     def loss_from_features(
         self,
@@ -1203,14 +1262,15 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
 
         key_cos_max = torch.matmul(F.normalize(x_fine, p=2, dim=-1), self._eval_f_keys.t()).max(dim=-1).values
         conf_gate = torch.clamp(key_cos_max, 0.0, 1.0)
+        x_conv_scaled = F.normalize(x_conv, p=2, dim=-1) * self.conv_norm_scale
         raw_man_cps, raw_res_cps, sel = self.fine_tubes[f_idx].head(
-            z_dock_f, h_avg_f, ctx_coarse, f_st, x_conv
+            z_dock_f, h_avg_f, ctx_coarse, f_st, x_conv_scaled
         )
         best_mode = sel.argmax(dim=1)
         b_arange = torch.arange(bsz, device=img.device)
-        delta_man_best = (0.55 * overlap_f.unsqueeze(-1)) * torch.tanh(raw_man_cps[b_arange, best_mode])
-        p_manifold_best = torch.clamp(p_anchor + delta_man_best, 0.0, 1.0)
-        gate_scale = (self.res_scale * conf_gate.unsqueeze(-1) * overlap_f).unsqueeze(-1)
+        anchor_logit_best = torch.logit(p_anchor.clamp(1e-4, 1.0 - 1e-4))
+        p_manifold_best = torch.sigmoid(anchor_logit_best + raw_man_cps[b_arange, best_mode])
+        gate_scale = (self.res_scale * conf_gate).unsqueeze(-1).unsqueeze(-1)
         delta_res_best = gate_scale * torch.tanh(raw_res_cps[b_arange, best_mode])
 
         p_star = torch.clamp(p_manifold_best + delta_res_best, 0.0, 1.0)
@@ -1345,7 +1405,15 @@ def train_arm_task_fast(
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs, eta_min=1e-5)
 
     t_start = time.perf_counter()
-    for _ in range(epochs):
+    reanchor_ep = max(1, epochs // 3) if epochs >= 3 else -1
+    for ep in range(epochs):
+        if (
+            ep == reanchor_ep
+            and hasattr(model, "reanchor_active_fine_key")
+            and "init_frames" in dataset
+        ):
+            init_t = torch.from_numpy(dataset["init_frames"][:8]).permute(0, 3, 1, 2).float() / 255.0
+            model.reanchor_active_fine_key(init_t, instruction)
         model.train()
         perm = torch.randperm(n_samples, device="cpu").to(device)
         for s in range(0, n_samples, batch_size):
