@@ -17,6 +17,11 @@ CLAUDE.md
 !/outputs/autonomous_*.png
 !/outputs/exp*.json
 !/outputs/exp*.png
+!/outputs/dtra_step1_dynamics_clean.png
+!/outputs/dtra_step1_dynamics_clean_ko.png
+!/outputs/dtra_3d_metaworld_benchmark.png
+!/outputs/dtra_3d_metaworld_benchmark_ko.png
+!/outputs/dtra_3d_metaworld_benchmark.json
 /outputs/*_raw_unorder_backup.png
 /backups/
 *.pth
