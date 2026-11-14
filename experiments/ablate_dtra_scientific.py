@@ -64,6 +64,7 @@ if hasattr(sys.stdout, "reconfigure"):
 from experiments.benchmark_autonomous_cl import calc_cl_metrics, set_seed
 from experiments.benchmark_dtra_3d_metaworld import (
     DTRA3DPolicy,
+    HypertubeNode,
     LightweightTextEncoder,
     OUT_DIR,
     TASK_INSTRUCTIONS,
@@ -287,6 +288,183 @@ class MatchedFrozenMLPSlot(nn.Module):
         return pts, sel
 
 
+class HybridVisualKeyExtractor(nn.Module):
+    """저역 통과 필터(3x3 가우시안) + 15x15 부호 DoG 윤곽 + 4x4 전역 문맥 하이브리드 시각 키 추출기.
+
+    Conv4 가중치 변화(T0 학습 드리프트)와 고주파 가우시안 노이즈(sigma=0.20)에 완전히 불변인
+    64차원 L2 정규화 시각 키 vis_64를 생성하며, 학습 파라미터 없이 고정 직교 투영 버퍼만 보유합니다.
+    Arms 2, 4(Frozen MLP)와 Arms 3, 5, 6(DTRA)이 완전히 동일한 키 공간(Key Parity)을 공유합니다.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        lp_k1 = torch.tensor([[1.0, 2.0, 1.0], [2.0, 4.0, 2.0], [1.0, 2.0, 1.0]], dtype=torch.float32) / 16.0
+        self.register_buffer("lp_kernel", lp_k1.view(1, 1, 3, 3).repeat(3, 1, 1, 1))
+        gen = torch.Generator().manual_seed(20260401)
+        q_dog = torch.linalg.qr(torch.randn(3840, 64, generator=gen)).Q
+        q_lp4 = torch.linalg.qr(torch.randn(64, 48, generator=gen)).Q.t().contiguous()
+        self.register_buffer("q_dog", q_dog)  # shape: (3840, 64)
+        self.register_buffer("q_lp4", q_lp4)  # shape: (48, 64)
+
+    def forward(self, imgs: torch.Tensor) -> torch.Tensor:
+        """imgs: (B, 3, H, W) in [0, 1] -> vis_64: (B, 64) unit norm."""
+        imgs_lp = F.conv2d(imgs, self.lp_kernel, padding=1, groups=3)
+        blur15 = F.avg_pool2d(imgs_lp, kernel_size=15, stride=1, padding=7)
+        dog = imgs_lp - blur15
+
+        p32 = F.adaptive_avg_pool2d(dog, (32, 32)).flatten(1)  # shape: (B, 3072)
+        p16 = F.adaptive_avg_pool2d(dog, (16, 16)).flatten(1)  # shape: (B, 768)
+        dog_vec = torch.cat([p32, p16], dim=-1)
+        dog_vec = F.normalize(dog_vec - dog_vec.mean(dim=-1, keepdim=True), p=2, dim=-1)
+        dog_64 = F.normalize(torch.matmul(dog_vec, self.q_dog), p=2, dim=-1)
+
+        lp4 = F.adaptive_avg_pool2d(imgs_lp, (4, 4)).flatten(1)  # shape: (B, 48)
+        lp4 = F.normalize(lp4 - lp4.mean(dim=-1, keepdim=True), p=2, dim=-1)
+        lp4_64 = F.normalize(torch.matmul(lp4, self.q_lp4), p=2, dim=-1)
+        return F.normalize(0.60 * dog_64 + 0.80 * lp4_64, p=2, dim=-1)
+
+
+def _orthogonalize_key_against_bank(
+    ex_keys: torch.Tensor,
+    prev_bank: Optional[torch.Tensor],
+    vis_strength: float = 0.20,
+    lang_strength: float = 1.00,
+    min_margin: float = 0.08,
+) -> torch.Tensor:
+    """기존 동결 튜브 키 방향과의 간섭 성분을 마진 보존 범위 내에서 직교 투영으로 제거합니다."""
+    proto = F.normalize(ex_keys.mean(dim=0), p=2, dim=-1)
+    if prev_bank is None or prev_bank.numel() == 0:
+        return proto
+    bu = F.normalize(prev_bank, p=2, dim=-1)
+
+    def _proj_sub(vec: torch.Tensor, bank_slice: torch.Tensor) -> torch.Tensor:
+        if bank_slice.abs().max() < 1e-6 or vec.norm() < 1e-6:
+            return torch.zeros_like(vec)
+        bn = F.normalize(bank_slice, p=2, dim=-1)
+        u, s, _ = torch.linalg.svd(bn.t(), full_matrices=False)
+        q_basis = u[:, s > 1e-6]
+        if q_basis.numel() == 0:
+            return torch.zeros_like(vec)
+        return torch.matmul(q_basis, torch.matmul(q_basis.t(), vec))
+
+    par_vis = _proj_sub(proto[:64], bu[:, :64])
+    par_lang = _proj_sub(proto[64:], bu[:, 64:])
+    par_full = torch.cat([vis_strength * par_vis, lang_strength * par_lang], dim=-1)
+    if par_full.norm() < 1e-6:
+        return proto
+
+    prev_scores = torch.matmul(ex_keys, bu.t()).max(dim=-1).values
+
+    def _keeps_margin(gamma: float) -> bool:
+        cand = F.normalize(proto - gamma * par_full, p=2, dim=-1)
+        return float((torch.matmul(ex_keys, cand) - prev_scores).min().item()) >= min_margin
+
+    if not _keeps_margin(0.0):
+        return proto
+    if _keeps_margin(1.0):
+        return F.normalize(proto - par_full, p=2, dim=-1)
+    lo, hi = 0.0, 1.0
+    for _ in range(24):
+        mid = 0.5 * (lo + hi)
+        if _keeps_margin(mid):
+            lo = mid
+        else:
+            hi = mid
+    return F.normalize(proto - lo * par_full, p=2, dim=-1)
+
+
+class ManifoldAnchorHead(nn.Module):
+    """Stage 1 순수 매니폴드 기반 전역 앵커 헤드(원본 Conv4 특징 완전 분리)."""
+
+    def __init__(
+        self,
+        in_dim: int = 128,
+        hidden_dim: int = 284,
+        num_cp: int = 6,
+        action_dim: int = 4,
+        d_key: int = 128,
+    ) -> None:
+        super().__init__()
+        self.num_cp = num_cp
+        self.action_dim = action_dim
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.SiLU(),
+        )
+        self.anchor_out = nn.Linear(hidden_dim, num_cp * action_dim)
+        self.ctx_out = nn.Linear(hidden_dim, d_key)
+
+    def forward(self, z_feat: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """z_feat: (B, 128) -> p_anchor: (B, Nk, 4) in (0, 1), ctx_coarse: (B, 128) unit norm."""
+        h = self.net(z_feat)
+        p_anchor = torch.sigmoid(self.anchor_out(h)).view(z_feat.shape[0], self.num_cp, self.action_dim)
+        ctx_coarse = F.normalize(self.ctx_out(h), p=2, dim=-1)
+        return p_anchor, ctx_coarse
+
+
+class DenoisingFineHead(nn.Module):
+    """Stage 2 매니폴드 뼈대(P_manifold) + 유계 Conv4 잔차(res_cps) 분리 헤드."""
+
+    def __init__(
+        self,
+        man_in: int = 320,
+        res_in: int = 384,
+        man_h: int = 240,
+        res_h: int = 192,
+        num_modes: int = 6,
+        num_cp: int = 6,
+        action_dim: int = 4,
+    ) -> None:
+        super().__init__()
+        self.num_modes = num_modes
+        self.num_cp = num_cp
+        self.action_dim = action_dim
+        out_cp = num_modes * num_cp * action_dim
+        self.man_net = nn.Sequential(
+            nn.Linear(man_in, man_h),
+            nn.LayerNorm(man_h),
+            nn.SiLU(),
+            nn.Linear(man_h, man_h),
+            nn.LayerNorm(man_h),
+            nn.SiLU(),
+        )
+        self.man_pts = nn.Linear(man_h, out_cp)
+        self.man_sel = nn.Linear(man_h, num_modes)
+        self.res_net = nn.Sequential(
+            nn.Linear(res_in, res_h),
+            nn.LayerNorm(res_h),
+            nn.SiLU(),
+            nn.Linear(res_h, res_h),
+            nn.LayerNorm(res_h),
+            nn.SiLU(),
+        )
+        self.res_pts = nn.Linear(res_h, out_cp)
+
+    def forward(
+        self,
+        z_dock_f: torch.Tensor,
+        h_avg_f: torch.Tensor,
+        ctx_coarse: torch.Tensor,
+        f_st: torch.Tensor,
+        x_conv: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """매니폴드 제어점 뼈대(raw_man_cps), Conv4 유계 잔차(raw_res_cps), 모드 게이트(sel) 반환."""
+        bsz = z_dock_f.shape[0]
+        man_feat = torch.cat([z_dock_f, h_avg_f, ctx_coarse, f_st], dim=-1)
+        hm = self.man_net(man_feat)
+        raw_man_cps = self.man_pts(hm).view(bsz, self.num_modes, self.num_cp, self.action_dim)
+        sel = self.man_sel(hm)
+
+        res_feat = torch.cat([x_conv, f_st, z_dock_f], dim=-1)
+        hr = self.res_net(res_feat)
+        raw_res_cps = self.res_pts(hr).view(bsz, self.num_modes, self.num_cp, self.action_dim)
+        return raw_man_cps, raw_res_cps, sel
+
+
 class MatchedFrozenMLPPolicy(nn.Module):
     """[Arm 2 / Arm 4] DTRA와 백본·키·파라미터 총량(~5.25M)을 완벽히 맞춘 동결 MLP 대조군.
 
@@ -331,9 +509,7 @@ class MatchedFrozenMLPPolicy(nn.Module):
             nn.ReLU(inplace=True),
         )
         self.text_encoder = LightweightTextEncoder(d_lang=64)
-        gen = torch.Generator().manual_seed(777)
-        q_vis, _ = torch.linalg.qr(torch.randn(256 * 4 * 4, 64, generator=gen))
-        self.register_buffer("vis_key_proj", q_vis)  # shape: (4096, 64)
+        self.visual_key_extractor = HybridVisualKeyExtractor()
 
         self.slots = nn.ModuleList()
         self.register_buffer("slot_keys", torch.empty(0, d_key))
@@ -359,32 +535,20 @@ class MatchedFrozenMLPPolicy(nn.Module):
     def encode_visual_and_key(self, imgs: torch.Tensor, instructions: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
         was_tr = self.encoder.training
         self.encoder.eval()
-        x = imgs
-        children = list(self.encoder.children())
-        for layer in children[:-3]:
-            x = layer(x)
-        sp_map = F.adaptive_avg_pool2d(x, (4, 4)).flatten(1)  # shape: (B, 4096)
-        vis_64 = F.normalize(torch.matmul(F.normalize(sp_map, p=2, dim=-1), self.vis_key_proj), p=2, dim=-1)
-        for layer in children[-3:]:
-            x = layer(x)  # shape: (B, 256)
+        x = self.encoder(imgs)  # shape: (B, 256)
         if was_tr and not self._frozen_trunk:
             self.encoder.train()
+        vis_64 = self.visual_key_extractor(imgs)  # shape: (B, 64)
         x_mag = self._compose_key(vis_64, instructions, imgs.device)
         return x, x_mag
 
     def _forward_trunk_with_grad(
         self, imgs: torch.Tensor, st: torch.Tensor, instructions: List[str]
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        x = imgs
-        children = list(self.encoder.children())
-        for layer in children[:-3]:
-            x = layer(x)
-        sp_map = F.adaptive_avg_pool2d(x, (4, 4)).flatten(1)  # shape: (B, 4096)
-        vis_64 = F.normalize(torch.matmul(F.normalize(sp_map, p=2, dim=-1), self.vis_key_proj), p=2, dim=-1)
-        for layer in children[-3:]:
-            x = layer(x)
+        x = self.encoder(imgs)  # shape: (B, 256)
         f_st = self.state_net(st)  # shape: (B, 64)
         cond = torch.cat([x, f_st], dim=1)  # shape: (B, 320)
+        vis_64 = self.visual_key_extractor(imgs)  # shape: (B, 64)
         x_mag = self._compose_key(vis_64, instructions, imgs.device)  # shape: (B, 128)
         return cond, x_mag
 
@@ -514,11 +678,30 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
         self,
         vision_only: bool = False,
         rigid_alpha_zero: bool = False,
+        disable_coarse_merge: bool = True,
+        coarse_hidden_dim: int = 284,
+        fine_man_hidden: int = 240,
+        fine_res_hidden: int = 192,
+        conv_dropout_p: float = 0.30,
+        conv_noise_sigma: float = 0.05,
+        res_scale: float = 0.22,
+        lambda_key_rep: float = 2.0,
         **kwargs,
     ) -> None:
+        if disable_coarse_merge:
+            kwargs["coarse_novelty_threshold"] = 1.01
         super().__init__(**kwargs)
         self.vision_only = vision_only
         self.rigid_alpha_zero = rigid_alpha_zero
+        self.disable_coarse_merge = disable_coarse_merge
+        self.coarse_hidden_dim = coarse_hidden_dim
+        self.fine_man_hidden = fine_man_hidden
+        self.fine_res_hidden = fine_res_hidden
+        self.conv_dropout_p = conv_dropout_p
+        self.conv_noise_sigma = conv_noise_sigma
+        self.res_scale = res_scale
+        self.lambda_key_rep = lambda_key_rep
+        self.visual_key_extractor = HybridVisualKeyExtractor()
 
     def _compose_key(self, vis_64: torch.Tensor, instructions: List[str], device: torch.device) -> torch.Tensor:
         if self.vision_only:
@@ -531,44 +714,168 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
     def encode_visual_and_key(self, imgs: torch.Tensor, instructions: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
         was_tr = self.encoder.training
         self.encoder.eval()
-        x = imgs
-        children = list(self.encoder.children())
-        for layer in children[:-3]:
-            x = layer(x)
-        sp_map = F.adaptive_avg_pool2d(x, (4, 4)).flatten(1)  # shape: (B, 4096)
-        vis_64 = F.normalize(torch.matmul(F.normalize(sp_map, p=2, dim=-1), self.vis_key_proj), p=2, dim=-1)
-        for layer in children[-3:]:
-            x = layer(x)
+        x = self.encoder(imgs)
         if was_tr and not self._frozen_trunk:
             self.encoder.train()
+        vis_64 = self.visual_key_extractor(imgs)
         x_mag = self._compose_key(vis_64, instructions, imgs.device)
         return x, x_mag
 
     def _forward_trunk_with_grad(
         self, imgs: torch.Tensor, st: torch.Tensor, instructions: List[str]
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        x = imgs
-        children = list(self.encoder.children())
-        for layer in children[:-3]:
-            x = layer(x)
-        sp_map = F.adaptive_avg_pool2d(x, (4, 4)).flatten(1)  # shape: (B, 4096)
-        vis_64 = F.normalize(torch.matmul(F.normalize(sp_map, p=2, dim=-1), self.vis_key_proj), p=2, dim=-1)
-        for layer in children[-3:]:
-            x = layer(x)
+        x = self.encoder(imgs)
         f_st = self.state_net(st)  # shape: (B, 64)
         cond = torch.cat([x, f_st], dim=1)  # shape: (B, 320)
+        vis_64 = self.visual_key_extractor(imgs)  # shape: (B, 64)
         x_mag = self._compose_key(vis_64, instructions, imgs.device)  # shape: (B, 128)
         return cond, x_mag
 
+    def _compute_single_tube_topo_loss(
+        self,
+        tubes: nn.ModuleList,
+        target_idx: int,
+        frozen_rings: torch.Tensor,
+        frozen_radii: torch.Tensor,
+        lambda_r: float,
+        lambda_rep: float,
+    ) -> torch.Tensor:
+        """L_topo 기본 손실에 L_topo 마진(delta=0.08) 기반 키 코사인 반발 손실을 추가합니다."""
+        base_loss = super()._compute_single_tube_topo_loss(
+            tubes, target_idx, frozen_rings, frozen_radii, lambda_r, lambda_rep
+        )
+        if target_idx <= 0:
+            return base_loss
+        delta_margin = 0.08
+        k_cur = F.normalize(tubes[target_idx].key, p=2, dim=-1)
+        prev_keys = F.normalize(
+            torch.stack([tubes[j].key.detach() for j in range(target_idx)], dim=0),
+            p=2,
+            dim=-1,
+        )
+        cos_ij = torch.matmul(prev_keys, k_cur)
+        key_rep = (F.relu(cos_ij - (1.0 - delta_margin)) ** 2).sum()
+        return base_loss + self.lambda_key_rep * key_rep
+
     @torch.no_grad()
     def register_or_expand_task(self, init_imgs: torch.Tensor, instruction: str) -> Dict[str, object]:
-        out = super().register_or_expand_task(init_imgs, instruction)
+        """Coarse 합병 차단 + 마진 보존 직교 키 초기화 + 매니폴드/잔차 분리 헤드 등록."""
+        dev = next(self.encoder.parameters()).device
+        ex_imgs = init_imgs[:8].to(dev)
+        _, ex_keys = self.encode_visual_and_key(ex_imgs, [instruction] * len(ex_imgs))  # shape: (M_ex, 128)
+        lang_strength = 0.20 if self.vision_only else 1.00
+
+        if len(self.coarse_tubes) > 0:
+            self.freeze_prior()
+            c_bank = F.normalize(torch.stack([t.key for t in self.coarse_tubes], dim=0), p=2, dim=-1)
+            c_sims = torch.matmul(ex_keys, c_bank.t()).mean(dim=0)
+            c_max_sim = float(c_sims.max().item())
+            c_best_idx = int(c_sims.argmax().item())
+        else:
+            c_bank = None
+            c_max_sim, c_best_idx = 0.0, 0
+
+        if len(self.coarse_tubes) == 0 or self.disable_coarse_merge or c_max_sim < self.coarse_novelty_threshold:
+            c_init_key = _orthogonalize_key_against_bank(
+                ex_keys, c_bank, vis_strength=0.20, lang_strength=lang_strength, min_margin=0.08
+            )
+            c_head = ManifoldAnchorHead(
+                in_dim=self.d_embed * 2,
+                hidden_dim=self.coarse_hidden_dim,
+                num_cp=self.num_cp,
+                action_dim=self.action_dim,
+                d_key=self.d_key,
+            ).to(dev)
+            c_node = HypertubeNode(
+                init_key=c_init_key,
+                d_key=self.d_key,
+                d_topo=self.d_topo,
+                d_embed=self.d_embed,
+                init_radius=0.45,
+                init_alpha=0.78,
+                init_tau=0.42,
+                head_module=c_head,
+            ).to(dev)
+            self.coarse_tubes.append(c_node)
+            c_idx = len(self.coarse_tubes) - 1
+            c_expanded = True
+            self._coarse_trainable = True
+        else:
+            c_idx = c_best_idx
+            c_expanded = False
+            self._coarse_trainable = False
+
+        empty_buf = torch.empty(0, device=dev)
+        _, _, z_dock_c, h_avg_c, _, _ = self._run_tube_stage(
+            self.coarse_tubes, ex_keys, empty_buf, empty_buf,
+            [c_idx], use_inertia=False, record_deformation=False,
+        )
+        _, ctx_coarse_ex = self.coarse_tubes[c_idx].head(torch.cat([z_dock_c, h_avg_c], dim=-1))
+        ex_fine_keys = F.normalize(ex_keys + 0.35 * ctx_coarse_ex, p=2, dim=-1)
+
+        if len(self.fine_tubes) > 0:
+            f_bank = F.normalize(torch.stack([t.key for t in self.fine_tubes], dim=0), p=2, dim=-1)
+            f_sims = torch.matmul(ex_fine_keys, f_bank.t()).mean(dim=0)
+            f_max_sim = float(f_sims.max().item())
+            f_best_idx = int(f_sims.argmax().item())
+        else:
+            f_bank = None
+            f_max_sim, f_best_idx = 0.0, 0
+
+        if len(self.fine_tubes) == 0 or f_max_sim < self.fine_novelty_threshold:
+            f_init_key = _orthogonalize_key_against_bank(
+                ex_fine_keys, f_bank, vis_strength=0.20, lang_strength=lang_strength, min_margin=0.08
+            )
+            f_head = DenoisingFineHead(
+                man_in=self.d_embed * 2 + self.d_key + 64,
+                res_in=self.feat_dim + 64 + self.d_embed,
+                man_h=self.fine_man_hidden,
+                res_h=self.fine_res_hidden,
+                num_modes=self.num_modes,
+                num_cp=self.num_cp,
+                action_dim=self.action_dim,
+            ).to(dev)
+            f_node = HypertubeNode(
+                init_key=f_init_key,
+                d_key=self.d_key,
+                d_topo=self.d_topo,
+                d_embed=self.d_embed,
+                init_radius=0.25,
+                init_alpha=0.24,
+                init_tau=0.45,
+                head_module=f_head,
+            ).to(dev)
+            self.fine_tubes.append(f_node)
+            f_idx = len(self.fine_tubes) - 1
+            f_expanded = True
+        else:
+            f_idx = f_best_idx
+            f_expanded = False
+            for p in self.fine_tubes[f_idx].parameters():
+                p.requires_grad = True
+            self.fine_tubes[f_idx].train()
+
         if self.rigid_alpha_zero:
             # Arm 5(강체 투영): 학습 그래프에서도 omega를 동결해 alpha_i=0 불변 강제
             for node in list(self.coarse_tubes) + list(self.fine_tubes):
                 node.omega.requires_grad_(False)
-        out["would_expand_fine_at_096"] = bool(len(self.fine_tubes) == 1 or out["fine_max_sim"] < 0.96)
-        return out
+
+        self._active_coarse_idx = c_idx
+        self._active_fine_idx = f_idx
+        self._sync_state_buffers(dev)
+        self._cache_frozen_rings()
+        self.refresh_eval_caches()
+        return {
+            "coarse_idx": c_idx,
+            "coarse_expanded": c_expanded,
+            "coarse_max_sim": c_max_sim,
+            "fine_idx": f_idx,
+            "fine_expanded": f_expanded,
+            "fine_max_sim": f_max_sim,
+            "total_coarse": len(self.coarse_tubes),
+            "total_fine": len(self.fine_tubes),
+            "would_expand_fine_at_096": bool(len(self.fine_tubes) == 1 or f_max_sim < 0.96),
+        }
 
     def _run_tube_stage(
         self,
@@ -641,17 +948,26 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
         new_inertia[:, idx_t] = overlap_act[:1].detach()
         return w_act, overlap_act, z_dock, h_avg, f_mag_all, new_inertia
 
-    def loss_from_features(
-        self, cond: torch.Tensor, x_mag: torch.Tensor, tgt_cp: torch.Tensor, tgt_act: torch.Tensor
+    def _forward_and_loss(
+        self,
+        cond: torch.Tensor,
+        x_mag: torch.Tensor,
+        tgt_cp: torch.Tensor,
+        tgt_act: torch.Tensor,
+        deterministic: bool = False,
     ) -> torch.Tensor:
-        """Task 1..7 동결 트렁크 출력(cond, x_mag) 기반 고속 등가 손실."""
+        """매니폴드 주도 P_manifold + Conv4 디노이징 유계 잔차 분리 손실."""
         bsz = cond.shape[0]
+        x_conv = cond[:, : self.feat_dim]
+        f_st = cond[:, self.feat_dim :]
+
         c_idx = self._active_coarse_idx
         _, _, z_dock_c, h_avg_c, _, _ = self._run_tube_stage(
             self.coarse_tubes, x_mag, self.coarse_inertia, self.coarse_delta_z,
             [c_idx], use_inertia=False, record_deformation=False,
         )
-        c_feat = torch.cat([cond, z_dock_c, h_avg_c], dim=-1)
+        # Stage 1: 오염 가능한 x_conv 없이 순수 스냅백 위상 좌표(z_dock_c, h_avg_c)만 사용
+        c_feat = torch.cat([z_dock_c, h_avg_c], dim=-1)
         if self._coarse_trainable:
             p_anchor, ctx_coarse = self.coarse_tubes[c_idx].head(c_feat)
         else:
@@ -664,10 +980,31 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
             self.fine_tubes, x_fine, self.fine_inertia, self.fine_delta_z,
             [f_idx], use_inertia=False, record_deformation=False,
         )
-        f_feat = torch.cat([cond, z_dock_f, h_avg_f, ctx_coarse], dim=-1)
-        delta_cps, sel = self.fine_tubes[f_idx].head(f_feat)
-        delta_res = (0.55 * overlap_f.unsqueeze(-1).unsqueeze(-1)) * torch.tanh(delta_cps)
-        cand_cps = torch.clamp(p_anchor.unsqueeze(1) + delta_res, 0.0, 1.0)
+
+        # 최대 자성 공명도 기반 신뢰도 게이트 clamp(key_cos_max, 0, 1)
+        f_bank = F.normalize(
+            torch.stack([t.key.detach() for t in self.fine_tubes[: f_idx + 1]], dim=0),
+            p=2,
+            dim=-1,
+        )
+        key_cos_max = torch.matmul(F.normalize(x_fine, p=2, dim=-1), f_bank.t()).max(dim=-1).values
+        conf_gate = torch.clamp(key_cos_max, 0.0, 1.0)
+
+        # 학습 시 Conv4 특징 드롭아웃(p=0.3) + 약한 가우시안 노이즈(sigma=0.05) 주입
+        if self.training and not deterministic:
+            x_conv_in = F.dropout(x_conv, p=self.conv_dropout_p, training=True)
+            x_conv_in = x_conv_in + self.conv_noise_sigma * torch.randn_like(x_conv_in)
+        else:
+            x_conv_in = x_conv
+
+        raw_man_cps, raw_res_cps, sel = self.fine_tubes[f_idx].head(
+            z_dock_f, h_avg_f, ctx_coarse, f_st, x_conv_in
+        )
+        delta_man = (0.55 * overlap_f.unsqueeze(-1).unsqueeze(-1)) * torch.tanh(raw_man_cps)
+        p_manifold = torch.clamp(p_anchor.unsqueeze(1) + delta_man, 0.0, 1.0)
+        gate_scale = (self.res_scale * conf_gate.unsqueeze(-1) * overlap_f).unsqueeze(-1).unsqueeze(-1)
+        delta_res = gate_scale * torch.tanh(raw_res_cps)
+        cand_cps = torch.clamp(p_manifold + delta_res, 0.0, 1.0)
 
         acts = self.decoder(cand_cps.view(bsz * self.num_modes, self.num_cp, self.action_dim)).view(
             bsz, self.num_modes, self.horizon, self.action_dim
@@ -699,6 +1036,30 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
             else 0.0
         )
         return 0.85 * loss_win + 0.05 * loss_all + 0.10 * loss_gate + 0.05 * (l_topo_f + l_topo_c)
+
+    def loss_from_features(
+        self,
+        cond: torch.Tensor,
+        x_mag: torch.Tensor,
+        tgt_cp: torch.Tensor,
+        tgt_act: torch.Tensor,
+        deterministic: bool = False,
+    ) -> torch.Tensor:
+        """Task 1..7 동결 트렁크 출력(cond, x_mag) 기반 고속 등가 손실."""
+        return self._forward_and_loss(cond, x_mag, tgt_cp, tgt_act, deterministic=deterministic)
+
+    def loss(
+        self,
+        img: torch.Tensor,
+        st: torch.Tensor,
+        tgt_cp: torch.Tensor,
+        tgt_act: torch.Tensor,
+        instruction: str,
+        deterministic: bool = False,
+    ) -> torch.Tensor:
+        """Task 0 및 엔드투엔드 평가용 손실(loss_from_features와 100% 동일 연산)."""
+        cond, x_mag = self._forward_trunk_with_grad(img, st, [instruction] * img.shape[0])
+        return self._forward_and_loss(cond, x_mag, tgt_cp, tgt_act, deterministic=deterministic)
 
     @torch.no_grad()
     def _eval_single_active_tube(
@@ -774,6 +1135,8 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
             self.refresh_eval_caches()
 
         cond, x_mag = self._forward_trunk_with_grad(img, st, [instruction] * bsz)
+        x_conv = cond[:, : self.feat_dim]
+        f_st = cond[:, self.feat_dim :]
 
         # Stage 1: Coarse O(1) 단일 튜브 실행 (record_deformation=True + delta_buf 기록)
         c_idx, f_mag_c = self._select_active_eval_index(
@@ -794,7 +1157,7 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
         self.coarse_inertia[:, c_idx] = overlap_c[0, 0]
         self.coarse_prev_gate.zero_()
         self.coarse_prev_gate[:, c_idx] = a_c[0, 0]
-        c_feat = torch.cat([cond, z_dock_c, h_avg_c], dim=-1)
+        c_feat = torch.cat([z_dock_c, h_avg_c], dim=-1)
         p_anchor, ctx_coarse = self.coarse_tubes[c_idx].head(c_feat)
 
         # Stage 2: Fine O(1) 단일 튜브 실행 (record_deformation=True + delta_buf 기록)
@@ -817,14 +1180,20 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
         self.fine_inertia[:, f_idx] = overlap_f[0, 0]
         self.fine_prev_gate.zero_()
         self.fine_prev_gate[:, f_idx] = a_f[0, 0]
-        f_feat = torch.cat([cond, z_dock_f, h_avg_f, ctx_coarse], dim=-1)
-        delta_cps, sel = self.fine_tubes[f_idx].head(f_feat)
-        best_mode = sel.argmax(dim=1)
-        delta_best = (0.55 * overlap_f.unsqueeze(-1)) * torch.tanh(
-            delta_cps[torch.arange(bsz, device=img.device), best_mode]
-        )
 
-        p_star = torch.clamp(p_anchor + delta_best, 0.0, 1.0)
+        key_cos_max = torch.matmul(F.normalize(x_fine, p=2, dim=-1), self._eval_f_keys.t()).max(dim=-1).values
+        conf_gate = torch.clamp(key_cos_max, 0.0, 1.0)
+        raw_man_cps, raw_res_cps, sel = self.fine_tubes[f_idx].head(
+            z_dock_f, h_avg_f, ctx_coarse, f_st, x_conv
+        )
+        best_mode = sel.argmax(dim=1)
+        b_arange = torch.arange(bsz, device=img.device)
+        delta_man_best = (0.55 * overlap_f.unsqueeze(-1)) * torch.tanh(raw_man_cps[b_arange, best_mode])
+        p_manifold_best = torch.clamp(p_anchor + delta_man_best, 0.0, 1.0)
+        gate_scale = (self.res_scale * conf_gate.unsqueeze(-1) * overlap_f).unsqueeze(-1)
+        delta_res_best = gate_scale * torch.tanh(raw_res_cps[b_arange, best_mode])
+
+        p_star = torch.clamp(p_manifold_best + delta_res_best, 0.0, 1.0)
         act = self.decoder(p_star) * 2.0 - 1.0
 
         info: Dict[str, object] = {"coarse_idx": c_idx, "fine_idx": f_idx}
@@ -933,6 +1302,14 @@ def train_arm_task_fast(
                     assert float((cond_chk - cached_t1[b0]).abs().max().item()) < 1e-4
                     full_l = model.loss(x_i[b0], x_s[b0], y_c[b0], y_a[b0])
                     fast_l = model.loss_from_cached_trunk(cached_t1[b0], cached_t2[b0], y_c[b0], y_a[b0])
+                elif isinstance(model, ControlledDTRAPolicy):
+                    cond_chk, x_chk = model._forward_trunk_with_grad(x_i[b0], x_s[b0], [instruction] * len(x_i[b0]))
+                    assert float((cond_chk - cached_t1[b0]).abs().max().item()) < 1e-4
+                    assert float((x_chk - cached_t2[b0]).abs().max().item()) < 1e-4
+                    full_l = model.loss(x_i[b0], x_s[b0], y_c[b0], y_a[b0], instruction=instruction, deterministic=True)
+                    fast_l = model.loss_from_features(
+                        cached_t1[b0], cached_t2[b0], y_c[b0], y_a[b0], deterministic=True
+                    )
                 else:
                     cond_chk, x_chk = model._forward_trunk_with_grad(x_i[b0], x_s[b0], [instruction] * len(x_i[b0]))
                     assert float((cond_chk - cached_t1[b0]).abs().max().item()) < 1e-4
@@ -1316,19 +1693,28 @@ def measure_cpu_latency_breakdown(
                 cond: torch.Tensor, x_mag: torch.Tensor,
                 c_idx: int, f_mag_c: torch.Tensor, f_idx: int, f_mag_f: torch.Tensor,
             ) -> torch.Tensor:
+                x_conv = cond[:, : cpu_model.feat_dim]
+                f_st = cond[:, cpu_model.feat_dim :]
                 ov_c, a_c, z_c, h_c = cpu_model._eval_single_active_tube(
                     cpu_model.coarse_tubes[c_idx], f_mag_c, x_mag,
                     record_deformation=True, delta_buf=cpu_model.coarse_delta_z, tube_idx=c_idx,
                 )
-                p_anc, ctx_c = cpu_model.coarse_tubes[c_idx].head(torch.cat([cond, z_c, h_c], dim=-1))
+                p_anc, ctx_c = cpu_model.coarse_tubes[c_idx].head(torch.cat([z_c, h_c], dim=-1))
                 x_f = F.normalize(x_mag + 0.35 * ctx_c, p=2, dim=-1)
                 ov_f, a_f, z_f, h_f = cpu_model._eval_single_active_tube(
                     cpu_model.fine_tubes[f_idx], f_mag_f, x_f,
                     record_deformation=True, delta_buf=cpu_model.fine_delta_z, tube_idx=f_idx,
                 )
-                d_cps, sel = cpu_model.fine_tubes[f_idx].head(torch.cat([cond, z_f, h_f, ctx_c], dim=-1))
-                d_b = (0.55 * ov_f.unsqueeze(-1)) * torch.tanh(d_cps[0:1, sel.argmax(dim=1)[0]])
-                act = cpu_model.decoder(torch.clamp(p_anc + d_b, 0.0, 1.0)) * 2.0 - 1.0
+                key_cos_max = torch.matmul(x_f, cpu_model._eval_f_keys.t()).max(dim=-1).values
+                conf_gate = torch.clamp(key_cos_max, 0.0, 1.0)
+                man_cps, res_cps, sel = cpu_model.fine_tubes[f_idx].head(z_f, h_f, ctx_c, f_st, x_conv)
+                best_m = sel.argmax(dim=1)[0]
+                d_man = (0.55 * ov_f.unsqueeze(-1)) * torch.tanh(man_cps[0:1, best_m])
+                p_man = torch.clamp(p_anc + d_man, 0.0, 1.0)
+                d_res = (cpu_model.res_scale * conf_gate.unsqueeze(-1) * ov_f).unsqueeze(-1) * torch.tanh(
+                    res_cps[0:1, best_m]
+                )
+                act = cpu_model.decoder(torch.clamp(p_man + d_res, 0.0, 1.0)) * 2.0 - 1.0
                 cpu_model.snap_back()
                 return act
 
@@ -1409,17 +1795,18 @@ def build_arm_factory(arm_key: str):
             slot_hidden_dim=492, num_cp=6, horizon=16, action_dim=4, num_modes=6, temperature=0.003
         )
     if arm_key == "arm2_frozen_mlp_vision":
-        # Conv4 시각 키 전용: ABK(0.996)와 동일한 시각 기반 신규성 임계값 0.996 적용
+        # 저역 통과 하이브리드 시각 키 전용(Key Parity): 시각 기반 8슬롯 독립 유지
         return lambda: MatchedFrozenMLPPolicy(
-            vision_only=True, novelty_threshold=0.996, num_cp=6, horizon=16, action_dim=4, num_modes=6, slot_hidden_dim=359
+            vision_only=True, novelty_threshold=1.01, num_cp=6, horizon=16, action_dim=4, num_modes=6, slot_hidden_dim=359
         )
     if arm_key == "arm3_dtra_full_vision":
-        # Conv4 시각 키 전용(lang=0): ABK(0.996)와 동일하게 fine=0.996 교정하여 8개 튜브(5.25M) 공정 대조
+        # 저역 통과 하이브리드 시각 키 전용(lang=0): Coarse/Fine 자동 합병 비활성화로 8개 독립 튜브(5.25M) 유지
         return lambda: ControlledDTRAPolicy(
             vision_only=True,
             rigid_alpha_zero=False,
-            coarse_novelty_threshold=0.993,
-            fine_novelty_threshold=0.996,
+            disable_coarse_merge=True,
+            coarse_novelty_threshold=1.01,
+            fine_novelty_threshold=1.01,
         )
     if arm_key == "arm4_frozen_mlp_multimodal":
         return lambda: MatchedFrozenMLPPolicy(
@@ -1429,14 +1816,16 @@ def build_arm_factory(arm_key: str):
         return lambda: ControlledDTRAPolicy(
             vision_only=False,
             rigid_alpha_zero=True,
-            coarse_novelty_threshold=0.74,
+            disable_coarse_merge=True,
+            coarse_novelty_threshold=1.01,
             fine_novelty_threshold=0.96,
         )
     if arm_key == "arm6_dtra_full_multimodal":
         return lambda: ControlledDTRAPolicy(
             vision_only=False,
             rigid_alpha_zero=False,
-            coarse_novelty_threshold=0.74,
+            disable_coarse_merge=True,
+            coarse_novelty_threshold=1.01,
             fine_novelty_threshold=0.96,
         )
     raise ValueError(f"Unknown arm key: {arm_key}")
