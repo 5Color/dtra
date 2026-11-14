@@ -13,14 +13,19 @@ Official implementation and preprint for **DTRA** (*Dynamic Topological Ring Arc
 
 ## 1. Core Architecture Overview
 
-* **First-Order Elliptical Hypertubes on $\mathbb{S}^{63}$ (`D_topo = 64`):**
-  Every motor primitive $R_i$ is represented as a closed first-order harmonic orbit on the unit hypersphere using the periodic basis $B_{\text{ring}}(\theta) = [1, \cos\theta, \sin\theta]^\top$, parameterized by learnable attraction radius $r_i = \mathrm{softplus}(\rho_i) + 10^{-3}$, bounded elastic compliance $\alpha_i = \sigma(\omega_i) \in (0, 1)$, and adaptive magnetic gate $\tau_i = \mathrm{softplus}(\beta_i)$. Incoming topological queries $\mathbf{c}_t \in \mathbb{S}^{63}$ locate the exact nearest ring point in $O(1)$ via closed-form analytical `atan2` phase projection under spherical chord distance $d_{\text{chord}}$.
+* **First-Order Elliptical Hypertubes on $`\mathbb{S}^{63}`$ (`D_topo = 64`):**
+  Every motor primitive $`R_i`$ is represented as a closed first-order harmonic orbit on the unit hypersphere using the periodic basis $`B_{\text{ring}}(\theta) = [1, \cos\theta, \sin\theta]^\top`$, parameterized by learnable attraction radius $`r_i = \mathrm{softplus}(\rho_i) + 10^{-3}`$, bounded elastic compliance $`\alpha_i = \sigma(\omega_i) \in (0, 1)`$, and adaptive magnetic gate $`\tau_i = \mathrm{softplus}(\beta_i)`$. Incoming topological queries $`\mathbf{c}_t \in \mathbb{S}^{63}`$ locate the exact nearest ring point in $`O(1)`$ via closed-form analytical `atan2` phase projection under spherical chord distance $`d_{\text{chord}}`$.
 * **Multimodal Visual-Language Magnetic Keys (`D_key = 128`):**
-  Replaces sensitive `15x15` Difference-of-Gaussians (DoG) visual prototypes with normalized multimodal query vectors $\mathbf{x}_t = \mathrm{norm}([0.55\,\mathbf{v}_t ; 0.835\,\ell_{\text{task}}]) \in \mathbb{S}^{127}$ combining frozen mid-level Conv4 spatial features and deterministic `LightweightTextEncoder` instructions (`13.9x` wider mean inter-task cosine separation margin).
-* **Two-Stage Coarse-to-Fine Docking ($O(\lvert A_t \rvert) \approx O(1)$):**
-  Stage-1 thick, compliant Coarse rings emit base cubic B-Spline anchor control points $\mathbf{P}_{\text{anchor}}$ and context shift $\mathbf{c}_{\text{ctx}}$; Stage-2 thin, stiff Fine rings refine $6$-mode Winner-Takes-All (WTA) control-point residuals $\Delta\mathbf{P}_{m^*}$ decoded through a frozen clamped cubic B-Spline basis (`N_k = 6` knots $\to$ $H = 16$ continuous trajectory steps, `exec_steps = 8`). During evaluation, only gated active tubes $i \in A_t$ are executed.
-* **Command-Compatible Myelination ($M_{ij}$) & Elastic Snap-Back (`snap_back()`):**
-  Unified magnetic attraction combines intra-episode inertia ($\eta\, o_{i,t-1}$) with symmetric Hebbian myelinated conductance $M_{ij}$ gated by command compatibility $\max(0, \cos(\mathbf{x}_t, \mathbf{k}_i))$, delivering `+0.165` associative recall acceleration while blocking incompatible queries to `0.0`. Immediately after chunk synthesis, `snap_back()` clears temporary deformations $\Delta\mathbf{z}_i \leftarrow \mathbf{0}$ (`L_inf = 0.0`), and `reset()` clears cross-chunk buffers at episode boundaries.
+  Replaces sensitive `15x15` Difference-of-Gaussians (DoG) visual prototypes with normalized multimodal query vectors combining frozen mid-level Conv4 spatial features ($`\mathbf{v}_t \in \mathbb{S}^{63}`$) and deterministic `LightweightTextEncoder` instructions ($`\ell_{\text{task}} \in \mathbb{S}^{63}`$), delivering a `13.9x` wider mean inter-task cosine separation margin:
+
+  $$
+  \mathbf{x}_t = \mathrm{norm}\bigl([\,0.55\,\mathbf{v}_t \,;\, 0.835\,\ell_{\text{task}}\,]\bigr) \in \mathbb{S}^{127}
+  $$
+
+* **Two-Stage Coarse-to-Fine Docking ($`O(\lvert A_t \rvert) \approx O(1)`$):**
+  Stage-1 thick, compliant Coarse rings emit base cubic B-Spline anchor control points $`\mathbf{P}_{\text{anchor}}`$ and context shift $`\mathbf{c}_{\text{ctx}}`$; Stage-2 thin, stiff Fine rings refine `6`-mode Winner-Takes-All (WTA) control-point residuals $`\Delta\mathbf{P}_{m^*}`$ decoded through a frozen clamped cubic B-Spline basis (`N_k = 6` knots $\to$ $`H = 16`$ continuous trajectory steps, `exec_steps = 8`). During evaluation, only gated active tubes $`i \in A_t`$ are executed.
+* **Command-Compatible Myelination ($`M_{ij}`$) & Elastic Snap-Back (`snap_back()`):**
+  Unified magnetic attraction combines intra-episode inertia ($`\eta\, o_{i,t-1}`$) with symmetric Hebbian myelinated conductance $`M_{ij}`$ gated by command compatibility $`\max(0, \cos(\mathbf{x}_t, \mathbf{k}_i))`$, delivering `+0.165` associative recall acceleration while blocking incompatible queries to `0.0`. Immediately after chunk synthesis, `snap_back()` clears temporary deformations $`\Delta\mathbf{z}_i \leftarrow \mathbf{0}`$ (`L_inf = 0.0`), and `reset()` clears cross-chunk buffers at episode boundaries.
 
 ---
 
@@ -55,7 +60,7 @@ Evaluated sequentially over $K = 8$ MuJoCo `ML1 v3` tasks (`128x128` corner RGB 
 
 | Efficiency, Resonance & 3D OOD Stress Metric | `v1.1.3 ABK (Blend)` | **DTRA (v2.1, Ours)** | Improvement |
 | :--- | :---: | :---: | :---: |
-| **CPU Inference Latency ($K=1 \to K=4 \to K=8$)** | `5.08 -> 17.54 -> 27.48 ms` ($O(K)$) | **`3.51 -> 10.61 -> 10.28 ms`** ($O(1)$) | **`2.67x` faster at $K=8$** |
+| **CPU Inference Latency ($K=1 \to K=4 \to K=8$)** | `5.08 -> 17.54 -> 27.48 ms` · $`O(K)`$ | **`3.51 -> 10.61 -> 10.28 ms`** · $`O(1)`$ | **`2.67x` faster at $K=8$** |
 | **Magnetic Resonance Cosine Margin (Mean / Min)** | `0.0198` / `0.0082` | **`0.2752`** / **`0.0230`** | **`13.9x` wider mean margin** |
 | **3D OOD Avg SR (Clean / Mild $\sigma=0.10$ / Severe $\sigma=0.20$)** | `87.5%` / `4.7%` / `4.7%` | **`90.6%` / `42.2%` / `42.2%`** | **`9x` higher Severe OOD SR** |
 | **3D OOD Severe Routing Accuracy ($\sigma=0.20$, Bright `1.25x+0.12`)** | `40.6%` | **`89.1%`** | **`+48.5%p` routing retention** |
