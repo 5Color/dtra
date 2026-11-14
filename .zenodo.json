@@ -1,6 +1,6 @@
 {
-  "title": "ABK-VLA: Task-ID-Free Continual Visuomotor Policy Learning via Autonomous B-Spline Knot Compression and Visual Prototype Routing",
-  "description": "Official open-source implementation, pretrained checkpoint, 2D multi-stroke continual learning benchmark, OOD perturbation & multi-seed order stress tests, Hard Argmax vs Select-then-Blend ablation, 3D Meta-World continual manipulation port, and preprint PDF for ABK-VLA.",
+  "title": "DTRA: Real-Time Continual 3D Manipulation via Two-Stage Docking and Elastic Snap-Back of Hypertube Rings",
+  "description": "Official open-source implementation, Step 1 hyperspherical hypertube dynamics simulation, 8-task 3D Meta-World continual manipulation benchmark, mathematical specification, and 7-page preprint PDF for DTRA (Dynamic Topological Ring Architecture).",
   "creators": [
     {
       "name": "Son, Seungjoon",
@@ -9,13 +9,20 @@
   ],
   "keywords": [
     "continual-learning",
-    "visuomotor-policy",
-    "b-spline",
-    "action-chunking",
     "robotics",
+    "visuomotor-policy",
+    "meta-world",
     "pytorch",
-    "task-id-free",
-    "metaworld"
+    "hypertube-rings",
+    "b-spline",
+    "task-id-free"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.24208545",
+      "relation": "continues",
+      "scheme": "doi"
+    }
   ],
   "license": "MIT",
   "upload_type": "software"
