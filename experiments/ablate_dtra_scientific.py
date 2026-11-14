@@ -981,13 +981,17 @@ def train_arm_task_fast(
 
 
 class MetaWorldEvalRegistry:
-    """평가 속도 향상을 위해 ML1 train/test 환경 인스턴스를 캐시·재사용하는 레지스트리."""
+    """평가용 ML1 분할 메타데이터를 캐싱하되 단일 MuJoCo GL 컨텍스트만 순차 사용하도록 관리.
+
+    Windows OpenGL/GLFW 환경에서는 복수의 `render_mode='rgb_array'` 환경을 동시에 열어두면
+    렌더링 컨텍스트가 서로 덮어써져 프레임이 훼손되므로, `ml1` 분할 객체만 캐시하고
+    평가 호출마다 단일 `env`를 열어 `finally: env.close()`로 즉시 반환합니다.
+    """
 
     def __init__(self, tasks: Sequence[str], ml1_seed: int = 42) -> None:
         self.tasks = list(tasks)
         self.ml1_seed = ml1_seed
         self._ml1: Dict[str, object] = {}
-        self._envs: Dict[Tuple[str, str], object] = {}
         self.split_diagnostics: Dict[str, Dict] = {}
 
     def prepare_all(self) -> Dict[str, Dict]:
@@ -995,18 +999,19 @@ class MetaWorldEvalRegistry:
         for name in self.tasks:
             ml1 = metaworld.ML1(name, seed=self.ml1_seed)
             self._ml1[name] = ml1
-            env = ml1.train_classes[name](render_mode="rgb_array", camera_name="corner", width=128, height=128)
-            self._envs[("train_heldout", name)] = env
-
-            tr_goals, te_goals = [], []
-            for t in ml1.train_tasks:
-                env.set_task(t)
-                env.reset()
-                tr_goals.append(np.array(env._target_pos, dtype=np.float32))
-            for t in ml1.test_tasks:
-                env.set_task(t)
-                env.reset()
-                te_goals.append(np.array(env._target_pos, dtype=np.float32))
+            env = ml1.train_classes[name]()
+            try:
+                tr_goals, te_goals = [], []
+                for t in ml1.train_tasks:
+                    env.set_task(t)
+                    env.reset()
+                    tr_goals.append(np.array(env._target_pos, dtype=np.float32))
+                for t in ml1.test_tasks:
+                    env.set_task(t)
+                    env.reset()
+                    te_goals.append(np.array(env._target_pos, dtype=np.float32))
+            finally:
+                env.close()
 
             tr_g = np.stack(tr_goals, axis=0)
             te_g = np.stack(te_goals, axis=0)
@@ -1024,26 +1029,19 @@ class MetaWorldEvalRegistry:
 
     def get_env_and_tasks(self, task_name: str, split: str, n_eval: int) -> Tuple[object, List]:
         ml1 = self._ml1[task_name]
-        key = (split, task_name)
-        if key not in self._envs:
-            cls_map = ml1.train_classes if split == "train_heldout" else ml1.test_classes
-            self._envs[key] = cls_map[task_name](render_mode="rgb_array", camera_name="corner", width=128, height=128)
-        env = self._envs[key]
+        cls_map = ml1.train_classes if split == "train_heldout" else ml1.test_classes
+        env = cls_map[task_name](render_mode="rgb_array", camera_name="corner", width=128, height=128)
         if split == "train_heldout":
             tasks_slice = ml1.train_tasks[35 : 35 + n_eval]
         elif split == "official_test":
             tasks_slice = ml1.test_tasks[:n_eval]
         else:
+            env.close()
             raise ValueError(f"Unknown split: {split}")
         return env, list(tasks_slice)
 
     def close(self) -> None:
-        for env in self._envs.values():
-            try:
-                env.close()
-            except Exception:
-                pass
-        self._envs.clear()
+        self._ml1.clear()
 
 
 # ==============================================================================
@@ -1080,76 +1078,79 @@ def eval_arm_task(
     pre_snap_abs_all, pre_snap_l2_all, post_snap_abs_all = [], [], []
     coarse_dz_all, fine_dz_all = [], []
 
-    for ep_i, t in enumerate(eval_tasks):
-        instr = (
-            instructions_override[ep_i % len(instructions_override)]
-            if instructions_override is not None
-            else base_instr
-        )
-        env.set_task(t)
-        obs, _ = env.reset()
-        f0 = np.flipud(env.render()).copy()
-        t_f0 = torch.from_numpy(f0).permute(2, 0, 1).float().unsqueeze(0).to(device) / 255.0
-        t_f0 = apply_ood_rgb_perturbation(t_f0, noise_std, 1.0, 0.0, rng)
-
-        if isinstance(model, MatchedABK3DPolicy):
-            model.reset_cache()
-            w = model.set_episode_init_frame(t_f0)[0].detach().cpu().numpy()
-            if task_id is not None:
-                matched_slots += int(np.argmax(w) == task_id)
-        else:
-            model.reset()
-
-        ep_matched = False
-        done = False
-        cur_ep_dz = []
-
-        for step_idx in range(0, 150, exec_steps):
-            fr = np.flipud(env.render()).copy()
-            tx = torch.from_numpy(fr).permute(2, 0, 1).float().unsqueeze(0).to(device) / 255.0
-            tx = apply_ood_rgb_perturbation(tx, noise_std, 1.0, 0.0, rng)
-            ts = torch.from_numpy(obs[:4].astype(np.float32)).unsqueeze(0).to(device)
+    try:
+        for ep_i, t in enumerate(eval_tasks):
+            instr = (
+                instructions_override[ep_i % len(instructions_override)]
+                if instructions_override is not None
+                else base_instr
+            )
+            env.set_task(t)
+            obs, _ = env.reset()
+            f0 = np.flipud(env.render()).copy()
+            t_f0 = torch.from_numpy(f0).permute(2, 0, 1).float().unsqueeze(0).to(device) / 255.0
+            t_f0 = apply_ood_rgb_perturbation(t_f0, noise_std, 1.0, 0.0, rng)
 
             if isinstance(model, MatchedABK3DPolicy):
-                chunk = model.predict(tx, ts, routing_mode=routing_mode)
-            elif isinstance(model, ControlledDTRAPolicy):
-                chunk, info_route = model.predict(tx, ts, instruction=instr, collect_telemetry=collect_telemetry)
-                if step_idx == 0 and task_id is not None:
-                    ep_matched = (int(info_route["fine_idx"]) == task_id)
-                if collect_telemetry:
-                    dz = float(info_route["mean_delta_z_star_norm"])
-                    cur_ep_dz.append(dz)
-                    chunk_dz_all.append(dz)
-                    coarse_dz_all.append(float(info_route["coarse_delta_z_star_norm"]))
-                    fine_dz_all.append(float(info_route["fine_delta_z_star_norm"]))
-                    chunk_pull_all.append(
-                        0.5 * (float(info_route["coarse_pull_norm"]) + float(info_route["fine_pull_norm"]))
-                    )
-                    chunk_act_all.append(
-                        0.5 * (float(info_route["coarse_act"]) + float(info_route["fine_act"]))
-                    )
-                    pre_snap_abs_all.append(float(info_route["pre_snap_buf_max"]))
-                    pre_snap_l2_all.append(float(info_route["pre_snap_buf_l2_max"]))
-                    post_snap_abs_all.append(float(info_route["post_snap_buf_max"]))
+                model.reset_cache()
+                w = model.set_episode_init_frame(t_f0)[0].detach().cpu().numpy()
+                if task_id is not None:
+                    matched_slots += int(np.argmax(w) == task_id)
             else:
-                chunk, info_route = model.predict(tx, ts, instruction=instr)
-                if step_idx == 0 and task_id is not None:
-                    ep_matched = (int(info_route["slot_idx"]) == task_id)
+                model.reset()
 
-            for a in chunk[:exec_steps]:
-                obs, _, _, _, info = env.step(np.clip(a, -1.0, 1.0))
-                if info.get("success", 0) > 0:
-                    done = True
+            ep_matched = False
+            done = False
+            cur_ep_dz = []
+
+            for step_idx in range(0, 150, exec_steps):
+                fr = np.flipud(env.render()).copy()
+                tx = torch.from_numpy(fr).permute(2, 0, 1).float().unsqueeze(0).to(device) / 255.0
+                tx = apply_ood_rgb_perturbation(tx, noise_std, 1.0, 0.0, rng)
+                ts = torch.from_numpy(obs[:4].astype(np.float32)).unsqueeze(0).to(device)
+
+                if isinstance(model, MatchedABK3DPolicy):
+                    chunk = model.predict(tx, ts, routing_mode=routing_mode)
+                elif isinstance(model, ControlledDTRAPolicy):
+                    chunk, info_route = model.predict(tx, ts, instruction=instr, collect_telemetry=collect_telemetry)
+                    if step_idx == 0 and task_id is not None:
+                        ep_matched = (int(info_route["fine_idx"]) == task_id)
+                    if collect_telemetry:
+                        dz = float(info_route["mean_delta_z_star_norm"])
+                        cur_ep_dz.append(dz)
+                        chunk_dz_all.append(dz)
+                        coarse_dz_all.append(float(info_route["coarse_delta_z_star_norm"]))
+                        fine_dz_all.append(float(info_route["fine_delta_z_star_norm"]))
+                        chunk_pull_all.append(
+                            0.5 * (float(info_route["coarse_pull_norm"]) + float(info_route["fine_pull_norm"]))
+                        )
+                        chunk_act_all.append(
+                            0.5 * (float(info_route["coarse_act"]) + float(info_route["fine_act"]))
+                        )
+                        pre_snap_abs_all.append(float(info_route["pre_snap_buf_max"]))
+                        pre_snap_l2_all.append(float(info_route["pre_snap_buf_l2_max"]))
+                        post_snap_abs_all.append(float(info_route["post_snap_buf_max"]))
+                else:
+                    chunk, info_route = model.predict(tx, ts, instruction=instr)
+                    if step_idx == 0 and task_id is not None:
+                        ep_matched = (int(info_route["slot_idx"]) == task_id)
+
+                for a in chunk[:exec_steps]:
+                    obs, _, _, _, info = env.step(np.clip(a, -1.0, 1.0))
+                    if info.get("success", 0) > 0:
+                        done = True
+                        break
+                if done:
                     break
-            if done:
-                break
 
-        if not isinstance(model, MatchedABK3DPolicy) and task_id is not None:
-            matched_slots += int(ep_matched)
-        succs += int(done)
-        if collect_telemetry and cur_ep_dz:
-            ep_mean_dz.append(float(np.mean(cur_ep_dz)))
-            ep_max_dz.append(float(np.max(cur_ep_dz)))
+            if not isinstance(model, MatchedABK3DPolicy) and task_id is not None:
+                matched_slots += int(ep_matched)
+            succs += int(done)
+            if collect_telemetry and cur_ep_dz:
+                ep_mean_dz.append(float(np.mean(cur_ep_dz)))
+                ep_max_dz.append(float(np.max(cur_ep_dz)))
+    finally:
+        env.close()
 
     out: Dict[str, object] = {
         "success_rate": float(succs / max(1, len(eval_tasks))),
