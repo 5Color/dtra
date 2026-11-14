@@ -18,9 +18,9 @@ Official implementation and preprint for **DTRA** (*Dynamic Topological Ring Arc
 * **Multimodal Visual-Language Magnetic Keys (`D_key = 128`):**
   Replaces sensitive `15x15` Difference-of-Gaussians (DoG) visual prototypes with normalized multimodal query vectors combining frozen mid-level Conv4 spatial features ($`\mathbf{v}_t \in \mathbb{S}^{63}`$) and deterministic `LightweightTextEncoder` instructions ($`\ell_{\text{task}} \in \mathbb{S}^{63}`$), delivering a `13.9x` wider mean inter-task cosine separation margin:
 
-  $$
+  ```math
   \mathbf{x}_t = \mathrm{norm}\bigl([\,0.55\,\mathbf{v}_t \,;\, 0.835\,\ell_{\text{task}}\,]\bigr) \in \mathbb{S}^{127}
-  $$
+  ```
 
 * **Two-Stage Coarse-to-Fine Docking ($`O(\lvert A_t \rvert) \approx O(1)`$):**
   Stage-1 thick, compliant Coarse rings emit base cubic B-Spline anchor control points $`\mathbf{P}_{\text{anchor}}`$ and context shift $`\mathbf{c}_{\text{ctx}}`$; Stage-2 thin, stiff Fine rings refine `6`-mode Winner-Takes-All (WTA) control-point residuals $`\Delta\mathbf{P}_{m^*}`$ decoded through a frozen clamped cubic B-Spline basis (`N_k = 6` knots $\to$ $`H = 16`$ continuous trajectory steps, `exec_steps = 8`). During evaluation, only gated active tubes $`i \in A_t`$ are executed.
