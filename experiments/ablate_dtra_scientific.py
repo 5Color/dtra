@@ -796,6 +796,8 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
                 init_tau=0.42,
                 head_module=c_head,
             ).to(dev)
+            c_node.beta.requires_grad_(False)
+            c_node.register_buffer("_key_anchor", c_init_key.detach().clone())
             self.coarse_tubes.append(c_node)
             c_idx = len(self.coarse_tubes) - 1
             c_expanded = True
@@ -845,6 +847,8 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
                 init_tau=0.45,
                 head_module=f_head,
             ).to(dev)
+            f_node.beta.requires_grad_(False)
+            f_node.register_buffer("_key_anchor", f_init_key.detach().clone())
             self.fine_tubes.append(f_node)
             f_idx = len(self.fine_tubes) - 1
             f_expanded = True
@@ -855,6 +859,9 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
                 p.requires_grad = True
             self.fine_tubes[f_idx].train()
 
+        # 임계값 beta 고정으로 태스크 간 편향 탈취 차단
+        for node in list(self.coarse_tubes) + list(self.fine_tubes):
+            node.beta.requires_grad_(False)
         if self.rigid_alpha_zero:
             # Arm 5(강체 투영): 학습 그래프에서도 omega를 동결해 alpha_i=0 불변 강제
             for node in list(self.coarse_tubes) + list(self.fine_tubes):
@@ -1035,7 +1042,20 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
             if self._coarse_trainable
             else 0.0
         )
-        return 0.85 * loss_win + 0.05 * loss_all + 0.10 * loss_gate + 0.05 * (l_topo_f + l_topo_c)
+        l_key_anchor = 2.0 * (
+            1.0 - torch.dot(
+                F.normalize(self.fine_tubes[f_idx].key, p=2, dim=-1),
+                F.normalize(self.fine_tubes[f_idx]._key_anchor, p=2, dim=-1),
+            )
+        )
+        if self._coarse_trainable:
+            l_key_anchor = l_key_anchor + 2.0 * (
+                1.0 - torch.dot(
+                    F.normalize(self.coarse_tubes[c_idx].key, p=2, dim=-1),
+                    F.normalize(self.coarse_tubes[c_idx]._key_anchor, p=2, dim=-1),
+                )
+            )
+        return 0.85 * loss_win + 0.05 * loss_all + 0.10 * loss_gate + 0.05 * (l_topo_f + l_topo_c) + l_key_anchor
 
     def loss_from_features(
         self,
