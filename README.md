@@ -16,11 +16,7 @@ Official implementation and preprint for **DTRA** (*Dynamic Topological Ring Arc
 * **First-Order Elliptical Hypertubes on $`\mathbb{S}^{63}`$ (`D_topo = 64`):**
   Every motor primitive $`R_i`$ is represented as a closed first-order harmonic orbit on the unit hypersphere using the periodic basis $`B_{\text{ring}}(\theta) = [1, \cos\theta, \sin\theta]^\top`$, parameterized by learnable attraction radius $`r_i = \mathrm{softplus}(\rho_i) + 10^{-3}`$, bounded elastic compliance $`\alpha_i = \sigma(\omega_i) \in (0, 1)`$, and adaptive magnetic gate $`\tau_i = \mathrm{softplus}(\beta_i)`$. Incoming topological queries $`\mathbf{c}_t \in \mathbb{S}^{63}`$ locate the exact nearest ring point in $`O(1)`$ via closed-form analytical `atan2` phase projection under spherical chord distance $`d_{\text{chord}}`$.
 * **Multimodal Visual-Language Magnetic Keys (`D_key = 128`):**
-  Replaces sensitive `15x15` Difference-of-Gaussians (DoG) visual prototypes with normalized multimodal query vectors combining frozen mid-level Conv4 spatial features ($`\mathbf{v}_t \in \mathbb{S}^{63}`$) and deterministic `LightweightTextEncoder` instructions ($`\ell_{\text{task}} \in \mathbb{S}^{63}`$), delivering a `13.9x` wider mean inter-task cosine separation margin:
-
-  ```math
-  \mathbf{x}_t = \mathrm{norm}\bigl([\,0.55\,\mathbf{v}_t \,;\, 0.835\,\ell_{\text{task}}\,]\bigr) \in \mathbb{S}^{127}
-  ```
+  Replaces sensitive `15x15` Difference-of-Gaussians (DoG) visual prototypes with normalized multimodal query vectors $`\mathbf{x}_t = \mathrm{norm}\bigl([\,0.55\,\mathbf{v}_t \,;\, 0.835\,\ell_{\text{task}}\,]\bigr) \in \mathbb{S}^{127}`$ combining frozen mid-level Conv4 spatial features ($`\mathbf{v}_t \in \mathbb{S}^{63}`$) and deterministic `LightweightTextEncoder` instructions ($`\ell_{\text{task}} \in \mathbb{S}^{63}`$), delivering a `13.9x` wider mean inter-task cosine separation margin.
 
 * **Two-Stage Coarse-to-Fine Docking ($`O(\lvert A_t \rvert) \approx O(1)`$):**
   Stage-1 thick, compliant Coarse rings emit base cubic B-Spline anchor control points $`\mathbf{P}_{\text{anchor}}`$ and context shift $`\mathbf{c}_{\text{ctx}}`$; Stage-2 thin, stiff Fine rings refine `6`-mode Winner-Takes-All (WTA) control-point residuals $`\Delta\mathbf{P}_{m^*}`$ decoded through a frozen clamped cubic B-Spline basis (`N_k = 6` knots $\to$ $`H = 16`$ continuous trajectory steps, `exec_steps = 8`). During evaluation, only gated active tubes $`i \in A_t`$ are executed.
