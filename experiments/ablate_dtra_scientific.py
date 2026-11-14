@@ -754,7 +754,7 @@ class ControlledDTRAPolicy(DTRA3DPolicy):
             dim=-1,
         )
         cos_ij = torch.matmul(prev_keys, k_cur)
-        key_rep = (F.relu(cos_ij - (1.0 - delta_margin)) ** 2).sum()
+        key_rep = (F.relu(cos_ij - (1.0 - delta_margin)) ** 2).mean()
         return base_loss + self.lambda_key_rep * key_rep
 
     @torch.no_grad()
