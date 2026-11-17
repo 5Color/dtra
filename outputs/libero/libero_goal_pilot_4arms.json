@@ -1,0 +1,724 @@
+{
+  "config": {
+    "suite": "libero_goal",
+    "max_tasks": 5,
+    "task_indices": null,
+    "max_demos": null,
+    "stride": 1,
+    "epochs": 35,
+    "batch_size": 128,
+    "lr": 0.0005,
+    "horizon": 16,
+    "num_cp": 8,
+    "exec_steps": 8,
+    "n_eval": 5,
+    "max_rollout_steps": null,
+    "seed": 42,
+    "arms": [
+      "arm_frozen_mlp",
+      "arm_er_5pct",
+      "arm_dtra_rigid",
+      "arm_dtra_elastic"
+    ],
+    "fast_eval_endpoints": false,
+    "out_json": "outputs\\libero_goal_pilot_4arms.json"
+  },
+  "tasks": [
+    {
+      "idx": 0,
+      "name": "open_the_middle_drawer_of_the_cabinet",
+      "language": "open the middle drawer of the cabinet",
+      "chunks": 6927
+    },
+    {
+      "idx": 1,
+      "name": "put_the_bowl_on_the_stove",
+      "language": "put the bowl on the stove",
+      "chunks": 4981
+    },
+    {
+      "idx": 2,
+      "name": "put_the_wine_bottle_on_top_of_the_cabinet",
+      "language": "put the wine bottle on top of the cabinet",
+      "chunks": 5294
+    },
+    {
+      "idx": 3,
+      "name": "open_the_top_drawer_and_put_the_bowl_inside",
+      "language": "open the top drawer and put the bowl inside",
+      "chunks": 10108
+    },
+    {
+      "idx": 4,
+      "name": "put_the_bowl_on_top_of_the_cabinet",
+      "language": "put the bowl on top of the cabinet",
+      "chunks": 4994
+    }
+  ],
+  "arms": {
+    "arm_frozen_mlp": {
+      "mean_final_sr": 1.0,
+      "forgetting_rate": 0.0,
+      "bwt": 0.14999999105930328,
+      "mean_final_route_acc": 1.0,
+      "max_vram_mb": 3695.1,
+      "mean_samples_per_sec": 9000.9,
+      "R_sr": [
+        [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          1.0,
+          1.0,
+          0.800000011920929,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.800000011920929,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.6000000238418579,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "R_route": [
+        [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "train_logs": [
+        {
+          "train_time_s": 26.63,
+          "samples_per_sec": 9104.8,
+          "peak_vram_mb": 3665.7,
+          "final_loss": 0.03214,
+          "trainable_params": 397584
+        },
+        {
+          "train_time_s": 18.68,
+          "samples_per_sec": 9331.5,
+          "peak_vram_mb": 3686.0,
+          "final_loss": 0.04477,
+          "trainable_params": 397584
+        },
+        {
+          "train_time_s": 22.06,
+          "samples_per_sec": 8397.5,
+          "peak_vram_mb": 3689.0,
+          "final_loss": 0.05066,
+          "trainable_params": 397584
+        },
+        {
+          "train_time_s": 39.09,
+          "samples_per_sec": 9050.9,
+          "peak_vram_mb": 3692.0,
+          "final_loss": 0.04393,
+          "trainable_params": 397584
+        },
+        {
+          "train_time_s": 19.17,
+          "samples_per_sec": 9119.8,
+          "peak_vram_mb": 3695.1,
+          "final_loss": 0.05338,
+          "trainable_params": 397584
+        }
+      ],
+      "final_eval": {
+        "T0": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 110.6,
+          "eval_time_s": 10.14
+        },
+        "T1": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 94.4,
+          "eval_time_s": 10.09
+        },
+        "T2": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 104.0,
+          "eval_time_s": 10.87
+        },
+        "T3": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 187.2,
+          "eval_time_s": 17.79
+        },
+        "T4": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 109.2,
+          "eval_time_s": 11.52
+        }
+      }
+    },
+    "arm_er_5pct": {
+      "mean_final_sr": 0.8799999952316284,
+      "forgetting_rate": 0.09999999403953552,
+      "bwt": -0.04999999701976776,
+      "mean_final_route_acc": 0.2,
+      "max_vram_mb": 3298.5,
+      "mean_samples_per_sec": 4559.62,
+      "R_sr": [
+        [
+          1.0,
+          0.20000000298023224,
+          0.6000000238418579,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.800000011920929,
+          1.0,
+          0.800000011920929,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.6000000238418579
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.800000011920929
+        ]
+      ],
+      "R_route": [
+        [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "train_logs": [
+        {
+          "train_time_s": 26.88,
+          "samples_per_sec": 9018.7,
+          "peak_vram_mb": 3288.1,
+          "final_loss": 0.03053,
+          "trainable_params": 445016
+        },
+        {
+          "train_time_s": 34.47,
+          "samples_per_sec": 5056.9,
+          "peak_vram_mb": 3298.5,
+          "final_loss": 0.06454,
+          "trainable_params": 445016
+        },
+        {
+          "train_time_s": 51.55,
+          "samples_per_sec": 3594.2,
+          "peak_vram_mb": 3291.6,
+          "final_loss": 0.07922,
+          "trainable_params": 445016
+        },
+        {
+          "train_time_s": 124.21,
+          "samples_per_sec": 2848.2,
+          "peak_vram_mb": 3290.7,
+          "final_loss": 0.07084,
+          "trainable_params": 445016
+        },
+        {
+          "train_time_s": 76.66,
+          "samples_per_sec": 2280.1,
+          "peak_vram_mb": 3289.8,
+          "final_loss": 0.07751,
+          "trainable_params": 445016
+        }
+      ],
+      "final_eval": {
+        "T0": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 121.6,
+          "eval_time_s": 11.24
+        },
+        "T1": {
+          "sr": 1.0,
+          "route_acc": 0.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 92.2,
+          "eval_time_s": 9.55
+        },
+        "T2": {
+          "sr": 0.6,
+          "route_acc": 0.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 99.33333333333333,
+          "eval_time_s": 15.44
+        },
+        "T3": {
+          "sr": 1.0,
+          "route_acc": 0.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 183.4,
+          "eval_time_s": 17.32
+        },
+        "T4": {
+          "sr": 0.8,
+          "route_acc": 0.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 95.75,
+          "eval_time_s": 12.78
+        }
+      }
+    },
+    "arm_dtra_rigid": {
+      "mean_final_sr": 0.8799999356269836,
+      "forgetting_rate": 0.09999999403953552,
+      "bwt": -0.04999999701976776,
+      "mean_final_route_acc": 1.0,
+      "max_vram_mb": 3695.9,
+      "mean_samples_per_sec": 5928.86,
+      "R_sr": [
+        [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.800000011920929,
+          0.800000011920929,
+          0.800000011920929,
+          0.800000011920929
+        ],
+        [
+          0.0,
+          0.0,
+          0.800000011920929,
+          1.0,
+          0.800000011920929
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.800000011920929
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "R_route": [
+        [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "train_logs": [
+        {
+          "train_time_s": 39.15,
+          "samples_per_sec": 6192.0,
+          "peak_vram_mb": 3682.9,
+          "final_loss": 0.02874,
+          "trainable_params": 424332
+        },
+        {
+          "train_time_s": 29.02,
+          "samples_per_sec": 6008.3,
+          "peak_vram_mb": 3686.2,
+          "final_loss": 0.04674,
+          "trainable_params": 424332
+        },
+        {
+          "train_time_s": 31.43,
+          "samples_per_sec": 5894.7,
+          "peak_vram_mb": 3689.4,
+          "final_loss": 0.05744,
+          "trainable_params": 424332
+        },
+        {
+          "train_time_s": 59.93,
+          "samples_per_sec": 5903.5,
+          "peak_vram_mb": 3692.7,
+          "final_loss": 0.04682,
+          "trainable_params": 424332
+        },
+        {
+          "train_time_s": 30.96,
+          "samples_per_sec": 5645.8,
+          "peak_vram_mb": 3695.9,
+          "final_loss": 0.05909,
+          "trainable_params": 424332
+        }
+      ],
+      "final_eval": {
+        "T0": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 121.0,
+          "eval_time_s": 11.2
+        },
+        "T1": {
+          "sr": 0.8,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 91.5,
+          "eval_time_s": 12.48
+        },
+        "T2": {
+          "sr": 0.8,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 100.0,
+          "eval_time_s": 12.96
+        },
+        "T3": {
+          "sr": 0.8,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 189.75,
+          "eval_time_s": 19.25
+        },
+        "T4": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 97.2,
+          "eval_time_s": 10.4
+        }
+      }
+    },
+    "arm_dtra_elastic": {
+      "mean_final_sr": 0.9199999570846558,
+      "forgetting_rate": 0.04999999701976776,
+      "bwt": 0.0,
+      "mean_final_route_acc": 1.0,
+      "max_vram_mb": 3695.9,
+      "mean_samples_per_sec": 5831.14,
+      "R_sr": [
+        [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.800000011920929,
+          0.800000011920929,
+          1.0,
+          0.800000011920929
+        ],
+        [
+          0.0,
+          0.0,
+          0.800000011920929,
+          0.800000011920929,
+          0.800000011920929
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "R_route": [
+        [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "train_logs": [
+        {
+          "train_time_s": 40.1,
+          "samples_per_sec": 6046.7,
+          "peak_vram_mb": 3682.9,
+          "final_loss": 0.02871,
+          "trainable_params": 424332
+        },
+        {
+          "train_time_s": 29.0,
+          "samples_per_sec": 6010.7,
+          "peak_vram_mb": 3686.2,
+          "final_loss": 0.0467,
+          "trainable_params": 424332
+        },
+        {
+          "train_time_s": 31.78,
+          "samples_per_sec": 5830.3,
+          "peak_vram_mb": 3689.4,
+          "final_loss": 0.0565,
+          "trainable_params": 424332
+        },
+        {
+          "train_time_s": 61.14,
+          "samples_per_sec": 5786.8,
+          "peak_vram_mb": 3692.7,
+          "final_loss": 0.04671,
+          "trainable_params": 424332
+        },
+        {
+          "train_time_s": 31.89,
+          "samples_per_sec": 5481.2,
+          "peak_vram_mb": 3695.9,
+          "final_loss": 0.0589,
+          "trainable_params": 424332
+        }
+      ],
+      "final_eval": {
+        "T0": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.4624977111816406,
+          "mean_delta_z": 0.05649801362783481,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 120.4,
+          "eval_time_s": 11.2
+        },
+        "T1": {
+          "sr": 0.8,
+          "route_acc": 1.0,
+          "mean_alpha": 0.4441475570201874,
+          "mean_delta_z": 0.0582836891990155,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 93.25,
+          "eval_time_s": 12.56
+        },
+        "T2": {
+          "sr": 0.8,
+          "route_acc": 1.0,
+          "mean_alpha": 0.45319417119026184,
+          "mean_delta_z": 0.10115219311541822,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 100.5,
+          "eval_time_s": 13.07
+        },
+        "T3": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.4926256537437439,
+          "mean_delta_z": 0.0890237542334944,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 201.4,
+          "eval_time_s": 19.43
+        },
+        "T4": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.434882253408432,
+          "mean_delta_z": 0.15526908299615305,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 97.6,
+          "eval_time_s": 10.44
+        }
+      }
+    }
+  }
+}
