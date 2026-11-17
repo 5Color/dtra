@@ -1,5 +1,7 @@
 # DTRA: Dynamic Topology Ring Architecture
 
+[English](README.md) | [한국어](README_KO.md)
+
 [![Preprint (DTRA v3.0)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](dtra/paper_v2/DTRA_v3.0_Preprint.pdf)
 [![arXiv Manuscript](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](dtra/paper_v2/dtra_preprint.pdf)
 [![Zenodo v3.0 DOI Slot](https://img.shields.io/badge/Zenodo%20v3.0-Pending%20DOI%20Minting-informational.svg)](RELEASE_NOTES_v3.0.0.md)
@@ -16,6 +18,8 @@
 > 2. **Gen 2 — `dtra` (**DTRA v3.0 — Dynamic Topology Ring Architecture**, corresponding to [`5Color/dtra`](https://github.com/5Color/dtra)):** Resolves Voronoi encroachment, duplicate-instruction routing collapse, and $O(K)$ task-specific head growth across $K=100$ sequential 7-DoF LIBERO tasks via $\mathbb{S}^{63}$ topological ring isolation, Two-Stage Top-$M$ CMC, `SharedBasisBank` ($100 \to 27$ frozen primitive bases, `-73%`), and Two-Timescale Snap-Back (`post_snap_norm = 0.0000`).
 > Ongoing **v4.0 Future Work** extensions (`Organ` $K=5{,}000$, `CALVIN` V4/V5, `RoboCasa`) live isolated in `outputs/{organ_v4,calvin_v4,calvin_v5,robocasa}/` and `dtra/experiments/{calvin_v4,calvin_v5,robocasa_v4}/` and are strictly excluded from **DTRA v3.0** preprint metrics and release tables.
 
+> **Inference-input scope:** Task-ID-free means no integer task index is passed to the policy at inference. Routing uses dual-camera features, proprioception, and a language embedding; evaluations that provide language commands are command-conditioned, not observation-only.
+
 For the complete hypothesis-by-hypothesis chronology, see [**RESEARCH_LINEAGE.md**](RESEARCH_LINEAGE.md), [**RELEASE_NOTES_v3.0.0.md**](RELEASE_NOTES_v3.0.0.md), and the 20-page outline [**dtra/PAPER_20P_OUTLINE.md**](dtra/PAPER_20P_OUTLINE.md).
 
 ---
@@ -25,6 +29,7 @@ For the complete hypothesis-by-hypothesis chronology, see [**RESEARCH_LINEAGE.md
 ```text
 drawing-vla/
 ├── README.md                              # Project landing page, 3-seed v3.0 tables & reproduction guide
+├── README_KO.md                           # Korean DTRA overview and benchmark results
 ├── RELEASE_NOTES_v3.0.0.md                # Official DTRA v3.0.0 release notes & Zenodo DOI slot
 ├── RESEARCH_LINEAGE.md                    # Gen-1 -> Gen-2 research chronology & milestone ledger
 ├── requirements.txt                       # Core Python dependencies
@@ -52,7 +57,6 @@ drawing-vla/
 │       ├── dtra_preprint.pdf              # Exact 20-page clean ASCII arXiv build (pdfLaTeX/XeTeX safe)
 │       ├── dtra_v3.0_preprint.tex         # XeTeX 20-page LaTeX source
 │       ├── dtra_preprint.tex              # Pure ASCII 20-page arXiv LaTeX source
-│       └── README_KO.md                   # Korean research summary
 │
 ├── outputs/
 │   ├── libero/                            # Locked LIBERO-100 3-seed JSONs (42, 100, 2026) & LIBERO-Goal pilot

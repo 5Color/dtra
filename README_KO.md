@@ -1,133 +1,118 @@
-# Drawing VLA: Closed-Loop Visuomotor Action Chunking for Interactive Multi-Stroke Sketch Generation
+# DTRA: Dynamic Topology Ring Architecture
 
-> **Official repository for the paper:**  
-> *"Drawing VLA: Closed-Loop Visuomotor Action Chunking for Interactive Multi-Stroke Sketch Generation from Crowdsourced Demonstrations"*  
-> **Author:** Seungjoon Son  
->
-> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24122154.svg)](https://doi.org/10.5281/zenodo.24122154)
-> [![Live Benchmark](https://img.shields.io/badge/Live%20Benchmark-Hand%20vs%20AI-success?logo=vercel)](https://handvsai.vercel.app)
-> [![Paper PDF](https://img.shields.io/badge/Paper-PDF-red?logo=adobeacrobatreader)](./Drawing_VLA.pdf)
-> [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
->
-> 🎮 **실시간 웹 벤치마크 플레이:** [https://handvsai.vercel.app](https://handvsai.vercel.app)  
-> 📄 **논문 원문 (PDF):** [Drawing_VLA.pdf](./Drawing_VLA.pdf)
+[English](README.md) | **한국어**
 
----
+[![프리프린트 (DTRA v3.0)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](dtra/paper_v2/DTRA_v3.0_Preprint.pdf)
+[![arXiv 원고](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](dtra/paper_v2/dtra_preprint.pdf)
+[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24218483.svg)](https://doi.org/10.5281/zenodo.24218483)
+[![MIT 라이선스](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## 🎨 Overview & Visual Results
+**초구면 라우팅과 공유 운동 기저를 이용한 재생 없는 지속 시각운동 제어.** DTRA v3.0은 3개 학습 시드에서 LIBERO-100 최종 성공률 `87.00 ± 0.86%`를 보고합니다.
 
-Drawing VLA explores closed-loop visuomotor policy learning for precision 2D sketch generation. By predicting 16-step action chunks from dual-channel visual observations (current canvas state and target template), the model generates smooth, multi-stroke sketches while maintaining robust closed-loop error correction.
+> **연구 세대와 범위:** 이 저장소는 Gen 1 Drawing-VLA/ABK-VLA와 Gen 2 DTRA v3.0을 함께 보관합니다. 본 README의 DTRA 실험 수치는 LIBERO-100, LIBERO-Goal 파일럿, 8태스크 Meta-World 범위입니다. CALVIN v4/v5, RoboCasa, Organ은 후속 v4.0 연구 트랙이며 v3.0 결과에 포함하지 않습니다. 연구 이력은 [RESEARCH_LINEAGE.md](RESEARCH_LINEAGE.md), 버전 경계는 [DTRA 논문 개요](dtra/PAPER_20P_OUTLINE.md)를 참고하세요.
 
-### 🎥 실시간 자율 드로잉 롤아웃 (Live Closed-Loop Rollouts)
+## 아키텍처 개요
 
-| 가이드 선따기: 사과 (3획) | 다중 스트로크 분리: 새싹 (4획) |
-| :---: | :---: |
-| <img src="./paper/figures/rollout_apple.gif" width="360" alt="Drawing-VLA 사과 롤아웃" /> | <img src="./paper/figures/rollout_sprout.gif" width="360" alt="Drawing-VLA 새싹 롤아웃" /> |
+Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우팅 영역 침범과 태스크별 행동 헤드의 선형 증가가 문제가 됩니다. DTRA v3.0은 동결된 ResNet-18 DualCam 인코더, 고유수용성 입력, `LightweightTextEncoder`를 공통 인식 경로로 사용하고 네 요소를 결합합니다.
 
-*Drawing-VLA 통합 정책 모델($K=16$ 액션 청킹, Temporal Ensembling, Catmull-Rom 스플라인 브러시 렌더러)이 캔버스 시각 피드백을 실시간으로 확인하며 자율 드로잉을 수행하는 실제 롤아웃 영상.*
+1. **라우팅 마진 보정:** 이전 태스크의 쿼리 기준점과 자기 유사도 하한을 보존하고, 이전 라우팅 영역을 침범하는 키 업데이트를 투영해 제거합니다.
+2. **2단계 Top-M 공통 성분 제거(CMC):** 전체 키 코사인 스캔으로 후보 5개를 고른 뒤, 후보들이 공유하는 언어·장면 성분을 제거하고 세부 카메라 특징과 고유수용성 잔차로 재순위화합니다. 동일 지시어 태스크의 LIBERO-100 라우팅 정확도는 `41.76%`에서 `99.68 ± 0.45%`로 보고되었습니다.
+3. **공유 운동 기저(SharedBasisBank):** 길이 16의 행동 청크를 6개 제어점의 클램프드 `C²` 큐빅 B-스플라인으로 나타내고, 100개 태스크에서 27개 동결 기저를 공유합니다. 73% 감소는 기저 개수 기준이며 전체 모델 메모리 감소를 뜻하지 않습니다.
+4. **두 시간척도의 Snap-Back:** 청크 사이 임시 변형 상태를 되돌리는 `chunk_snap_back()`과 에피소드 종료 시 `episode_snap_back()`을 구분합니다. `post_snap_norm = 0.0000`은 상태 초기화를 뜻하며 파라미터 보존을 독립적으로 입증하는 수치는 아닙니다.
 
-### 1. 폐루프 롤아웃 vs. 단일 스텝 베이스라인 비교 (이론적 방어 및 수치 검증)
-![Figure 1: Rollout Comparison](./paper/figures/fig1_rollout_comparison.png)
-*Figure 1: 폐루프 Action Chunking(Drawing-VLA)과 단일 스텝 마르코프 베이스라인(v5b)의 사과(3획) 및 새싹(4획) 드로잉 비교.*
+### 입력 조건
 
-| 평가 지표 (Evaluation Metric) | 단일 스텝 마르코프 베이스라인 (`v5b`) | Drawing-VLA (ACT, 제안 모델) | 이론적 원인 및 메커니즘 |
-| :--- | :---: | :---: | :--- |
-| **게임 점수 (/100)** | 87.2 (A등급) | **99.9 (S등급)** | 누적 드리프트 및 복합 오차 제거 |
-| **윤곽선 채움률 (Coverage)** | 94.1% | **100.0%** | 조기 중단 없는 완전한 경계선 탐색 |
-| **궤적 정밀도 (Precision)** | 83.4% | **100.0%** | 시간 앙상블($q=6$)을 통한 궤적 평활화 |
-| **조화 평균 점수 (Harmonic F1)** | 0.884 | **1.000** | 이중 허용오차(5px/10px) 완벽 정렬 |
-| **양방향 SDF 오차 (Avg Error)** | 4.80 px | **1.20 px** | 서브픽셀 단위의 정밀한 윤곽 추적 |
-| **다중 획 분리 (Stroke Decoupling)** | **실패** (1획으로 뭉개짐) | **해결** (3획 완벽 분리) | 단일 스텝 모드 평균화 극복 ($w_{\text{up}} = 10.0$) |
-| **자율 종료 (Self-Termination)** | 시간 초과 강제 컷오프 | **정상 자율 종료** (708스텝) | 16스텝 미래 계획 지평($K=16$) 확보 |
+여기서 **Task-ID-free**는 추론 때 정수형 태스크 인덱스를 정책에 직접 전달하지 않는다는 뜻입니다. 라우팅 입력에는 두 카메라 특징, 고유수용성 상태와 언어 임베딩이 포함됩니다. 언어 지시를 제공하는 평가는 순수 시각·고유수용성 관측만 사용하는 평가와 구분해야 합니다.
 
-> [!NOTE]
-> **왜 단일 스텝 베이스라인은 실패하는가? (파라미터 부족이 아닌 '구조적·수학적 필연성')**  
-> 베이스라인(`MLP Baseline (v5b)`)은 튜닝이 덜 된 허수아비 모델이 아니며, **Drawing-VLA와 완전히 동일한 합성곱 비전 인코더 백본과 2채널 캔버스 관측 입력**을 공유합니다. 그럼에도 사과 줄기를 떼지 못하고 질질 끄는 이유는 모델 크기 때문이 아니라, **마르코프 단일 스텝 모방 학습 고유의 모드 평균화(Mode Averaging)** 때문입니다:
-> 1. **다중 모달 시연 간 모드 평균화:** 사람이 그릴 때 사과 몸통부터 그리는 사람과 줄기부터 그리는 사람, 시계방향과 반시계방향으로 그리는 데이터가 섞여 있을 때, 단일 스텝 정책은 분기점에서 상충하는 벡터들의 산술 평균을 계산해 버립니다. 이로 인해 펜을 허공에 질질 끄는 비정상적인 평균 궤적이 발생하며, 파라미터를 100배 키우더라도 구조상 이를 해결할 수 없습니다.
-> 2. **오차 누적 (Compounding Error):** 매 스텝마다 예측 오차가 시간 지평을 따라 $O(\epsilon T^2)$로 누적되어 종단부에서 궤적이 크게 붕괴합니다.
-> 3. **Action Chunking의 해법 ($K=16, w_{\text{up}}=10.0$):** 캔버스 시각 피드백과 펜 위치를 조건으로 16스텝 미래 궤적 청크를 한 번에 예측하고 펜-업 손실에 10배 가중치를 부여함으로써, 연속적인 궤적 계획 지평을 확보하여 획 전환(Pen-Up)을 깔끔하게 물리적으로 분리해 냅니다.
+## 벤치마크 결과
 
-### 2. 실시간 외란 복구 (+20px 공간 교란 실험)
-![Figure 4: Perturbation Recovery](./paper/figures/fig4_perturbation_recovery.png)
-*Figure 4: $t=150$ 스텝에서 외부 강제 튕김(+20px 외란)을 주었을 때, 개루프 모델은 영구히 이탈하지만 폐루프 Drawing-VLA는 42스텝 만에 윤곽선으로 자율 복귀하는 모습.*
+### LIBERO-100 (K=100)
 
-| 제어 정책 / 조건 | 외란 크기 (Perturbation) | 채움률 (Coverage) | 정밀도 (Precision) | 조화 F1 점수 | 오차 복구 동역학 |
-| :--- | :---: | :---: | :---: | :---: | :--- |
-| **Drawing-VLA (폐루프 제어)** | 외란 없음 ($0$ px) | **100.0%** | **100.0%** | **1.000** | 정상 궤적 추적 |
-| **Drawing-VLA (폐루프 제어)** | $+10$ px 외란 | 94.9% | 94.1% | 0.945 | 신속한 윤곽선 재수렴 |
-| **Drawing-VLA (폐루프 제어)** | **$+20$ px 외란** | **86.5%** | **87.5%** | **0.870** | **42스텝 만에 완전 복구** ($1.64$ px 오차) |
-| **개루프 재생 베이스라인 (Open-Loop)** | $+20$ px 외란 | 43.7% | 40.4% | 0.420 | **영구적 궤적 이탈 및 붕괴** (시각 피드백 부재) |
+각 마일스톤에서 시드당 5회 롤아웃을 평가했습니다. 전체 4개 비교군은 2개 시드, `Frozen MLP`와 `DTRA Elastic` 핵심 비교는 3개 시드를 사용했습니다.
 
-> [!NOTE]
-> **개루프 시퀀스 모델(SketchRNN 등) vs. 폐루프 시각운동 제어**  
-> SketchRNN 같은 기존 벡터 시퀀스 모델은 캔버스 픽셀을 보지 않고 상대 좌표 변위$(\Delta x, \Delta y)$만 예측하는 '개루프(Open-loop)' 방식입니다. 도중에 손이 빗나가거나 펜이 튕기면 영구히 빗나가며 회복이 불가능합니다(F1 0.420). 반면 Drawing-VLA는 캔버스 잉크와 목표 도안의 시각적 불일치를 지속 감지하여 **42스텝(누적 모델 추론 시간 42.8ms) 만에 지수 감쇠로 윤곽선 오차를 1.64px 이하로 정상 수렴**시킵니다.
+| 방법 | 최종 성공률 | 망각률 | BWT | 라우팅 정확도 | 동일 지시어 라우팅 | 기저 수 | 활성 추론 지연 |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `arm_frozen_mlp` (N=3) | 70.33 ± 1.18% | 2.90 ± 1.05% | +0.20 ± 2.29% | 81.94 ± 0.24% | 41.76 ± 2.09% | 100 | 6.46 ± 0.57 ms |
+| `arm_er_5pct` (N=2) | 40.50 ± 0.30% | 27.07 ± 4.04% | −20.71 ± 2.93% | 1.00 ± 0.00% | 0.00 ± 0.00% | 1 | 5.34 ± 0.03 ms |
+| `arm_dtra_rigid` (N=2) | 86.20 ± 0.00% | 2.93 ± 0.91% | +0.10 ± 0.91% | 99.86 ± 0.14% | 99.53 ± 0.47% | 27 | 9.36 ± 0.05 ms |
+| **`arm_dtra_elastic` (N=3)** | **87.00 ± 0.86%** | **2.69 ± 0.67%** | **+0.20 ± 0.72%** | **99.90 ± 0.13%** | **99.68 ± 0.45%** | **27** | 9.55 ± 0.20 ms |
 
-### 3. 진단 절제 실험 (Ablation Studies, 논문 5.3절)
-* **펜-업 손실 가중치 ($w_{\text{up}} = 1.0$ vs. $10.0$):** 가중치를 1.0으로 낮출 경우 펜을 떼지 못하고 질질 끄는 현상이 재현되어, 불균형 클래스(펜-업 10배 가중치) 재가중이 다중 획 분리의 필수 조건임을 입증.
-* **시간 앙상블 ($q = 1$ vs. $q = 6$):** 앙상블을 끄면 청크 전환 경계에서 고주파 지터(진동)가 발생하지만, $q=6$ 시간 지수 평활화를 통해 매끄러운 $C^1$ 연속 스플라인 브러시 궤적을 완성.
+`arm_dtra_elastic`의 시드별 최종 성공률은 42번 시드 `87.80%`, 100번 시드 `87.40%`, 2026번 시드 `85.80%`입니다.
 
----
+### Meta-World 및 LIBERO-Goal
 
-## 📁 프로젝트 폴더 및 파일 구조
+| 벤치마크 | 방법 | 성공률 | 망각률 | 라우팅 | OOD 성공률 / VRAM |
+| :--- | :--- | ---: | ---: | ---: | :--- |
+| Meta-World 8태스크 (3개 시드) | Frozen MLP 멀티모달 | 85.6 ± 3.1% | 0.0 ± 0.0% | 100.0% | 심한 OOD 23.6 ± 3.9% |
+| Meta-World 8태스크 (3개 시드) | **DTRA Full 멀티모달** | **72.2 ± 6.8%** | **0.0 ± 0.0%** | **100.0%** | **심한 OOD 51.4 ± 4.4%** |
+| Meta-World 역순 (T7→T0, 시드 42) | DTRA Full 멀티모달 | 74.2% | 0.0% | 100.0% | OOD 64.2% |
+| LIBERO-Goal 5태스크 파일럿 (시드 42) | DTRA Elastic | 92.0% | 5.0% | 100.0% | VRAM 3,696 MB |
 
-```
-drawing-vla/
-├── train/                   # [AI 모델링] Action Chunking 정책 학습 및 롤아웃
-│   ├── dataset.py           # 텐서 변환 및 관측 렌더링 파이프라인
-│   ├── policies.py          # ACT / Convolutional 정책 모델 아키텍처
-│   ├── train_policy.py      # 모델 학습 스크립트 (CUDA / Intel XPU / CPU)
-│   ├── rollout_eval.py      # 폐루프 롤아웃 및 정밀도 평가 엔진
-│   ├── brush.py             # 유기적 붓 스트로크 렌더러 (스플라인/필압)
-│   └── check_demos.py       # 데이터셋 품질 검사 및 시각화
-├── tests/                   # [테스트] 유닛 및 폐루프 평가 테스트
-│   ├── test_brush.py        # 붓 렌더러 테스트
-│   ├── test_dataset.py      # 데이터 로더 및 관측 규격 테스트
-│   ├── test_scoring_b.py    # 신규 B-v1 채점 알고리즘 테스트
-│   ├── test_rollout.py      # 폐루프 롤아웃 및 복구 테스트
-│   └── test_training.py     # 정책 학습 손실 함수 테스트
-├── paper/                   # [논문] LaTeX 소스, 벤치마크 결과 도표 및 수치
-├── scoring.py               # [채점] 도안 매칭 채점 (F1, 커버리지, 정밀도, avg_error)
-├── templates.json           # [도안] 표준 벤치마크 12종 벡터 패스 좌표
-├── targets_128.json         # [기준 데이터] 128x128 도안별 표준 목표 이미지
-└── Drawing_VLA.pdf          # 논문 정식 PDF
+### 평가 범위와 수치 해석
+
+- 각 태스크는 시드별로 동일한 첫 5개 초기 상태를 사용해 5회 평가했습니다. 시드 간 표준편차는 더 넓은 초기 상태 분포에 대한 신뢰구간이 아닙니다.
+- LIBERO-100의 성공률 기준 망각률은 `2.69 ± 0.67%`입니다. 파라미터 동결과 임시 상태 초기화는 별개이며, 망각률에서 라우팅 변화와 롤아웃 변동의 기여는 분리되지 않았습니다.
+- 73% 감소는 K=100에서 기저 수를 100개에서 27개로 줄인 값입니다. 공통 동결 백본을 제외한 정책 파라미터 저장 공간은 DTRA `183.14 MB`, Frozen MLP `151.67 MB`였습니다. K=100 이후의 점근적 메모리 성장률이나 손익분기점은 입증하지 않았습니다.
+- Meta-World에서 DTRA는 Frozen MLP보다 정상 조건 성공률이 낮고 심한 OOD 성공률이 높았습니다. 이는 관측된 성능 절충이며 인과적 설명이 입증된 것은 아닙니다.
+- LIBERO의 `9.55 ± 0.20 ms`는 정책 추론 측정입니다. 전체 후보 검색은 `O(K)`이며, 선택 후보의 디코딩 코어가 상수 비용입니다. 이 수치를 종단 간 로봇 제어 지연으로 해석하면 안 됩니다.
+
+## 저장소 구조
+
+```text
+v1_drawing_vla/          # Gen 1 Drawing-VLA 및 ABK-VLA 보관
+dtra/                    # DTRA v3.0 핵심 코드와 실험
+  core/                  # B-스플라인 디코더 및 링 동역학
+  experiments/libero/    # LIBERO-Goal 및 LIBERO-100
+  experiments/metaworld/ # Meta-World 평가와 절제 실험
+  experiments/calvin_v4/, calvin_v5/, robocasa_v4/  # v4.0 후속 연구
+  paper_v2/              # 프리프린트 PDF와 LaTeX 소스
+outputs/                 # 고정 결과 JSON, 체크포인트와 그림
+scripts/                 # 결과 집계, 그림 및 프리프린트 생성
+tests/                   # 모듈 및 불변량 테스트
 ```
 
----
+## 재현과 코드 공개 범위
 
-## 🚀 빠른 시작 (Quick Start)
+공개 릴리스에는 프리프린트, LaTeX 소스, 그림과 고정 결과 JSON이 포함됩니다. 벤치마크 실행 코드와 재현 의존성은 공개 체크아웃에 아직 모두 포함되어 있지 않습니다. 아래 명령은 로컬 연구 체크아웃 기준이며 완전한 빈 환경 설치 절차가 아닙니다.
 
-### 1. 환경 설정
 ```bash
-git clone https://github.com/5Color/drawing-vla.git
-cd drawing-vla
+# 핵심 테스트
 pip install -r requirements.txt
+python -m unittest discover -s tests -v
+
+# LIBERO-100 (libero conda 환경에서 실행)
+python -m dtra.experiments.libero.benchmark_dtra_libero \
+  --suites libero_10,libero_90 --max-tasks 100 \
+  --stream-tasks --eval-milestones 10,30,50,70,100 \
+  --epochs 25 --batch-size 128 --n-eval 5 --seed 42 \
+  --out-json outputs/libero/benchmark_dtra_libero_10_libero_90_k100.json
+
+# Meta-World 3개 시드 절제 실험
+python -m dtra.experiments.metaworld.ablate_dtra_scientific \
+  --seeds 42 100 2026 --epochs 80
+
+# 결과 요약, 그림 및 프리프린트 다시 생성
+python scripts/summarize_libero_multiseed.py
+python scripts/generate_libero100_figures.py
+python scripts/build_dtra_v3_paper.py
 ```
 
-### 2. 라이브 벤치마크 웹 플랫폼
-실시간 웹 캔버스에서 자신의 드로잉을 AI 모델과 직접 겨뤄보고 벤치마크를 체험할 수 있습니다:
-- **공식 웹 플랫폼:** [https://handvsai.vercel.app](https://handvsai.vercel.app) *(태블릿 펜, 터치, 마우스 완벽 지원)*
+## 그림과 프리프린트
 
-### 3. 테스트 스위트 실행
-```bash
-python -m unittest tests.test_scoring_b tests.test_brush tests.test_dataset tests.test_rollout tests.test_training
+- [DTRA v3.0 프리프린트 PDF](dtra/paper_v2/DTRA_v3.0_Preprint.pdf) · [arXiv용 PDF](dtra/paper_v2/dtra_preprint.pdf)
+- [아키텍처 그림](outputs/figures/fig6_dtra_v3_architecture_schematic.png) · [LIBERO-100 확장 그래프](outputs/figures/fig7_libero100_scaling_curves.png) · [기저 및 호출 경로](outputs/figures/fig8_libero100_basis_and_callstack.png)
+
+## 인용
+
+```bibtex
+@misc{son2026dtra,
+  author = {Son, Seungjoon},
+  title  = {{DTRA}: Dynamic Topology Ring Architecture for Replay-Free Continual Visuomotor Control via Hyperspherical Isolation and Shared Motor Bases},
+  year   = {2026},
+  month  = nov,
+  doi    = {10.5281/zenodo.24218483},
+  url    = {https://doi.org/10.5281/zenodo.24218483}
+}
 ```
 
-### 4. 모델 가중치 다운로드 및 롤아웃 평가
-학습된 모델 체크포인트는 [GitHub Releases v1.0.0](https://github.com/5Color/drawing-vla/releases/tag/v1.0.0)에 공개되어 있으며, 저장소에 포함된 `targets_128.json` 도안을 이용해 별도 데이터셋 없이도 즉시 롤아웃 평가가 가능합니다:
-```bash
-# 1) 사전 학습 가중치 다운로드
-mkdir -p outputs
-curl -L -o outputs/apple_vla_policy.pth https://github.com/5Color/drawing-vla/releases/download/v1.0.0/apple_vla_policy.pth
-
-# 2) 폐루프 롤아웃 평가 (붓 렌더링 및 Temporal Ensembling 포함)
-python train/rollout_eval.py --ckpt outputs/apple_vla_policy.pth --exec-steps 12 --ensemble --brush
-
-# 3) (선택) 데이터셋 파이프라인 검증 (data/raw가 비어 있으면 합성 시연으로 자동 검증)
-python train/dataset.py --resample-step 0.004
-
-# 4) (선택) data/raw/demo_<target>_*.json 시연 데이터로 직접 재학습
-python train/train_policy.py --head transformer --epochs 60 --goal-drop 0.5
-```
-
-> [!NOTE]
-> **데이터셋 공개 범위:** 크라우드소싱 참여자 프라이버시 보호를 위해 원시 시연 JSON은 공개 저장소에 포함되어 있지 않습니다. 사전학습 가중치·평가 엔진·도안 텐서(`targets_128.json`)가 모두 공개되어 있어 롤아웃 재현이 가능하며, `train/dataset.py` 스키마에 맞춘 시연 파일을 `data/raw/`에 넣으면 `train/train_policy.py`로 바로 학습할 수 있습니다.
+[MIT License](LICENSE)
