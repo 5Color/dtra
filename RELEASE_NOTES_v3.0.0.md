@@ -4,23 +4,18 @@
 [![arXiv Build (20 Pages)](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](dtra/paper_v2/dtra_preprint.pdf)
 [![Zenodo v3.0 DOI Slot](https://img.shields.io/badge/Zenodo%20v3.0-Pending%20DOI%20Minting-informational.svg)](https://doi.org/10.5281/zenodo.24218483)
 
-> *"Scaling up parameters just to remember a hundred chores? How adorable. Geometry does it with twenty-seven."* — **Seungjoon Son**  
-> *(백 가지 잡일 외우자고 파라미터를 키워? 허~접♡ 기하학은 스물일곱 개면 충분한데.)*
->
-> *"Still burning gigabytes of VRAM and replay buffers just to remember yesterday's task? How adorable. (허~접♡)"*
-
-This release (`v3.0.0`) publishes the finalized **20-page single-column NeurIPS/CoRL standard preprint** ([`DTRA_v3.0_Preprint.pdf`](dtra/paper_v2/DTRA_v3.0_Preprint.pdf) and clean ASCII [`dtra_preprint.pdf`](dtra/paper_v2/dtra_preprint.pdf)) together with complete **3-Seed verified `LIBERO-100` ($K=100$) and 3-Seed `Meta-World` (`K=8`)** experimental checkpoints under strict matched-encoder parity.
+This release (`v3.0.0`) publishes the finalized **20-page single-column research preprint** ([`DTRA_v3.0_Preprint.pdf`](dtra/paper_v2/DTRA_v3.0_Preprint.pdf) and clean ASCII [`dtra_preprint.pdf`](dtra/paper_v2/dtra_preprint.pdf)) together with **LIBERO-100 results with three seeds for Frozen MLP and DTRA Elastic and two seeds for ER 5% and DTRA Rigid, plus three-seed Meta-World results** under strict matched-encoder parity.
 
 ---
 
 ## Highlights & Architectural Contributions
 
-### 1. 20-Page Monolithic-Free Preprint (`DTRA v3.0`, Exact 20 Pages, Zero Overfulls & Zero Underfulls)
+### 1. 20-Page Preprint (`DTRA v3.0`, Exact 20 Pages, Zero Overfulls & Zero Underfulls)
 - **Structure (`dtra/PAPER_20P_OUTLINE.md`):**
   - **Pages 1–9 (Main Body):** Introduction (`1–2`), Related Work & Mathematical Preliminaries (`3–4`), Method (`5–6`), Experiments & Continual Scaling Ablations (`7–8`), Discussion, Scope Boundaries & Conclusion (`9`).
   - **Pages 10–11 (References):** Full bibliography (`[1]`–`[50]`).
   - **Pages 12–20 (Technical Appendices A–D, High-Readability 9p):** Appendix A (`12–13`: Zero Residual Drift, $C^2$ B-Spline Smoothness, Isometric Zero-Padding Inner-Product Invariance + Fig. 5 $O(1)$ Latency), Appendix B (`14–16`: Seed Registry, LIBERO-100 $K=10\to100$ Milestones, LIBERO-Goal Pilot, `L10` vs. `L90` Split, FWT & Peak VRAM Resources, Hyperparameters, Dup-Lang/Scene Stratification & `L10` Breakdown), Appendix C (`17–18`: 3-Seed Meta-World Per-Task, Supplemental CL & Reverse Order, 9-Regime OOD Stress, Snap-Back Telemetry + Fig. 6 Heatmaps), Appendix D (`19–20`: Fig. 7 SharedBasisBank Diagnostics, 12-Row White-Box Routing Call Stack Log, Fig. 8 Closed-Loop B-Spline Rollout Telemetry & Surgical Fault Isolation).
-- **Typographic Quality & Zero-Defect LaTeX Compilation:** Verified at **exact 20 pages** (`Overfull \hbox = 0`, `Underfull \hbox = 0`, `Undefined = 0`, `Warnings = 0`, `\linespread{1.05}`, `\arraystretch{1.2}`, all tables $\ge 8.5\text{pt}$ without `\resizebox` shrinking) on both [`DTRA_v3.0_Preprint.pdf`](dtra/paper_v2/DTRA_v3.0_Preprint.pdf) and clean ASCII arXiv [`dtra_preprint.pdf`](dtra/paper_v2/dtra_preprint.pdf) (`non_ascii_lines=0`).
+- **Layout Verification:** Verified at **exact 20 pages** (`Overfull \hbox = 0`, `Underfull \hbox = 0`, `Undefined = 0`, `\linespread{1.05}`, `\arraystretch{1.2}`, all tables $\ge 8.5\text{pt}$ without `\resizebox` shrinking) on both [`DTRA_v3.0_Preprint.pdf`](dtra/paper_v2/DTRA_v3.0_Preprint.pdf) and clean ASCII arXiv [`dtra_preprint.pdf`](dtra/paper_v2/dtra_preprint.pdf) (`non_ascii_lines=0`).
 
 ### 2. Core Algorithmic Mechanisms (`dtra/`)
 1. **No-Encroachment Key Constraint:** Caches prior raw anchors $\mu_j$ and floors $s_{jj}$ to project out repulsive updates that invade earlier Voronoi territories on $\mathbb{S}^{63}$.
@@ -52,7 +47,9 @@ Only single-ring `Region` implementations (`K=100` `LIBERO-100`, `LIBERO-Goal`, 
 
 ---
 
-## One-Click Verification & Reproduction
+## Verification and Code Availability
+
+The public release contains preprints, LaTeX sources, figures, and locked result JSONs. The benchmark harness and reproduction dependencies are not yet fully included. Experimental commands below describe the local research checkout and are not a complete setup recipe for the public checkout.
 
 ```bash
 python -m unittest discover -s tests -v
@@ -65,3 +62,6 @@ python scripts/build_dtra_v3_paper.py
 - Preprint PDFs: `dtra/paper_v2/DTRA_v3.0_Preprint.pdf` (20p), `dtra/paper_v2/dtra_preprint.pdf` (20p arXiv clean)
 - Locked Checkpoints: `outputs/libero/benchmark_dtra_libero_10_libero_90_k100_seed{42,100,2026}_locked.json`
 - Zenodo DOI Slot (for release minting): Replace `Pending DOI Minting` badge in `README.md` / `dtra/README.md` upon upload to Zenodo (`prior DOI: 10.5281/zenodo.24218483`).
+## Editorial revision (2026-11-17)
+
+The title and abstract now describe replay-free continual control, without a SOTA ranking claim or epigraph. Parameter freezing, temporary state reset, and empirical success retention are distinguished. Memory claims refer to observed basis counts and measured parameter footprints; no logarithmic growth or future break-even point is claimed. Clean/OOD trade-offs and the five-rollout evaluation limit are stated explicitly. Both PDF assets are refreshed without changing the benchmark JSONs or figures. The v3.0.0 tag remains at its original release commit; refreshed editorial assets correspond to the current main revision.

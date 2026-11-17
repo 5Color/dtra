@@ -1,6 +1,6 @@
 # DTRA v3.0 — NeurIPS / CoRL 20-Page Master Manuscript Blueprint
 
-> **Target Formatting Standard:** NeurIPS / CoRL Official Style — **10pt, 1-Column (Single-Column)** (`\linespread{1.05}`, `\arraystretch{1.2}`, Table Font $\ge 8.5\text{pt}$, `Overfull = 0`, `Underfull = 0`)  
+> **Document Layout:** Research preprint — **10pt, 1-Column (Single-Column)** (`\linespread{1.05}`, `\arraystretch{1.2}`, Table Font $\ge 8.5\text{pt}$, `Overfull = 0`, `Underfull = 0`)  
 > **Total Budget:** **20 Pages** (`9 pages Main Body + 2 pages References + 9 pages Appendix A–D`, restoring `Figure 8` XAI rollout telemetry & all detailed split tables at full readability)  
 > **Strict Version Boundary:** 본 20쪽 설계서(`DTRA v3.0`)의 모든 본문·부록 실측 수치, 표, 그래프는 **단일 링 `Region` ($K=100$, LIBERO-100) 및 `Meta-World` / `LIBERO-Goal` 구현체**의 검증된 `_locked.json` 결과만 연결합니다.  
 > **멀티 링 `Organ` ($K=5{,}000$)** 및 **`CALVIN v4` / `RoboCasa` (`Object-Centric Hypertube Transport`)** 실험은 **Section 6.1 / Future Work 및 후속 논문(`DTRA v4.0`) 트랙으로 엄격히 분리**하며 본 원고 실측 표에 혼입하지 않습니다.
@@ -11,11 +11,11 @@
 
 | Page Range | Block | Target Role | Page Budget |
 | :--- | :--- | :--- | :---: |
-| **Pages 1–2** | **Section 1: Introduction** | 모놀리식 End-to-End 간섭 비판, 기하·위상 분리 패러다임, 4대 핵심 기법 및 기여 요약, Fig. 1 (End-to-End Architecture & Scope Boundary) | **2.0 p** |
+| **Pages 1–2** | **Section 1: Introduction** | 파라미터 간섭 문제 정의, 기하·위상 분리 패러다임, 4대 핵심 기법 및 기여 요약, Fig. 1 (End-to-End Architecture & Scope Boundary) | **2.0 p** |
 | **Pages 3–4** | **Section 2 & 3: Related Work & Preliminaries** | 연속 학습 3계열(Regularization / Rehearsal / Isolation), 행동 청킹·B-Spline 운동 원시, 연속 PEFT(`SeqLoRA`/`KeepLoRA`/`OrthoSkillVLA` 도메인·사전학습 전제 분리), $\mathbb{S}^{63}$ 초구면·보로노이 분할·$C^2$ B-Spline 정식화 | **2.0 p** |
 | **Pages 5–6** | **Section 4: Method (DTRA v3.0)** | 단일 링 `Region` 내부 메커니즘 4종(No-Encroachment 마진 정제, 2-Stage Top-$M$ CMC, `SharedBasisBank` + AdamW Silent Drift $=0.0$, Two-Timescale Snap-Back) 및 Algorithm 1 Pseudocode | **2.0 p** |
 | **Pages 7–8** | **Section 5: Experiments & Ablations** | 엄격 인코더 패리티 4-Arm 프로토콜, 3D Meta-World 8-Task (3-Seed + Supplemental CL/OOD/Reverse), LIBERO-Goal ($K=5$) Pilot, LIBERO-100 ($K=10\to 100$) 스케일링 곡선(Fig. 4) 및 밀도 전이(Regime Crossover) 분석 | **2.0 p** |
-| **Page 9** | **Section 6 & 7: Discussion, Scope Boundary & Conclusion** | `Cell -> Region` (Implemented) vs `Organ` (Conceptual Future Work) 경계, White-Box `Routing Call Stack` & 외과적 결함 격리, 엣지 하드웨어 SRAM/DRAM/SSD 친화도, 한계 및 결론 | **1.0 p** |
+| **Page 9** | **Section 6 & 7: Discussion, Scope Boundary & Conclusion** | `Cell -> Region` (Implemented) vs `Organ` (Conceptual Future Work) 경계, White-Box `Routing Call Stack` & 외과적 결함 격리, 등록 학습과 제어 추론 분리, $O(K)$ 검색과 $O(1)$ 선택 커널 비용 구분, 가중치 불변과 상태 리셋의 구분, 한계 및 결론 | **1.0 p** |
 | **Pages 10–11** | **References** | 약 **50편** 핵심 문헌 (모놀리식 트랜스포머·VLA, 연속학습 정칙화/리플레이/격리, 운동 원시·B-Spline, 직교 PEFT/부분공간, 초구면/위상 라우팅, 벤치마크·선행연구 `ABK-VLA`) | **2.0 p** |
 | **Pages 12–20** | **Appendix A–D (Supplementary Material)** | 수학적 증명 + $O(1)$ 레이턴시(A, `12–13p`), LIBERO-100 상세 마일스톤·스플릿·리소스·하이퍼파라미터·씬별 분할(B, `14–16p`), Meta-World 태스크별 3-Seed·9종 OOD·Snap-Back·Heatmap(C, `17–18p`), SharedBasisBank 진단·12행 Call Stack·Fig. 8 XAI 궤적(D, `19–20p`) | **9.0 p** |
 
@@ -24,9 +24,9 @@
 ## 1. Main Body Detailed Section-by-Section Plan (Pages 1–9)
 
 ### Pages 1–2 — Section 1: Introduction (2.0 p)
-* **Page 1 (Title, Abstract, Problem Framing, Epigraph):**
+* **Page 1 (Title, Abstract, Problem Framing):**
   * Title & Author block (`10pt single-column` 표준)
-  * **Abstract (250–300 words):** 모놀리식 파라미터 공유의 구조적 망각 문제를 짚고, $\mathbb{S}^{63}$ 초구면 위상 격리 기반 Replay-Free · Task-ID-Free 연속 제어 프레임워크 DTRA v3.0 소개. LIBERO-100 ($K=100$) VLM-free 단일 연속 스트림 엄격 패리티 환경에서의 87.80% (Seed 42; Multi-seed 검증 `_locked.json` 연동) 성적을 VLM 사전학습 기반 `OrthoSkillVLA` (86.25%, 표준 서브스위트 평균)과 정확한 전제 하에 대비.
+  * **Abstract:** Replay-Free · Task-ID-Free 연속 제어 프레임워크와 4대 구성 요소를 소개하고, LIBERO-100 3-Seed 성공률 `87.00 ± 0.86%`, 라우팅 `99.68 ± 0.45%`, 관측 FR `2.69 ± 0.67%`, 기저 개수와 전체 파라미터 용량의 차이, Meta-World Clean/OOD 트레이드오프를 구분합니다. 다른 평가 프로토콜의 OrthoSkillVLA와 수치 순위를 비교하지 않습니다.
   * **Fig. 1 (`fig6_dtra_v3_architecture_schematic.png`):** 단일 링 `Region`($K=100$) 4대 모듈 파이프라인 + 하단 `Cell -> Region [IMPLEMENTED]` vs `Organ [FUTURE ROADMAP]` 구현 경계 명시도.
 * **Page 2 (Research Lineage & 4 Key Bottleneck Solutions):**
   * **Research Lineage (`ABK-VLA` $K=4$ → Meta-World $K=8$ → LIBERO-100 $K=100$):** `ABK-VLA`가 남긴 $O(K)$ 잔차 체이닝 지연 및 DoG 노이즈 취약성 해결과, $K=100$ 고밀도 환경에서 새롭게 부각된 (1) **Voronoi Encroachment (`Dup-Lang` 붕괴)**, (2) **$O(K)$ Head 증가 vs 표현력 압축 딜레마** 정리.
@@ -78,7 +78,7 @@
 * **Category Breakdown (~50 papers):**
   1. **Foundation VLAs & Monolithic Policy Backbones (~10편):** Attention Is All You Need (Vaswani et al., NeurIPS 2017), RT-1, RT-2, Octo, OpenVLA (Kim et al., 2024), pi0 / ACT (Zhao et al., RSS 2023), Diffusion Policy (Chi et al., RSS 2023), RVT/PerAct 등.
   2. **Continual Learning — Regularization, Rehearsal & Isolation (~14편):** EWC (Kirkpatrick et al., PNAS 2017), RWalk (Chaudhry et al., ECCV 2018), SI, MAS, GEM (Lopez-Paz & Ranzato, NeurIPS 2017), A-GEM, DER++, Progressive Neural Networks (Rusu et al., 2016), PackNet (Mallya & Lazebnik, CVPR 2018), HAT, L2P (Wang et al., CVPR 2022), DualPrompt, CODA-Prompt.
-  3. **Continual PEFT, Subspace Adaptation & Movement Primitives (~12편):** LoRA (Hu et al., ICLR 2022), O-LoRA, InfLoRA, SeqLoRA (Parsa et al., arXiv:2605.22743, 2026 — diffusion domain), KeepLoRA (Luo et al., ICLR 2026 — VLM/classification), OrthoSkillVLA (Wang et al., arXiv:2608.19589, 2026 — VLM-pretrained LIBERO sub-suites), ProMP (Paraschos et al., NeurIPS 2013), DMPs (Ijspeert et al., 2013), B-Spline Motion Planning / ViMP.
+  3. **Continual PEFT, Subspace Adaptation & Movement Primitives (~12편):** LoRA (Hu et al., ICLR 2022), O-LoRA, InfLoRA, SeqLoRA (Parsa et al., arXiv:2605.22743, 2026 — diffusion domain), KeepLoRA (Luo et al., ICLR 2026 — VLM/classification), OrthoSkillVLA (Wang et al., arXiv:2608.19589, 2026 — pretrained VLA continual skill adaptation; direct numerical ranking excluded), ProMP (Paraschos et al., NeurIPS 2013), DMPs (Ijspeert et al., 2013), B-Spline Motion Planning / ViMP.
   4. **Hyperspherical Geometry, Metric Routing & Topological Memory (~8편):** SphereFace/CosFace/ArcFace 초구면 마진 기하학, Hyperdimensional Computing / Vector Symbolic Architectures (Kanerva), Sparse Distributed Memory, Hopfield Networks & Associative Recall, Neural Collapse on Hyperspheres.
   5. **Benchmarks & Prior Lineage (~6편):** Meta-World (Yu et al., CoRL 2020), Continual World (Wołczyk et al., NeurIPS 2021), LIBERO (Liu et al., NeurIPS 2023), Drawing-VLA (Son, Zenodo DOI: 10.5281/zenodo.24122154), ABK-VLA (Son, Zenodo DOI: 10.5281/zenodo.24208545), DTRA v2/v3 Preprint Archive (Zenodo DOI: 10.5281/zenodo.24218483).
 
@@ -88,7 +88,7 @@
 
 ### Appendix A — Mathematical Proofs & Theoretical Guarantees (Pages 12–13, 2.0 p)
 * **A.1 Exact Zero Residual & Weight Drift Proof ($\nabla_\theta = 0$, $L_\infty = 0.0$):** Optimizer exclusion (`requires_grad=False`) + `chunk_snap_back()` $\to$ `episode_snap_back()` (`post_snap_norm = 0.0000`).
-* **A.2 $C^2$ Clamped Cubic B-Spline Continuity & Knot-Space Compression Bound:** $C^0/C^1/C^2$ continuity + convex-hull spectral smoothing bound.
+* **A.2 $C^2$ Clamped Cubic B-Spline Continuity & Knot-Space Compression Bound:** $C^0/C^1/C^2$ continuity + 단일 청크 내부 연속성과 control-point perturbation에 대한 출력 유계성; 청크 간 연속성·하드웨어 jerk/torque 안전성은 보장하지 않음.
 * **A.3 Isometric Zero-Padding Inner-Product & Voronoi Margin Invariance:** $\Phi_d^D(\mathbf{v}) = [\mathbf{v}; \mathbf{0}] \in \mathbb{S}^{D-1}$ exact inner-product & Voronoi invariance + **Fig. 5** (`fig5_o1_latency_scaling.png`).
 
 ### Appendix B — LIBERO-100 Full Milestones, Splits, Resources & Reproducibility (`_locked.json` Binding) (Pages 14–16, 3.0 p)

@@ -1,8 +1,3 @@
-> *"Scaling up parameters just to remember a hundred chores? How adorable. Geometry does it with twenty-seven."* — **Seungjoon Son**  
-> *(백 가지 잡일 외우자고 파라미터를 키워? 허~접♡ 기하학은 스물일곱 개면 충분한데.)*
->
-> *"Still burning gigabytes of VRAM and replay buffers just to remember yesterday's task? How adorable. (허~접♡)"*
-
 # DTRA: Dynamic Topology Ring Architecture
 
 [![Preprint (DTRA v3.0)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](dtra/paper_v2/DTRA_v3.0_Preprint.pdf)
@@ -14,12 +9,11 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.x](https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg)](https://pytorch.org/)
 
-**Zero-Forgetting Continual 3D & 7-DoF Visuomotor Control via Hyperspherical Topological Isolation, Two-Stage Common-Mode Cancellation, and 27 Frozen Shared Primitives (`87.00 ± 0.86%` across 3 seeds on `LIBERO-100`).**
+**Replay-free, Task-ID-free continual visuomotor control with hyperspherical routing and shared motor bases: 87.00 ± 0.86% final LIBERO-100 success across three training seeds.**
 
 > **Repository Separation Note:** This repository tracks two generations of research:
 > 1. **Gen 1 — `v1_drawing_vla` (`Drawing-VLA` v1.1.2 & `ABK-VLA` v1.1.3):** Clamped cubic B-Spline action chunking ($N_k=6, H=16$), geometric DoG prototype routing, and continual 2D stroke benchmarks.
-> 2. **Gen 2 — `dtra` (**DTRA v3.0 — Dynamic Topology Ring Architecture**, corresponding to [`5Color/dtra`](https://github.com/5Color/dtra)):** Resolves Voronoi encroachment, duplicate-instruction routing collapse, and $O(K)$ parameter bloat across $K=100$ sequential 7-DoF LIBERO tasks via $\mathbb{S}^{63}$ topological ring isolation, Two-Stage Top-$M$ CMC, `SharedBasisBank` ($100 \to 27$ frozen primitive bases, `-73%`), and Two-Timescale Snap-Back (`post_snap_norm = 0.0000`).
->
+> 2. **Gen 2 — `dtra` (**DTRA v3.0 — Dynamic Topology Ring Architecture**, corresponding to [`5Color/dtra`](https://github.com/5Color/dtra)):** Resolves Voronoi encroachment, duplicate-instruction routing collapse, and $O(K)$ task-specific head growth across $K=100$ sequential 7-DoF LIBERO tasks via $\mathbb{S}^{63}$ topological ring isolation, Two-Stage Top-$M$ CMC, `SharedBasisBank` ($100 \to 27$ frozen primitive bases, `-73%`), and Two-Timescale Snap-Back (`post_snap_norm = 0.0000`).
 > Ongoing **v4.0 Future Work** extensions (`Organ` $K=5{,}000$, `CALVIN` V4/V5, `RoboCasa`) live isolated in `outputs/{organ_v4,calvin_v4,calvin_v5,robocasa}/` and `dtra/experiments/{calvin_v4,calvin_v5,robocasa_v4}/` and are strictly excluded from **DTRA v3.0** preprint metrics and release tables.
 
 For the complete hypothesis-by-hypothesis chronology, see [**RESEARCH_LINEAGE.md**](RESEARCH_LINEAGE.md), [**RELEASE_NOTES_v3.0.0.md**](RELEASE_NOTES_v3.0.0.md), and the 20-page outline [**dtra/PAPER_20P_OUTLINE.md**](dtra/PAPER_20P_OUTLINE.md).
@@ -82,7 +76,7 @@ drawing-vla/
 
 ### A. LIBERO-100 (`libero_10 + libero_90`, $K=10 \to 100$) Multi-Seed Summary (Strict Encoder Parity)
 
-All parity arms share identical frozen perception (`ResNet-18` DualCam + proprioception) and `LightweightTextEncoder` under `<= 2.8 GB` Peak VRAM (`n_eval=5` per task at each milestone). Finalized `_locked.json` checkpoints cover full 4-arm runs on Seeds `{42, 100}` ($N=2$) and 2-arm core parity (`arm_frozen_mlp`, `arm_dtra_elastic`) on Seeds `{42, 100, 2026}` ($N=3$):
+All parity arms share identical frozen perception (`ResNet-18` DualCam + proprioception) and `LightweightTextEncoder` with DTRA Elastic peak VRAM of `2,713 ± 77 MB` (`n_eval=5` per task at each milestone; ER 5% peaks at approximately `4,772 MB`). Finalized `_locked.json` checkpoints cover full 4-arm runs on Seeds `{42, 100}` ($N=2$) and 2-arm core parity (`arm_frozen_mlp`, `arm_dtra_elastic`) on Seeds `{42, 100, 2026}` ($N=3$):
 
 | Arm (Strict Parity) | $K=10$ SR | $K=30$ SR | $K=50$ SR | $K=70$ SR | **$K=100$ SR $\uparrow$** | FR $\downarrow$ | BWT $\uparrow$ | RouteAcc $\uparrow$ | Dup-Lang Route $\uparrow$ | Bases ($K=100$) | Active Latency |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -104,9 +98,22 @@ All parity arms share identical frozen perception (`ResNet-18` DualCam + proprio
 | **Meta-World Reverse ($T_7 \to T_0$, Seed 42)** | `arm6_dtra_full_multimodal` | `74.2%` | **`0.0%`** | **`100.0%`** | `64.2%` OOD SR | [`ablate_dtra_supplemental_results.json`](outputs/metaworld/ablate_dtra_supplemental_results.json) |
 | **LIBERO-Goal Pilot (5 Tasks, Seed 42)** | **`arm_dtra_elastic`** | **`92.0%`** | `5.0%` | **`100.0%`** | `3,696 MB` VRAM (`post_snap_norm = 0.0`) | [`libero_goal_pilot_4arms.json`](outputs/libero/libero_goal_pilot_4arms.json) |
 
+
+### Evaluation scope and resource interpretation
+
+Frozen MLP and DTRA Elastic use seeds 42, 100, and 2026; ER 5% and DTRA Rigid use seeds 42 and 100. Each task is evaluated with five rollouts per seed using the same first five provided initial states. Cross-seed standard deviations are not confidence intervals over a broader initial-state distribution.
+
+Parameter freezing and temporary state reset are separate: `post_snap_norm = 0.0000` records a reset state, not an independent before/after weight comparison. LIBERO-100 success-rate forgetting is **2.69 ± 0.67%**. Its sources have not been separated into routing changes and rollout variability.
+
+The **73% reduction concerns motor basis count**, from one basis per task to 27 shared bases at K=100. Recorded policy parameters occupy **183.14 MB** for DTRA versus **151.67 MB** for Frozen MLP, excluding the common frozen backbone. The experiments do not establish an asymptotic memory-growth law or a break-even task count beyond K=100.
+
+On Meta-World, DTRA Full has lower clean success (**72.2 ± 6.8%** vs. **85.6 ± 3.1%**) and higher severe OOD success (**51.4 ± 4.4%** vs. **23.6 ± 3.9%**) than multimodal Frozen MLP. This is an observed trade-off, not a demonstrated causal explanation. Registration involves training; the **9.55 ± 0.20 ms** LIBERO figure measures policy inference. Broad retrieval remains O(K), with a constant-cost selected decoding core.
+
 ---
 
-## 3. One-Click Reproduction Guide
+## 3. Reproduction and Code Availability
+
+The public release contains preprints, LaTeX sources, figures, and locked result JSONs. The benchmark harness and reproduction dependencies are not yet fully included. Experimental commands below describe the local research checkout and are not a complete setup recipe for the public checkout.
 
 ```bash
 # 0. Install dependencies & run invariant unit tests
@@ -148,7 +155,7 @@ python scripts/build_dtra_v3_paper.py
 ```bibtex
 @misc{son2026dtra,
   author       = {Son, Seungjoon},
-  title        = {{DTRA}: Dynamic Topology Ring Architecture for Zero-Forgetting Continual Visuomotor Control via Hyperspherical Topological Isolation},
+  title        = {{DTRA}: Dynamic Topology Ring Architecture for Replay-Free Continual Visuomotor Control via Hyperspherical Isolation and Shared Motor Bases},
   year         = {2026},
   month        = nov,
   publisher    = {Zenodo},
@@ -169,7 +176,3 @@ python scripts/build_dtra_v3_paper.py
 ```
 
 Released under the [MIT License](LICENSE).
-
----
-
-> *P.S. (to 7B+ dense Transformers still forgetting Task 0):* **허~접♡**
