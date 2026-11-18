@@ -35,8 +35,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dataset import HOME_STATE, OBS_SIZE, DrawingVLADataset, slice_action_chunk  # noqa: E402
 from policies import DiffusionPolicy, TransformerPolicy, VisuomotorPolicy, build_policy  # noqa: E402,F401
 
-ROOT = Path(__file__).resolve().parents[1]
-OUT_DIR = ROOT / "outputs"
+ROOT = Path(__file__).resolve().parents[3]
+OUT_DIR = ROOT / "outputs" / "v1_archive"
 PX = 512  # 오차를 512px 캔버스 기준 픽셀로 표시
 
 

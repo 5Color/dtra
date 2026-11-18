@@ -1,0 +1,12 @@
+{
+  "completed_at_utc": "2026-11-18T07:21:17.439991+00:00",
+  "benchmark_processes_exited": true,
+  "recorder_process_exited": true,
+  "arms": [
+    "Arm1_Flat_MLP",
+    "Arm2_ER_5pct",
+    "Arm3_DTRA_v4_NoTransport",
+    "Arm4_DTRA_v4_Hypertube"
+  ],
+  "num_tasks_per_arm": 12
+}

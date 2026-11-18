@@ -12,20 +12,35 @@ CLAUDE.md
 /data/*
 !/data/bspline/
 /data/bspline/*
+!/data/bspline/bspline_vla_dataset_apple_m6_h16_s8.npz
+!/data/bspline/bspline_vla_dataset_sprout_m6_h16_s8.npz
+!/data/bspline/bspline_vla_dataset_star_m6_h16_s8.npz
+!/data/bspline/bspline_vla_dataset_cat_m6_h16_s8.npz
+
 /outputs/*
-!/outputs/autonomous_cl_benchmark.json
-!/outputs/autonomous_*.png
-!/outputs/exp*.json
-!/outputs/exp*.png
-!/outputs/dtra_step1_dynamics_clean.png
-!/outputs/dtra_step1_dynamics_clean_ko.png
-!/outputs/dtra_3d_metaworld_benchmark.png
-!/outputs/dtra_3d_metaworld_benchmark_ko.png
-!/outputs/dtra_3d_metaworld_benchmark.json
-/outputs/*_raw_unorder_backup.png
+!/outputs/figures/
+!/outputs/metaworld/
+/outputs/metaworld/*
+!/outputs/metaworld/dtra_3d_metaworld_benchmark.json
+!/outputs/metaworld/dtra_3d_metaworld_benchmark.png
+!/outputs/metaworld/dtra_3d_metaworld_benchmark_ko.png
+!/outputs/metaworld/exp4_metaworld_cl.json
+!/outputs/metaworld/exp4_metaworld_cl.png
+!/outputs/metaworld/ablate_dtra_*_results.json
+!/outputs/libero/
+/outputs/libero/*
+!/outputs/libero/libero_*.json
+!/outputs/v1_archive/
+/outputs/v1_archive/*
+!/outputs/v1_archive/autonomous_cl_benchmark.json
+!/outputs/v1_archive/autonomous_*.png
+!/outputs/v1_archive/autonomous_model_d_final.pth
+!/outputs/v1_archive/exp*.json
+!/outputs/v1_archive/exp*.png
+
 /backups/
 *.pth
-!/outputs/autonomous_model_d_final.pth
+!/outputs/v1_archive/autonomous_model_d_final.pth
 *.pt
 *.npz
 !/data/bspline/bspline_vla_dataset_apple_m6_h16_s8.npz
@@ -35,10 +50,15 @@ CLAUDE.md
 *.log
 *.sqlite*
 
-# Local backend and monitoring tools (kept private, except B-spline core modules)
-tools/*
-!tools/bspline_core.py
-!tools/bspline_augment.py
+# Local backend and monitoring tools (kept private, except core scoring/B-spline modules)
+v1_drawing_vla/handvsai/*
+!v1_drawing_vla/handvsai/scoring.py
+!v1_drawing_vla/handvsai/targets_128.json
+!v1_drawing_vla/handvsai/templates.json
+!v1_drawing_vla/handvsai/README.md
+v1_drawing_vla/src/tools/convert_dataset_to_bspline.py
+v1_drawing_vla/paper_v1/adaptive_b_spline_knot_architecture_research_spec.md
+v1_drawing_vla/paper_v1/master_research_dossier_action_blueprint.md
 db.py
 api_core.py
 collect_common.py
@@ -56,4 +76,12 @@ Thumbs.db
 scratch/
 scratch_*.py
 scratch_*.png
+
+# Large raw rollout media and logs inside dtra/ (keep lightweight dtra/assets/*.gif previews)
+dtra/outputs/**/*.gif
+dtra/outputs/**/*.mp4
+dtra/outputs/**/*.log
+dtra/experiments/**/*.gif
+dtra/experiments/**/*.mp4
+dtra/experiments/**/*.log
 

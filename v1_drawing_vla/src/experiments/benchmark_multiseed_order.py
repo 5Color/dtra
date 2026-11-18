@@ -25,9 +25,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+for _p in (str(PROJECT_ROOT), str(PROJECT_ROOT / "v1_drawing_vla" / "src")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(line_buffering=True)
 
@@ -41,7 +42,7 @@ from experiments.benchmark_three_models import pick_device, prepare_task_loaders
 from tools.bspline_augment import BSplineGeometricAugmentor
 from train.bspline_policy import AutonomousABKPolicy
 
-OUT_DIR = PROJECT_ROOT / "outputs"
+OUT_DIR = PROJECT_ROOT / "outputs" / "v1_archive"
 FORWARD_TASKS = ["apple", "sprout", "star", "cat"]
 REVERSE_TASKS = ["cat", "star", "sprout", "apple"]
 

@@ -1,0 +1,84 @@
+{
+  "episode_selection": "Held-out evaluation episodes showcasing solved Atomic tasks (OpenDrawer ep80, CloseDrawer ep80, OpenMicrowave ep80, PickPlaceCounterToSink ep81) and the Composite bottleneck (OrganizeVegetables ep80, first 180 steps)",
+  "capture": "Every consecutive simulator step (1:1 real-time at env.control_freq=20.0 Hz); 15 hold frames (0.75s) appended after each solved atomic episode",
+  "evaluation": "Unmodified env._check_success() and sanitize_pure_rgbd_obs()",
+  "drift_metric_limit": "DTRA parameter_drift() returns structural constant 0.0 under frozen cell banks",
+  "episodes": [
+    {
+      "task": "OpenDrawer",
+      "stage": "ATOMIC",
+      "episode_id": 80,
+      "frame_start_zero_based": 0,
+      "frame_count": 187,
+      "hold_frames": 15,
+      "control_frequency_hz": 20.0,
+      "result": {
+        "solved": true,
+        "route_match": true,
+        "infer_ms": 1.8574688583612442,
+        "dp_norm": 0.0
+      }
+    },
+    {
+      "task": "CloseDrawer",
+      "stage": "ATOMIC",
+      "episode_id": 80,
+      "frame_start_zero_based": 187,
+      "frame_count": 134,
+      "hold_frames": 15,
+      "control_frequency_hz": 20.0,
+      "result": {
+        "solved": true,
+        "route_match": true,
+        "infer_ms": 1.569458283483982,
+        "dp_norm": 0.0
+      }
+    },
+    {
+      "task": "OpenMicrowave",
+      "stage": "ATOMIC",
+      "episode_id": 80,
+      "frame_start_zero_based": 321,
+      "frame_count": 268,
+      "hold_frames": 15,
+      "control_frequency_hz": 20.0,
+      "result": {
+        "solved": true,
+        "route_match": true,
+        "infer_ms": 2.772935666143894,
+        "dp_norm": 0.07167251468436384
+      }
+    },
+    {
+      "task": "PickPlaceCounterToSink",
+      "stage": "ATOMIC",
+      "episode_id": 81,
+      "frame_start_zero_based": 589,
+      "frame_count": 279,
+      "hold_frames": 15,
+      "control_frequency_hz": 20.0,
+      "result": {
+        "solved": true,
+        "route_match": true,
+        "infer_ms": 2.5258632376790047,
+        "dp_norm": 0.0
+      }
+    },
+    {
+      "task": "OrganizeVegetables",
+      "stage": "COMPOSITE (SYS1 LIMIT)",
+      "episode_id": 80,
+      "frame_start_zero_based": 868,
+      "frame_count": 190,
+      "hold_frames": 10,
+      "control_frequency_hz": 20.0,
+      "result": {
+        "solved": false,
+        "route_match": true,
+        "infer_ms": 1.9686343148350716,
+        "dp_norm": 0.0
+      }
+    }
+  ],
+  "frame_count": 1058
+}

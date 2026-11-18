@@ -1,0 +1,44 @@
+--- run_robocasa_continual_benchmark.py (unchanged original)
++++ run_robocasa_continual_benchmark.py (in-memory recording only)
+@@ -534,7 +534,7 @@
+         clean_obs = sanitize_pure_rgbd_obs(raw_obs)
+         if env._check_success():
+             solved = True
+-        if record_hud_frames is not None and (step_i % 3 == 0 or solved or step_i == n_steps - 1):
++        if record_hud_frames is not None:
+             record_hud_frames.append(
+                 {
+                     "left_rgb": clean_obs["robot0_agentview_left_image"][::-1].copy(),
+--- record_robocasa_hud.py (unchanged original)
++++ record_robocasa_hud.py (in-memory recording only)
+@@ -101,7 +101,7 @@
+         ds = Path(tinfo["ds_path"])
+         env = create_robocasa_eval_env(tinfo["ds_path"])
+         chosen_frames: List[np.ndarray] = []
+-        for ep_id in tinfo["eval_eps"]:
++        for ep_id in tinfo["eval_eps"][:1]:
+             st = LU.get_episode_states(ds, ep_id)
+             init_state = {
+                 "states": st[0],
+@@ -112,7 +112,6 @@
+             res = rollout_spline_episode(env, init_state, policy, encoder, tname, record_hud_frames=step_recs)
+             frames = [render_robocasa_hud_frame(r) for r in step_recs]
+             if res["solved"]:
+-                frames.extend([frames[-1]] * 6)
+                 chosen_frames = frames
+                 print(f"  Recorded solved unseen {tname} ep{ep_id}: frames={len(frames)}")
+                 break
+@@ -127,11 +126,11 @@
+     out_dir.mkdir(parents=True, exist_ok=True)
+     gif_path = out_dir / "robocasa_pure_rgbd_hud_rollout.gif"
+     pil_frames = [Image.fromarray(f) for f in all_hud_frames]
+-    pil_frames[0].save(gif_path, save_all=True, append_images=pil_frames[1:], duration=90, loop=0, optimize=True)
++    pil_frames[0].save(gif_path, save_all=True, append_images=pil_frames[1:], duration=round(1000 / recording_fps), loop=0, optimize=False)
+     print(f"Saved GIF: {gif_path} ({len(pil_frames)} frames)")
+ 
+     mp4_path = out_dir / "robocasa_pure_rgbd_hud_rollout.mp4"
+-    imageio.mimsave(str(mp4_path), all_hud_frames, fps=12)
++    imageio.mimsave(str(mp4_path), all_hud_frames, fps=recording_fps, macro_block_size=1)
+     print(f"Saved MP4: {mp4_path}")
+ 
+ 

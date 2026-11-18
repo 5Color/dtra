@@ -36,7 +36,7 @@ STROKE_WIDTH_PX = 2.0      # 128 해상도 기준 (= 512 좌표계 8 단위, JS 
 SUPERSAMPLE = 4            # 512에서 그린 뒤 BOX 다운샘플 → 안티앨리어싱
 HOME_STATE = (0.5, 0.5, 0.0)
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ROOT = PROJECT_ROOT / "data" / "raw"
 
 

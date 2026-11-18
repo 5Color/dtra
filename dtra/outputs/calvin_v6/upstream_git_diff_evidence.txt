@@ -1,0 +1,39 @@
+CALVIN upstream integrity evidence
+Captured after benchmark and HUD video completion: 2026-11-18T04:32:18+00:00
+Tracked diff cleanliness and complete porcelain status are reported separately.
+
+Repository: calvin
+Path: /home/team03/dtra_a6000_lab/calvin_benchmark/calvin
+$ git rev-parse HEAD
+fa03f01f19c65920e18cf37398a9ce859274af76
+
+$ git remote -v
+origin	https://github.com/mees/calvin.git (fetch)
+origin	https://github.com/mees/calvin.git (push)
+
+$ git status --porcelain=v1
+(empty)
+$ git diff --no-ext-diff --no-textconv
+(empty)
+$ git diff --cached --no-ext-diff --no-textconv
+(empty)
+WORKTREE_TRACKED_DIFF: CLEAN
+INDEX_TRACKED_DIFF: CLEAN
+
+Repository: calvin_env
+Path: /home/team03/dtra_a6000_lab/calvin_benchmark/calvin/calvin_env
+$ git rev-parse HEAD
+1431a46bd36bde5903fb6345e68b5ccc30def666
+
+$ git remote -v
+origin	https://github.com/mees/calvin_env.git (fetch)
+origin	https://github.com/mees/calvin_env.git (push)
+
+$ git status --porcelain=v1
+(empty)
+$ git diff --no-ext-diff --no-textconv
+(empty)
+$ git diff --cached --no-ext-diff --no-textconv
+(empty)
+WORKTREE_TRACKED_DIFF: CLEAN
+INDEX_TRACKED_DIFF: CLEAN

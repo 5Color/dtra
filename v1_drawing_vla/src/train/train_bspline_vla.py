@@ -33,15 +33,16 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+for _p in (str(PROJECT_ROOT), str(PROJECT_ROOT / "v1_drawing_vla" / "src")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
-from tools.bspline_core import BSplineDecoder
+from dtra.core.bspline_core import BSplineDecoder
 from train.bspline_policy import BSplineCVAEPolicy, BSplineVisuomotorPolicy
 from train.dataset import CHUNK_SIZE, OBS_SIZE, DrawingVLADataset
 
-OUT_DIR = PROJECT_ROOT / "outputs"
+OUT_DIR = PROJECT_ROOT / "outputs" / "v1_archive"
 
 
 # ---------------------------------------------------------------------------

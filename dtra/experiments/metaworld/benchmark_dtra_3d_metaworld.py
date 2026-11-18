@@ -59,14 +59,16 @@ from metaworld.policies import (
 )
 from torch.utils.data import DataLoader, TensorDataset
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+V1_SRC_DIR = PROJECT_ROOT / "v1_drawing_vla" / "src"
+for _p in (str(PROJECT_ROOT), str(V1_SRC_DIR)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(line_buffering=True)
 
-from experiments.benchmark_autonomous_cl import calc_cl_metrics, set_seed
-from experiments.benchmark_metaworld_cl import (
+from v1_drawing_vla.src.experiments.benchmark_autonomous_cl import calc_cl_metrics, set_seed
+from v1_drawing_vla.src.experiments.benchmark_metaworld_cl import (
     TASK_SPECS,
     Autonomous3DABKPolicy,
     MetaWorldBSplineSlotHead,
@@ -75,11 +77,11 @@ from experiments.benchmark_metaworld_cl import (
     eval_metaworld_task,
     train_mw_task,
 )
-from experiments.benchmark_three_models import pick_device, safe_savefig, sync
-from experiments.sim_dtra_tube_dynamics import HypertubeRingLayer, _inv_softplus, _logit
-from tools.bspline_core import BSplineDecoder, build_difference_matrices
+from v1_drawing_vla.src.experiments.benchmark_three_models import pick_device, safe_savefig, sync
+from dtra.core.sim_dtra_tube_dynamics import HypertubeRingLayer, _inv_softplus, _logit
+from dtra.core.bspline_core import BSplineDecoder, build_difference_matrices
 
-OUT_DIR = PROJECT_ROOT / "outputs"
+OUT_DIR = PROJECT_ROOT / "outputs" / "metaworld"
 
 # 8-태스크 확장 스펙 (기존 4개 + 유사/동일 초기 배치 태스크 4개)
 TASK_SPECS_8 = list(TASK_SPECS) + [

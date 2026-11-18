@@ -6,11 +6,13 @@
 >
 > [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24122154.svg)](https://doi.org/10.5281/zenodo.24122154)
 > [![Live Benchmark](https://img.shields.io/badge/Live%20Benchmark-Hand%20vs%20AI-success?logo=vercel)](https://handvsai.vercel.app)
-> [![Paper PDF](https://img.shields.io/badge/Paper-PDF-red?logo=adobeacrobatreader)](./Drawing_VLA.pdf)
-> [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+> [![Paper and Artifacts](https://img.shields.io/badge/Paper-and%20Artifacts-red?logo=zenodo)](https://doi.org/10.5281/zenodo.24122154)
+> [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 >
 > 🎮 **실시간 웹 벤치마크 플레이:** [https://handvsai.vercel.app](https://handvsai.vercel.app)  
-> 📄 **논문 원문 (PDF):** [Drawing_VLA.pdf](./Drawing_VLA.pdf)
+> 📄 **논문 및 아티팩트:** [Zenodo 레코드](https://doi.org/10.5281/zenodo.24122154)
+
+> **보관 문서:** 이 파일은 Gen 1 Drawing VLA 안내서입니다. 현재 DTRA 문서는 [`../dtra/README_KO.md`](../dtra/README_KO.md)에서 확인하세요. 아래 실행 명령은 원래 `5Color/drawing-vla` 체크아웃 기준입니다.
 
 ---
 
@@ -22,12 +24,12 @@ Drawing VLA explores closed-loop visuomotor policy learning for precision 2D ske
 
 | 가이드 선따기: 사과 (3획) | 다중 스트로크 분리: 새싹 (4획) |
 | :---: | :---: |
-| <img src="./paper/figures/rollout_apple.gif" width="360" alt="Drawing-VLA 사과 롤아웃" /> | <img src="./paper/figures/rollout_sprout.gif" width="360" alt="Drawing-VLA 새싹 롤아웃" /> |
+| <img src="./paper_v1/figures/rollout_apple.gif" width="360" alt="Drawing-VLA 사과 롤아웃" /> | <img src="./paper_v1/figures/rollout_sprout.gif" width="360" alt="Drawing-VLA 새싹 롤아웃" /> |
 
 *Drawing-VLA 통합 정책 모델($K=16$ 액션 청킹, Temporal Ensembling, Catmull-Rom 스플라인 브러시 렌더러)이 캔버스 시각 피드백을 실시간으로 확인하며 자율 드로잉을 수행하는 실제 롤아웃 영상.*
 
 ### 1. 폐루프 롤아웃 vs. 단일 스텝 베이스라인 비교 (이론적 방어 및 수치 검증)
-![Figure 1: Rollout Comparison](./paper/figures/fig1_rollout_comparison.png)
+![Figure 1: Rollout Comparison](./paper_v1/figures/fig1_rollout_comparison.png)
 *Figure 1: 폐루프 Action Chunking(Drawing-VLA)과 단일 스텝 마르코프 베이스라인(v5b)의 사과(3획) 및 새싹(4획) 드로잉 비교.*
 
 | 평가 지표 (Evaluation Metric) | 단일 스텝 마르코프 베이스라인 (`v5b`) | Drawing-VLA (ACT, 제안 모델) | 이론적 원인 및 메커니즘 |
@@ -48,7 +50,7 @@ Drawing VLA explores closed-loop visuomotor policy learning for precision 2D ske
 > 3. **Action Chunking의 해법 ($K=16, w_{\text{up}}=10.0$):** 캔버스 시각 피드백과 펜 위치를 조건으로 16스텝 미래 궤적 청크를 한 번에 예측하고 펜-업 손실에 10배 가중치를 부여함으로써, 연속적인 궤적 계획 지평을 확보하여 획 전환(Pen-Up)을 깔끔하게 물리적으로 분리해 냅니다.
 
 ### 2. 실시간 외란 복구 (+20px 공간 교란 실험)
-![Figure 4: Perturbation Recovery](./paper/figures/fig4_perturbation_recovery.png)
+![Figure 4: Perturbation Recovery](./paper_v1/figures/fig4_perturbation_recovery.png)
 *Figure 4: $t=150$ 스텝에서 외부 강제 튕김(+20px 외란)을 주었을 때, 개루프 모델은 영구히 이탈하지만 폐루프 Drawing-VLA는 42스텝 만에 윤곽선으로 자율 복귀하는 모습.*
 
 | 제어 정책 / 조건 | 외란 크기 (Perturbation) | 채움률 (Coverage) | 정밀도 (Precision) | 조화 F1 점수 | 오차 복구 동역학 |

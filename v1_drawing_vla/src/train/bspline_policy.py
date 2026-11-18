@@ -21,7 +21,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from tools.bspline_augment import balanced_pen_transition_loss
-from tools.bspline_core import BSplineDecoder, build_difference_matrices
+from dtra.core.bspline_core import BSplineDecoder, build_difference_matrices
 from train.dataset import CHUNK_SIZE, OBS_SIZE
 
 

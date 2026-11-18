@@ -272,7 +272,9 @@ def _load_target_and_human_ref(
         human = render_canvas(human_traj)
         return target, human, human_traj, match_scores(human, target), ref_path
 
-    targets_path = root / "targets_128.json"
+    targets_path = root / "v1_drawing_vla" / "handvsai" / "targets_128.json"
+    if not targets_path.exists():
+        targets_path = root / "targets_128.json"
     if targets_path.exists():
         targets_map = json.loads(targets_path.read_text(encoding="utf-8"))
         if target_name in targets_map:

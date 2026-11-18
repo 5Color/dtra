@@ -1,0 +1,7602 @@
+{
+  "tasks": [
+    "button-press-v3",
+    "door-open-v3",
+    "window-open-v3",
+    "faucet-open-v3",
+    "drawer-open-v3",
+    "drawer-close-v3",
+    "handle-press-v3",
+    "coffee-button-v3"
+  ],
+  "seeds": [
+    42,
+    100,
+    2026
+  ],
+  "arms": [
+    "arm1_abk_dog_vision",
+    "arm2_frozen_mlp_vision",
+    "arm3_dtra_full_vision",
+    "arm4_frozen_mlp_multimodal",
+    "arm5_dtra_rigid_alpha0",
+    "arm6_dtra_full_multimodal"
+  ],
+  "config": {
+    "epochs": 55,
+    "n_demos": 30,
+    "n_eval": 15,
+    "n_ood_eval": 15,
+    "n_test_eval": 15
+  },
+  "instructions": {
+    "button-press-v3": "reach forward and press the red button on the desk",
+    "door-open-v3": "grasp the door handle and pull the door open",
+    "window-open-v3": "push the sliding window handle sideways to open the window",
+    "faucet-open-v3": "turn the faucet handle counterclockwise to open the water tap",
+    "drawer-open-v3": "grasp the drawer handle and pull the drawer open",
+    "drawer-close-v3": "push the open drawer inward to close the drawer",
+    "handle-press-v3": "push down firmly on the lever handle until pressed",
+    "coffee-button-v3": "reach to the coffee machine and press the brew button"
+  },
+  "paraphrased_instructions": {
+    "button-press-v3": [
+      "push the button down",
+      "depress the crimson switch mounted on the tabletop",
+      "move the gripper ahead and tap down the tabletop button"
+    ],
+    "door-open-v3": [
+      "latch onto the handle and swing the miniature door outward",
+      "seize the grip bar to open the hinged door panel",
+      "grab the knob on the small door and yank it open"
+    ],
+    "window-open-v3": [
+      "slide the casement sash laterally along the track",
+      "shove the glass pane latch horizontally until it opens",
+      "glide the window grip to the side to unseal the pane"
+    ],
+    "faucet-open-v3": [
+      "rotate the spigot valve anticlockwise to turn on water",
+      "twist the tap lever leftwards so water flows",
+      "spin the faucet knob counter clockwise to release water"
+    ],
+    "drawer-open-v3": [
+      "open the cabinet drawer",
+      "grab the front grip and slide out the storage tray",
+      "hold the drawer knob and draw the compartment toward you"
+    ],
+    "drawer-close-v3": [
+      "shut the extended cabinet tray by shoving it back in",
+      "press the pulled out drawer front inward until flush",
+      "push the cabinet drawer completely inside"
+    ],
+    "handle-press-v3": [
+      "force the bar switch straight downward completely",
+      "apply downward pressure onto the crank lever to engage it",
+      "depress the mechanical handle straight down to the base"
+    ],
+    "coffee-button-v3": [
+      "tap the espresso maker switch to start brewing",
+      "move toward the coffee brewer and activate the brew pad",
+      "press the start button located on the espresso machine"
+    ]
+  },
+  "ml1_split_diagnostics": {
+    "button-press-v3": {
+      "n_train_tasks": 50,
+      "n_test_tasks": 50,
+      "train_goal_mean": [
+        -0.0062,
+        0.7745,
+        0.115
+      ],
+      "test_goal_mean": [
+        -0.0009,
+        0.7763,
+        0.115
+      ],
+      "train_goal_std": [
+        0.0579,
+        0.0156,
+        0.0
+      ],
+      "test_goal_std": [
+        0.0592,
+        0.0155,
+        0.0
+      ],
+      "exact_goal_pose_overlap": 0
+    },
+    "door-open-v3": {
+      "n_train_tasks": 50,
+      "n_test_tasks": 50,
+      "train_goal_mean": [
+        -0.2531,
+        0.4491,
+        0.15
+      ],
+      "test_goal_mean": [
+        -0.2504,
+        0.4526,
+        0.15
+      ],
+      "train_goal_std": [
+        0.0289,
+        0.0311,
+        0.0
+      ],
+      "test_goal_std": [
+        0.0296,
+        0.031,
+        0.0
+      ],
+      "exact_goal_pose_overlap": 0
+    },
+    "window-open-v3": {
+      "n_train_tasks": 50,
+      "n_test_tasks": 50,
+      "train_goal_mean": [
+        0.1938,
+        0.7981,
+        0.16
+      ],
+      "test_goal_mean": [
+        0.1991,
+        0.8053,
+        0.16
+      ],
+      "train_goal_std": [
+        0.0579,
+        0.0623,
+        0.0
+      ],
+      "test_goal_std": [
+        0.0592,
+        0.0621,
+        0.0
+      ],
+      "exact_goal_pose_overlap": 0
+    },
+    "faucet-open-v3": {
+      "n_train_tasks": 50,
+      "n_test_tasks": 50,
+      "train_goal_mean": [
+        0.1719,
+        0.8245,
+        0.125
+      ],
+      "test_goal_mean": [
+        0.1746,
+        0.8263,
+        0.125
+      ],
+      "train_goal_std": [
+        0.0289,
+        0.0156,
+        0.0
+      ],
+      "test_goal_std": [
+        0.0296,
+        0.0155,
+        0.0
+      ],
+      "exact_goal_pose_overlap": 0
+    },
+    "drawer-open-v3": {
+      "n_train_tasks": 50,
+      "n_test_tasks": 50,
+      "train_goal_mean": [
+        -0.0062,
+        0.54,
+        0.09
+      ],
+      "test_goal_mean": [
+        -0.0009,
+        0.54,
+        0.09
+      ],
+      "train_goal_std": [
+        0.0579,
+        0.0,
+        0.0
+      ],
+      "test_goal_std": [
+        0.0592,
+        0.0,
+        0.0
+      ],
+      "exact_goal_pose_overlap": 0
+    },
+    "drawer-close-v3": {
+      "n_train_tasks": 50,
+      "n_test_tasks": 50,
+      "train_goal_mean": [
+        -0.0062,
+        0.74,
+        0.09
+      ],
+      "test_goal_mean": [
+        -0.0009,
+        0.74,
+        0.09
+      ],
+      "train_goal_std": [
+        0.0579,
+        0.0,
+        0.0
+      ],
+      "test_goal_std": [
+        0.0592,
+        0.0,
+        0.0
+      ],
+      "exact_goal_pose_overlap": 0
+    },
+    "handle-press-v3": {
+      "n_train_tasks": 50,
+      "n_test_tasks": 50,
+      "train_goal_mean": [
+        -0.0062,
+        0.6331,
+        0.0749
+      ],
+      "test_goal_mean": [
+        -0.0009,
+        0.6366,
+        0.075
+      ],
+      "train_goal_std": [
+        0.0579,
+        0.0311,
+        0.0005
+      ],
+      "test_goal_std": [
+        0.0592,
+        0.031,
+        0.0006
+      ],
+      "exact_goal_pose_overlap": 0
+    },
+    "coffee-button-v3": {
+      "n_train_tasks": 50,
+      "n_test_tasks": 50,
+      "train_goal_mean": [
+        -0.0062,
+        0.6591,
+        0.2999
+      ],
+      "test_goal_mean": [
+        -0.0009,
+        0.6626,
+        0.3
+      ],
+      "train_goal_std": [
+        0.0579,
+        0.0311,
+        0.0005
+      ],
+      "test_goal_std": [
+        0.0592,
+        0.031,
+        0.0006
+      ],
+      "exact_goal_pose_overlap": 0
+    }
+  },
+  "cpu_latency_breakdown": {
+    "arm1_abk_dog_vision": {
+      "K=1": {
+        "trunk_key_ms": 3.407862500171177,
+        "key_search_ok_ms": 0.07109500002115965,
+        "active_exec_ms": 0.2730824999161996,
+        "e2e_chunk_ms": 3.7930225000309292
+      },
+      "K=8": {
+        "trunk_key_ms": 3.3966650000365917,
+        "key_search_ok_ms": 0.08547500001441222,
+        "active_exec_ms": 0.8251949999248609,
+        "e2e_chunk_ms": 4.467279999880702
+      }
+    },
+    "arm2_frozen_mlp_vision": {
+      "K=1": {
+        "trunk_key_ms": 2.4516362500435207,
+        "key_search_ok_ms": 0.03152124991174787,
+        "active_exec_ms": 0.20649625002988614,
+        "e2e_chunk_ms": 2.7799537499959115
+      },
+      "K=8": {
+        "trunk_key_ms": 2.4992962502437877,
+        "key_search_ok_ms": 0.03225624968763441,
+        "active_exec_ms": 0.21070250004413538,
+        "e2e_chunk_ms": 2.762214999893331
+      }
+    },
+    "arm3_dtra_full_vision": {
+      "K=1": {
+        "trunk_key_ms": 2.433394999752636,
+        "key_search_ok_ms": 0.20766500019817613,
+        "active_exec_ms": 1.9692800000484567,
+        "e2e_chunk_ms": 4.871341249963734
+      },
+      "K=8": {
+        "trunk_key_ms": 2.4096687498968095,
+        "key_search_ok_ms": 0.20150374984950759,
+        "active_exec_ms": 1.8731675001617987,
+        "e2e_chunk_ms": 4.955771250024554
+      }
+    },
+    "arm4_frozen_mlp_multimodal": {
+      "K=1": {
+        "trunk_key_ms": 2.4558074997912627,
+        "key_search_ok_ms": 0.032079999800771475,
+        "active_exec_ms": 0.21081625018268824,
+        "e2e_chunk_ms": 2.760889999990468
+      },
+      "K=8": {
+        "trunk_key_ms": 2.4069050003163284,
+        "key_search_ok_ms": 0.032541250038775615,
+        "active_exec_ms": 0.19820374982373323,
+        "e2e_chunk_ms": 2.762213749883813
+      }
+    },
+    "arm5_dtra_rigid_alpha0": {
+      "K=1": {
+        "trunk_key_ms": 2.458021249913145,
+        "key_search_ok_ms": 0.20030999985465314,
+        "active_exec_ms": 1.862832500046352,
+        "e2e_chunk_ms": 4.912972499732859
+      },
+      "K=8": {
+        "trunk_key_ms": 2.432020000196644,
+        "key_search_ok_ms": 0.2088812500005588,
+        "active_exec_ms": 1.8722362499829615,
+        "e2e_chunk_ms": 5.017494999992778
+      }
+    },
+    "arm6_dtra_full_multimodal": {
+      "K=1": {
+        "trunk_key_ms": 2.4430825000308687,
+        "key_search_ok_ms": 0.20891375024802983,
+        "active_exec_ms": 1.8656150001334026,
+        "e2e_chunk_ms": 4.885743750128313
+      },
+      "K=8": {
+        "trunk_key_ms": 2.4675837499671616,
+        "key_search_ok_ms": 0.21305249974830076,
+        "active_exec_ms": 1.8659025001397822,
+        "e2e_chunk_ms": 4.93164874969807
+      }
+    },
+    "arm1_abk_dog_vision_blend": {
+      "K=1": {
+        "trunk_key_ms": 3.2040024998423178,
+        "key_search_ok_ms": 0.07109250000212342,
+        "active_exec_ms": 0.33319249996566214,
+        "e2e_chunk_ms": 3.543945000274107
+      },
+      "K=8": {
+        "trunk_key_ms": 3.032119999988936,
+        "key_search_ok_ms": 0.07797250000294298,
+        "active_exec_ms": 2.47013500011235,
+        "e2e_chunk_ms": 5.961266249869368
+      }
+    }
+  },
+  "per_seed": {
+    "42": {
+      "arm1_abk_dog_vision": {
+        "arm_key": "arm1_abk_dog_vision",
+        "title": "[Arm 1] ABK-VLA (15x15 DoG, Vision-Only)",
+        "seed": 42,
+        "total_params": 5253943,
+        "train_seconds_total": 72.31522150000092,
+        "R": [
+          [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.0,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.46666666865348816
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.7916666865348816,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 0.991666667163372,
+          "per_task_sr": [
+            0.9333333373069763,
+            0.7333333492279053,
+            0.7333333492279053,
+            1.0,
+            0.6000000238418579,
+            0.8666666746139526,
+            1.0,
+            0.46666666865348816
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.9333333373069763
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.8416666666666667,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.9333333333333333,
+            0.9333333333333333,
+            0.6,
+            1.0,
+            0.8,
+            0.8,
+            1.0,
+            0.6666666666666666
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.025,
+          "avg_route_acc": 0.3,
+          "per_task_sr": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.2
+          ],
+          "per_task_route": [
+            0.3333333333333333,
+            1.0,
+            1.0,
+            0.0,
+            0.06666666666666667,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "slot_idx": 0,
+            "expanded": true,
+            "max_sim": 0.0
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "slot_idx": 1,
+            "expanded": true,
+            "max_sim": 0.837174654006958
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "slot_idx": 2,
+            "expanded": true,
+            "max_sim": 0.9648738503456116
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "slot_idx": 3,
+            "expanded": true,
+            "max_sim": 0.9774461388587952
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "slot_idx": 4,
+            "expanded": true,
+            "max_sim": 0.9707412719726562
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "slot_idx": 5,
+            "expanded": true,
+            "max_sim": 0.9905118942260742
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "slot_idx": 6,
+            "expanded": true,
+            "max_sim": 0.9842625260353088
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "slot_idx": 7,
+            "expanded": true,
+            "max_sim": 0.9695985317230225
+          }
+        ],
+        "alpha_stats": null,
+        "abk_blend_clean": {
+          "R": [
+            [
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763
+            ],
+            [
+              0.0,
+              0.7333333492279053,
+              0.7333333492279053,
+              0.7333333492279053,
+              0.8666666746139526,
+              0.8666666746139526,
+              0.6000000238418579,
+              0.6000000238418579
+            ],
+            [
+              0.0,
+              0.0,
+              0.7333333492279053,
+              0.6666666865348816,
+              0.6666666865348816,
+              0.6666666865348816,
+              0.6666666865348816,
+              0.6000000238418579
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.7333333492279053,
+              0.6000000238418579,
+              0.7333333492279053,
+              0.7333333492279053
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.46666666865348816
+            ]
+          ],
+          "avg_final_f1": 0.7916666269302368,
+          "avg_forgetting": 0.05714285373687744,
+          "avg_bwt": -0.03809523582458496,
+          "test_avg_sr": 0.8,
+          "ood_severe_sr": 0.06666666666666667
+        }
+      },
+      "arm2_frozen_mlp_vision": {
+        "arm_key": "arm2_frozen_mlp_vision",
+        "title": "[Arm 2] Matched Frozen MLP (Vision-Only, lang=0)",
+        "seed": 42,
+        "total_params": 5249288,
+        "train_seconds_total": 77.52781429997412,
+        "R": [
+          [
+            0.9333333373069763,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.13333334028720856,
+            0.20000000298023224,
+            0.13333334028720856,
+            0.13333334028720856,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.5333333611488342,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6666666865348816,
+            0.2666666805744171,
+            0.2666666805744171,
+            0.2666666805744171
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.5083333253860474,
+          "avg_forgetting": 0.190476194024086,
+          "avg_bwt": -0.18095238506793976,
+          "avg_route_acc": 0.991666667163372,
+          "per_task_sr": [
+            0.7333333492279053,
+            0.8666666746139526,
+            0.0,
+            0.0,
+            0.2666666805744171,
+            0.46666666865348816,
+            0.9333333373069763,
+            0.800000011920929
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.9333333373069763
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.475,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.7333333333333333,
+            0.8666666666666667,
+            0.06666666666666667,
+            0.0,
+            0.06666666666666667,
+            0.3333333333333333,
+            0.9333333333333333,
+            0.8
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.275,
+          "avg_route_acc": 0.9333333333333333,
+          "per_task_sr": [
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333333333333,
+            0.6666666666666666,
+            0.26666666666666666
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            0.8666666666666667,
+            1.0,
+            0.9333333333333333,
+            0.8,
+            1.0,
+            0.8666666666666667
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "slot_idx": 0,
+            "expanded": true,
+            "max_sim": 0.0,
+            "would_expand_at_096": true,
+            "total_slots": 1
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "slot_idx": 1,
+            "expanded": true,
+            "max_sim": 0.8996411561965942,
+            "would_expand_at_096": true,
+            "total_slots": 2
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "slot_idx": 2,
+            "expanded": true,
+            "max_sim": 0.9674957394599915,
+            "would_expand_at_096": false,
+            "total_slots": 3
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "slot_idx": 3,
+            "expanded": true,
+            "max_sim": 0.9838416576385498,
+            "would_expand_at_096": false,
+            "total_slots": 4
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "slot_idx": 4,
+            "expanded": true,
+            "max_sim": 0.9451444149017334,
+            "would_expand_at_096": true,
+            "total_slots": 5
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "slot_idx": 5,
+            "expanded": true,
+            "max_sim": 0.9937080144882202,
+            "would_expand_at_096": false,
+            "total_slots": 6
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "slot_idx": 6,
+            "expanded": true,
+            "max_sim": 0.9759477376937866,
+            "would_expand_at_096": false,
+            "total_slots": 7
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "slot_idx": 7,
+            "expanded": true,
+            "max_sim": 0.9718455672264099,
+            "would_expand_at_096": false,
+            "total_slots": 8
+          }
+        ],
+        "alpha_stats": null
+      },
+      "arm3_dtra_full_vision": {
+        "arm_key": "arm3_dtra_full_vision",
+        "title": "[Arm 3] DTRA Full (Vision-Only, lang=0)",
+        "seed": 42,
+        "total_params": 5245536,
+        "train_seconds_total": 360.376295700029,
+        "R": [
+          [
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.8166666626930237,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 0.991666667163372,
+          "per_task_sr": [
+            0.7333333492279053,
+            0.8666666746139526,
+            0.6000000238418579,
+            1.0,
+            0.800000011920929,
+            1.0,
+            0.7333333492279053,
+            0.800000011920929
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.9333333373069763
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.8333333333333334,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.8,
+            0.9333333333333333,
+            0.4666666666666667,
+            1.0,
+            0.8666666666666667,
+            1.0,
+            0.7333333333333333,
+            0.8666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.6666666666666666,
+          "avg_route_acc": 0.95,
+          "per_task_sr": [
+            0.7333333333333333,
+            0.4666666666666667,
+            0.5333333333333333,
+            0.8666666666666667,
+            0.5333333333333333,
+            0.8,
+            0.8,
+            0.6
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.8666666666666667,
+            0.8,
+            1.0,
+            0.9333333333333333
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "coarse_idx": 0,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.0,
+            "fine_idx": 0,
+            "fine_expanded": true,
+            "fine_max_sim": 0.0,
+            "total_coarse": 1,
+            "total_fine": 1,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "coarse_idx": 1,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.899654746055603,
+            "fine_idx": 1,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8432387709617615,
+            "total_coarse": 2,
+            "total_fine": 2,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "coarse_idx": 2,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9674780368804932,
+            "fine_idx": 2,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8360046744346619,
+            "total_coarse": 3,
+            "total_fine": 3,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "coarse_idx": 3,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9835326075553894,
+            "fine_idx": 3,
+            "fine_expanded": true,
+            "fine_max_sim": 0.851443886756897,
+            "total_coarse": 4,
+            "total_fine": 4,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "coarse_idx": 4,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9470123648643494,
+            "fine_idx": 4,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8175243735313416,
+            "total_coarse": 5,
+            "total_fine": 5,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "coarse_idx": 5,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9936724305152893,
+            "fine_idx": 5,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8715423345565796,
+            "total_coarse": 6,
+            "total_fine": 6,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "coarse_idx": 6,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.976116955280304,
+            "fine_idx": 6,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8414026498794556,
+            "total_coarse": 7,
+            "total_fine": 7,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "coarse_idx": 7,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9718959331512451,
+            "fine_idx": 7,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8506197929382324,
+            "total_coarse": 8,
+            "total_fine": 8,
+            "would_expand_fine_at_096": true
+          }
+        ],
+        "alpha_stats": {
+          "coarse_alphas": [
+            0.7974,
+            0.8728,
+            0.8829,
+            0.8828,
+            0.8836,
+            0.8855,
+            0.8917,
+            0.8923
+          ],
+          "fine_alphas": [
+            0.2785,
+            0.3635,
+            0.3884,
+            0.3789,
+            0.3967,
+            0.3928,
+            0.3789,
+            0.4061
+          ]
+        },
+        "snapback_telemetry": {
+          "clean_id": {
+            "ep_delta_z_star_mean": 0.35304100564078744,
+            "ep_delta_z_star_max": 0.4918803423643112,
+            "coarse_delta_z_star_mean": 0.6317380834332824,
+            "fine_delta_z_star_mean": 0.08352555379507454,
+            "raw_pull_norm_mean": 0.5151819845221933,
+            "raw_pull_norm_max": 0.7122005224227905,
+            "gate_act_mean": 0.8905228961560356,
+            "pre_snap_buf_abs_mean": 0.19543809491390482,
+            "pre_snap_buf_abs_max": 0.3141789436340332,
+            "pre_snap_buf_l2_max": 0.8746360540390015,
+            "post_snap_buf_abs_max": 0.0
+          },
+          "ood_severe": {
+            "ep_delta_z_star_mean": 0.3524904223080203,
+            "ep_delta_z_star_max": 0.5086536593735218,
+            "coarse_delta_z_star_mean": 0.6227075304975653,
+            "fine_delta_z_star_mean": 0.09363760382339602,
+            "raw_pull_norm_mean": 0.5433794086562492,
+            "raw_pull_norm_max": 0.7556617259979248,
+            "gate_act_mean": 0.8573448026108972,
+            "pre_snap_buf_abs_mean": 0.19318720312844512,
+            "pre_snap_buf_abs_max": 0.3107331097126007,
+            "pre_snap_buf_l2_max": 0.8999758958816528,
+            "post_snap_buf_abs_max": 0.0
+          }
+        }
+      },
+      "arm4_frozen_mlp_multimodal": {
+        "arm_key": "arm4_frozen_mlp_multimodal",
+        "title": "[Arm 4] Matched Frozen MLP (Multimodal)",
+        "seed": 42,
+        "total_params": 5249288,
+        "train_seconds_total": 82.5477957999683,
+        "R": [
+          [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342
+          ],
+          [
+            0.0,
+            0.0,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.8333333134651184,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.800000011920929,
+            0.5333333611488342,
+            0.6666666865348816,
+            1.0,
+            0.800000011920929,
+            1.0,
+            1.0,
+            0.8666666746139526
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.8500000000000001,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.8,
+            0.4666666666666667,
+            0.6,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.9333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.20833333333333331,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.5333333333333333,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.3333333333333333,
+            0.6666666666666666,
+            0.13333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "slot_idx": 0,
+            "expanded": true,
+            "max_sim": 0.0,
+            "would_expand_at_096": true,
+            "total_slots": 1
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "slot_idx": 1,
+            "expanded": true,
+            "max_sim": 0.5325741171836853,
+            "would_expand_at_096": true,
+            "total_slots": 2
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "slot_idx": 2,
+            "expanded": true,
+            "max_sim": 0.5806899070739746,
+            "would_expand_at_096": true,
+            "total_slots": 3
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "slot_idx": 3,
+            "expanded": true,
+            "max_sim": 0.5939333438873291,
+            "would_expand_at_096": true,
+            "total_slots": 4
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "slot_idx": 4,
+            "expanded": true,
+            "max_sim": 0.7203882932662964,
+            "would_expand_at_096": true,
+            "total_slots": 5
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "slot_idx": 5,
+            "expanded": true,
+            "max_sim": 0.7679805159568787,
+            "would_expand_at_096": true,
+            "total_slots": 6
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "slot_idx": 6,
+            "expanded": true,
+            "max_sim": 0.6064609289169312,
+            "would_expand_at_096": true,
+            "total_slots": 7
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "slot_idx": 7,
+            "expanded": true,
+            "max_sim": 0.7216682434082031,
+            "would_expand_at_096": true,
+            "total_slots": 8
+          }
+        ],
+        "alpha_stats": null,
+        "paraphrased_instructions": {
+          "avg_sr": 0.5833333333333333,
+          "avg_route_acc": 0.7083333333333333,
+          "per_task_sr": [
+            0.5333333333333333,
+            0.6,
+            0.2,
+            1.0,
+            0.6,
+            0.3333333333333333,
+            0.4666666666666667,
+            0.9333333333333333
+          ],
+          "per_task_route": [
+            0.6666666666666666,
+            1.0,
+            0.3333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.6666666666666666,
+            0.3333333333333333,
+            1.0
+          ]
+        }
+      },
+      "arm5_dtra_rigid_alpha0": {
+        "arm_key": "arm5_dtra_rigid_alpha0",
+        "title": "[Arm 5] DTRA Rigid (Multimodal, alpha=0)",
+        "seed": 42,
+        "total_params": 5245536,
+        "train_seconds_total": 341.80146260000765,
+        "R": [
+          [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.8250000476837158,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.9333333373069763,
+            1.0,
+            0.46666666865348816,
+            0.800000011920929,
+            0.8666666746139526,
+            1.0,
+            0.6666666865348816,
+            0.8666666746139526
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.8333333333333334,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            1.0,
+            0.8666666666666667,
+            0.4,
+            0.9333333333333333,
+            1.0,
+            1.0,
+            0.6666666666666666,
+            0.8
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.6,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.4666666666666667,
+            0.5333333333333333,
+            0.4666666666666667,
+            0.6,
+            0.6,
+            0.9333333333333333,
+            0.6,
+            0.6
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "coarse_idx": 0,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.0,
+            "fine_idx": 0,
+            "fine_expanded": true,
+            "fine_max_sim": 0.0,
+            "total_coarse": 1,
+            "total_fine": 1,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "coarse_idx": 1,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5325728058815002,
+            "fine_idx": 1,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5205748081207275,
+            "total_coarse": 2,
+            "total_fine": 2,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "coarse_idx": 2,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5339369177818298,
+            "fine_idx": 2,
+            "fine_expanded": true,
+            "fine_max_sim": 0.44346892833709717,
+            "total_coarse": 3,
+            "total_fine": 3,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "coarse_idx": 3,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5460547208786011,
+            "fine_idx": 3,
+            "fine_expanded": true,
+            "fine_max_sim": 0.48901233077049255,
+            "total_coarse": 4,
+            "total_fine": 4,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "coarse_idx": 4,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6634302139282227,
+            "fine_idx": 4,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5864182114601135,
+            "total_coarse": 5,
+            "total_fine": 5,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "coarse_idx": 5,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6289401054382324,
+            "fine_idx": 5,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5065305233001709,
+            "total_coarse": 6,
+            "total_fine": 6,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "coarse_idx": 6,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5000523924827576,
+            "fine_idx": 6,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4811736047267914,
+            "total_coarse": 7,
+            "total_fine": 7,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "coarse_idx": 7,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.7216675281524658,
+            "fine_idx": 7,
+            "fine_expanded": true,
+            "fine_max_sim": 0.6469322443008423,
+            "total_coarse": 8,
+            "total_fine": 8,
+            "would_expand_fine_at_096": true
+          }
+        ],
+        "alpha_stats": {
+          "coarse_alphas": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fine_alphas": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "paraphrased_instructions": {
+          "avg_sr": 0.21666666666666667,
+          "avg_route_acc": 0.65,
+          "per_task_sr": [
+            0.8,
+            0.0,
+            0.06666666666666667,
+            0.4666666666666667,
+            0.06666666666666667,
+            0.0,
+            0.13333333333333333,
+            0.2
+          ],
+          "per_task_route": [
+            1.0,
+            0.8666666666666667,
+            0.3333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.6666666666666666
+          ]
+        },
+        "snapback_telemetry": {
+          "clean_id": {
+            "ep_delta_z_star_mean": 0.0,
+            "ep_delta_z_star_max": 0.0,
+            "coarse_delta_z_star_mean": 0.0,
+            "fine_delta_z_star_mean": 0.0,
+            "raw_pull_norm_mean": 0.16531818445489743,
+            "raw_pull_norm_max": 0.31218695640563965,
+            "gate_act_mean": 0.8215250814146439,
+            "pre_snap_buf_abs_mean": 0.0,
+            "pre_snap_buf_abs_max": 0.0,
+            "pre_snap_buf_l2_max": 0.0,
+            "post_snap_buf_abs_max": 0.0
+          },
+          "ood_severe": {
+            "ep_delta_z_star_mean": 0.0,
+            "ep_delta_z_star_max": 0.0,
+            "coarse_delta_z_star_mean": 0.0,
+            "fine_delta_z_star_mean": 0.0,
+            "raw_pull_norm_mean": 0.1860986972903586,
+            "raw_pull_norm_max": 0.3391750156879425,
+            "gate_act_mean": 0.8111306948427138,
+            "pre_snap_buf_abs_mean": 0.0,
+            "pre_snap_buf_abs_max": 0.0,
+            "pre_snap_buf_l2_max": 0.0,
+            "post_snap_buf_abs_max": 0.0
+          }
+        }
+      },
+      "arm6_dtra_full_multimodal": {
+        "arm_key": "arm6_dtra_full_multimodal",
+        "title": "[Arm 6] DTRA Full (Multimodal, alpha=learned)",
+        "seed": 42,
+        "total_params": 5245536,
+        "train_seconds_total": 358.1579274999385,
+        "R": [
+          [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.0,
+            0.4000000059604645,
+            0.4000000059604645,
+            0.4000000059604645,
+            0.4000000059604645,
+            0.4000000059604645,
+            0.4000000059604645
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6000000238418579
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.8083333373069763,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.4000000059604645,
+            1.0,
+            0.8666666746139526,
+            1.0,
+            0.7333333492279053,
+            0.6000000238418579
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.8333333333333334,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            1.0,
+            0.9333333333333333,
+            0.4666666666666667,
+            1.0,
+            0.8,
+            1.0,
+            0.8,
+            0.6666666666666666
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.575,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.4666666666666667,
+            0.8,
+            0.26666666666666666,
+            0.6666666666666666,
+            0.5333333333333333,
+            0.6666666666666666,
+            0.7333333333333333,
+            0.4666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "coarse_idx": 0,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.0,
+            "fine_idx": 0,
+            "fine_expanded": true,
+            "fine_max_sim": 0.0,
+            "total_coarse": 1,
+            "total_fine": 1,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "coarse_idx": 1,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5325727462768555,
+            "fine_idx": 1,
+            "fine_expanded": true,
+            "fine_max_sim": 0.48444443941116333,
+            "total_coarse": 2,
+            "total_fine": 2,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "coarse_idx": 2,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5338461399078369,
+            "fine_idx": 2,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4361242651939392,
+            "total_coarse": 3,
+            "total_fine": 3,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "coarse_idx": 3,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5460615754127502,
+            "fine_idx": 3,
+            "fine_expanded": true,
+            "fine_max_sim": 0.49974170327186584,
+            "total_coarse": 4,
+            "total_fine": 4,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "coarse_idx": 4,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6633254289627075,
+            "fine_idx": 4,
+            "fine_expanded": true,
+            "fine_max_sim": 0.59833163022995,
+            "total_coarse": 5,
+            "total_fine": 5,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "coarse_idx": 5,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6277864575386047,
+            "fine_idx": 5,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4864346385002136,
+            "total_coarse": 6,
+            "total_fine": 6,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "coarse_idx": 6,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.500053882598877,
+            "fine_idx": 6,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4583594799041748,
+            "total_coarse": 7,
+            "total_fine": 7,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "coarse_idx": 7,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.7216684818267822,
+            "fine_idx": 7,
+            "fine_expanded": true,
+            "fine_max_sim": 0.6503233909606934,
+            "total_coarse": 8,
+            "total_fine": 8,
+            "would_expand_fine_at_096": true
+          }
+        ],
+        "alpha_stats": {
+          "coarse_alphas": [
+            0.7945,
+            0.7988,
+            0.803,
+            0.7877,
+            0.8535,
+            0.8644,
+            0.8283,
+            0.8807
+          ],
+          "fine_alphas": [
+            0.2685,
+            0.2809,
+            0.3015,
+            0.3022,
+            0.274,
+            0.2949,
+            0.269,
+            0.2676
+          ]
+        },
+        "paraphrased_instructions": {
+          "avg_sr": 0.31666666666666665,
+          "avg_route_acc": 0.65,
+          "per_task_sr": [
+            0.7333333333333333,
+            0.0,
+            0.06666666666666667,
+            0.6666666666666666,
+            0.0,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.4
+          ],
+          "per_task_route": [
+            1.0,
+            0.8666666666666667,
+            0.3333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.6666666666666666
+          ]
+        },
+        "snapback_telemetry": {
+          "clean_id": {
+            "ep_delta_z_star_mean": 0.16485776542082486,
+            "ep_delta_z_star_max": 0.32767472602427006,
+            "coarse_delta_z_star_mean": 0.29561401016570527,
+            "fine_delta_z_star_mean": 0.03889529019167298,
+            "raw_pull_norm_mean": 0.29234708601023457,
+            "raw_pull_norm_max": 0.49641408026218414,
+            "gate_act_mean": 0.8425744378467808,
+            "pre_snap_buf_abs_mean": 0.09633280245121226,
+            "pre_snap_buf_abs_max": 0.2404922991991043,
+            "pre_snap_buf_l2_max": 0.6064172983169556,
+            "post_snap_buf_abs_max": 0.0
+          },
+          "ood_severe": {
+            "ep_delta_z_star_mean": 0.16972518862901476,
+            "ep_delta_z_star_max": 0.33987612277269363,
+            "coarse_delta_z_star_mean": 0.2997137621858016,
+            "fine_delta_z_star_mean": 0.04596888156588979,
+            "raw_pull_norm_mean": 0.312439181078741,
+            "raw_pull_norm_max": 0.5263199210166931,
+            "gate_act_mean": 0.8353021956539628,
+            "pre_snap_buf_abs_mean": 0.09854138500126569,
+            "pre_snap_buf_abs_max": 0.24602431058883667,
+            "pre_snap_buf_l2_max": 0.6191822290420532,
+            "post_snap_buf_abs_max": 0.0
+          }
+        }
+      }
+    },
+    "100": {
+      "arm1_abk_dog_vision": {
+        "arm_key": "arm1_abk_dog_vision",
+        "title": "[Arm 1] ABK-VLA (15x15 DoG, Vision-Only)",
+        "seed": 100,
+        "total_params": 5253943,
+        "train_seconds_total": 71.85426520006149,
+        "R": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6000000238418579
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.8500000238418579,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            1.0,
+            1.0,
+            0.6666666865348816,
+            1.0,
+            0.5333333611488342,
+            1.0,
+            1.0,
+            0.6000000238418579
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.8083333333333333,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            1.0,
+            0.8666666666666667,
+            0.4666666666666667,
+            1.0,
+            0.4,
+            1.0,
+            1.0,
+            0.7333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.03333333333333333,
+          "avg_route_acc": 0.3833333333333333,
+          "per_task_sr": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.2,
+            0.0,
+            0.06666666666666667
+          ],
+          "per_task_route": [
+            0.6666666666666666,
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.4
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "slot_idx": 0,
+            "expanded": true,
+            "max_sim": 0.0
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "slot_idx": 1,
+            "expanded": true,
+            "max_sim": 0.8577715158462524
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "slot_idx": 2,
+            "expanded": true,
+            "max_sim": 0.9616374969482422
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "slot_idx": 3,
+            "expanded": true,
+            "max_sim": 0.9770854711532593
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "slot_idx": 4,
+            "expanded": true,
+            "max_sim": 0.9757843017578125
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "slot_idx": 5,
+            "expanded": true,
+            "max_sim": 0.9929077625274658
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "slot_idx": 6,
+            "expanded": true,
+            "max_sim": 0.9874183535575867
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "slot_idx": 7,
+            "expanded": true,
+            "max_sim": 0.9698784351348877
+          }
+        ],
+        "alpha_stats": null,
+        "abk_blend_clean": {
+          "R": [
+            [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0,
+              1.0,
+              1.0,
+              0.8666666746139526,
+              0.8666666746139526,
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.46666666865348816,
+              0.6666666865348816,
+              0.6666666865348816,
+              0.6666666865348816,
+              0.6666666865348816,
+              0.5333333611488342
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.46666666865348816,
+              0.6000000238418579,
+              0.6666666865348816,
+              0.6666666865348816
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.8666666746139526,
+              0.9333333373069763,
+              0.9333333373069763
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.9333333373069763,
+              0.9333333373069763
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.7333333492279053
+            ]
+          ],
+          "avg_final_f1": 0.8500000238418579,
+          "avg_forgetting": 0.01904761791229248,
+          "avg_bwt": 0.047619053295680454,
+          "test_avg_sr": 0.8333333333333334,
+          "ood_severe_sr": 0.08333333333333333
+        }
+      },
+      "arm2_frozen_mlp_vision": {
+        "arm_key": "arm2_frozen_mlp_vision",
+        "title": "[Arm 2] Matched Frozen MLP (Vision-Only, lang=0)",
+        "seed": 100,
+        "total_params": 5249288,
+        "train_seconds_total": 77.4776141999755,
+        "R": [
+          [
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.5333333611488342,
+            0.5333333611488342
+          ],
+          [
+            0.0,
+            0.9333333373069763,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.3333333432674408,
+            0.2666666805744171,
+            0.13333334028720856,
+            0.13333334028720856,
+            0.06666667014360428,
+            0.06666667014360428
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.20000000298023224,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.7333333492279053,
+            0.20000000298023224,
+            0.20000000298023224,
+            0.20000000298023224
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5333333611488342
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.4333333373069763,
+          "avg_forgetting": 0.20000000298023224,
+          "avg_bwt": -0.20000000298023224,
+          "avg_route_acc": 0.991666667163372,
+          "per_task_sr": [
+            0.5333333611488342,
+            0.8666666746139526,
+            0.06666667014360428,
+            0.0,
+            0.20000000298023224,
+            0.3333333432674408,
+            0.9333333373069763,
+            0.5333333611488342
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.9333333373069763
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.44166666666666665,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.7333333333333333,
+            0.7333333333333333,
+            0.06666666666666667,
+            0.0,
+            0.2,
+            0.3333333333333333,
+            0.9333333333333333,
+            0.5333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.26666666666666666,
+          "avg_route_acc": 0.9750000000000001,
+          "per_task_sr": [
+            0.4,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.7333333333333333,
+            0.6,
+            0.4
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            0.8666666666666667,
+            1.0,
+            1.0,
+            0.9333333333333333,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "slot_idx": 0,
+            "expanded": true,
+            "max_sim": 0.0,
+            "would_expand_at_096": true,
+            "total_slots": 1
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "slot_idx": 1,
+            "expanded": true,
+            "max_sim": 0.8996411561965942,
+            "would_expand_at_096": true,
+            "total_slots": 2
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "slot_idx": 2,
+            "expanded": true,
+            "max_sim": 0.9674957394599915,
+            "would_expand_at_096": false,
+            "total_slots": 3
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "slot_idx": 3,
+            "expanded": true,
+            "max_sim": 0.9838416576385498,
+            "would_expand_at_096": false,
+            "total_slots": 4
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "slot_idx": 4,
+            "expanded": true,
+            "max_sim": 0.9451444149017334,
+            "would_expand_at_096": true,
+            "total_slots": 5
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "slot_idx": 5,
+            "expanded": true,
+            "max_sim": 0.9937080144882202,
+            "would_expand_at_096": false,
+            "total_slots": 6
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "slot_idx": 6,
+            "expanded": true,
+            "max_sim": 0.9759477376937866,
+            "would_expand_at_096": false,
+            "total_slots": 7
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "slot_idx": 7,
+            "expanded": true,
+            "max_sim": 0.9718455672264099,
+            "would_expand_at_096": false,
+            "total_slots": 8
+          }
+        ],
+        "alpha_stats": null
+      },
+      "arm3_dtra_full_vision": {
+        "arm_key": "arm3_dtra_full_vision",
+        "title": "[Arm 3] DTRA Full (Vision-Only, lang=0)",
+        "seed": 100,
+        "total_params": 5245536,
+        "train_seconds_total": 358.22117209996213,
+        "R": [
+          [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6666666865348816
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.7666666507720947,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 0.991666667163372,
+          "per_task_sr": [
+            0.9333333373069763,
+            0.6666666865348816,
+            0.46666666865348816,
+            0.8666666746139526,
+            0.7333333492279053,
+            1.0,
+            0.800000011920929,
+            0.6666666865348816
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.9333333373069763
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.775,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.9333333333333333,
+            0.6666666666666666,
+            0.4,
+            1.0,
+            0.8666666666666667,
+            1.0,
+            0.6,
+            0.7333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.425,
+          "avg_route_acc": 0.9666666666666667,
+          "per_task_sr": [
+            0.5333333333333333,
+            0.6,
+            0.2,
+            0.2,
+            0.0,
+            0.6,
+            0.7333333333333333,
+            0.5333333333333333
+          ],
+          "per_task_route": [
+            0.9333333333333333,
+            1.0,
+            0.9333333333333333,
+            1.0,
+            1.0,
+            0.8666666666666667,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "coarse_idx": 0,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.0,
+            "fine_idx": 0,
+            "fine_expanded": true,
+            "fine_max_sim": 0.0,
+            "total_coarse": 1,
+            "total_fine": 1,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "coarse_idx": 1,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.899644136428833,
+            "fine_idx": 1,
+            "fine_expanded": true,
+            "fine_max_sim": 0.822165846824646,
+            "total_coarse": 2,
+            "total_fine": 2,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "coarse_idx": 2,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9674954414367676,
+            "fine_idx": 2,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8615751266479492,
+            "total_coarse": 3,
+            "total_fine": 3,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "coarse_idx": 3,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9835842847824097,
+            "fine_idx": 3,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8607770204544067,
+            "total_coarse": 4,
+            "total_fine": 4,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "coarse_idx": 4,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9468387365341187,
+            "fine_idx": 4,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8097801804542542,
+            "total_coarse": 5,
+            "total_fine": 5,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "coarse_idx": 5,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.993697464466095,
+            "fine_idx": 5,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8587852120399475,
+            "total_coarse": 6,
+            "total_fine": 6,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "coarse_idx": 6,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.976101279258728,
+            "fine_idx": 6,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8785564303398132,
+            "total_coarse": 7,
+            "total_fine": 7,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "coarse_idx": 7,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9718998074531555,
+            "fine_idx": 7,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8750373125076294,
+            "total_coarse": 8,
+            "total_fine": 8,
+            "would_expand_fine_at_096": true
+          }
+        ],
+        "alpha_stats": {
+          "coarse_alphas": [
+            0.7872,
+            0.8824,
+            0.8826,
+            0.8824,
+            0.8887,
+            0.8875,
+            0.8898,
+            0.8934
+          ],
+          "fine_alphas": [
+            0.2702,
+            0.3918,
+            0.4021,
+            0.4051,
+            0.3708,
+            0.4135,
+            0.3891,
+            0.4269
+          ]
+        },
+        "snapback_telemetry": {
+          "clean_id": {
+            "ep_delta_z_star_mean": 0.345246646911786,
+            "ep_delta_z_star_max": 0.5124901160597801,
+            "coarse_delta_z_star_mean": 0.6083496011727152,
+            "fine_delta_z_star_mean": 0.09130383470460435,
+            "raw_pull_norm_mean": 0.5063472183169072,
+            "raw_pull_norm_max": 0.7657631039619446,
+            "gate_act_mean": 0.8908571920179154,
+            "pre_snap_buf_abs_mean": 0.18112458516288596,
+            "pre_snap_buf_abs_max": 0.2842775583267212,
+            "pre_snap_buf_l2_max": 0.8676615357398987,
+            "post_snap_buf_abs_max": 0.0
+          },
+          "ood_severe": {
+            "ep_delta_z_star_mean": 0.3452857447874742,
+            "ep_delta_z_star_max": 0.5159646570682526,
+            "coarse_delta_z_star_mean": 0.6035258964526122,
+            "fine_delta_z_star_mean": 0.10034723618290368,
+            "raw_pull_norm_mean": 0.5329772844652847,
+            "raw_pull_norm_max": 0.7694457173347473,
+            "gate_act_mean": 0.8612465835165526,
+            "pre_snap_buf_abs_mean": 0.18320781075588283,
+            "pre_snap_buf_abs_max": 0.2829066514968872,
+            "pre_snap_buf_l2_max": 0.8753145933151245,
+            "post_snap_buf_abs_max": 0.0
+          }
+        }
+      },
+      "arm4_frozen_mlp_multimodal": {
+        "arm_key": "arm4_frozen_mlp_multimodal",
+        "title": "[Arm 4] Matched Frozen MLP (Multimodal)",
+        "seed": 100,
+        "total_params": 5249288,
+        "train_seconds_total": 80.26414219997241,
+        "R": [
+          [
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.0,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.8333333134651184,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.7333333492279053,
+            0.7333333492279053,
+            0.5333333611488342,
+            1.0,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.800000011920929,
+            1.0
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.8333333333333333,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.7333333333333333,
+            0.7333333333333333,
+            0.5333333333333333,
+            1.0,
+            1.0,
+            1.0,
+            0.7333333333333333,
+            0.9333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.20833333333333331,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6666666666666666,
+            0.6,
+            0.06666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "slot_idx": 0,
+            "expanded": true,
+            "max_sim": 0.0,
+            "would_expand_at_096": true,
+            "total_slots": 1
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "slot_idx": 1,
+            "expanded": true,
+            "max_sim": 0.5325741171836853,
+            "would_expand_at_096": true,
+            "total_slots": 2
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "slot_idx": 2,
+            "expanded": true,
+            "max_sim": 0.5806899070739746,
+            "would_expand_at_096": true,
+            "total_slots": 3
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "slot_idx": 3,
+            "expanded": true,
+            "max_sim": 0.5939333438873291,
+            "would_expand_at_096": true,
+            "total_slots": 4
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "slot_idx": 4,
+            "expanded": true,
+            "max_sim": 0.7203882932662964,
+            "would_expand_at_096": true,
+            "total_slots": 5
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "slot_idx": 5,
+            "expanded": true,
+            "max_sim": 0.7679805159568787,
+            "would_expand_at_096": true,
+            "total_slots": 6
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "slot_idx": 6,
+            "expanded": true,
+            "max_sim": 0.6064609289169312,
+            "would_expand_at_096": true,
+            "total_slots": 7
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "slot_idx": 7,
+            "expanded": true,
+            "max_sim": 0.7216682434082031,
+            "would_expand_at_096": true,
+            "total_slots": 8
+          }
+        ],
+        "alpha_stats": null,
+        "paraphrased_instructions": {
+          "avg_sr": 0.575,
+          "avg_route_acc": 0.7083333333333333,
+          "per_task_sr": [
+            0.4,
+            0.8,
+            0.13333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.26666666666666666,
+            0.3333333333333333,
+            1.0
+          ],
+          "per_task_route": [
+            0.6666666666666666,
+            1.0,
+            0.3333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.6666666666666666,
+            0.3333333333333333,
+            1.0
+          ]
+        }
+      },
+      "arm5_dtra_rigid_alpha0": {
+        "arm_key": "arm5_dtra_rigid_alpha0",
+        "title": "[Arm 5] DTRA Rigid (Multimodal, alpha=0)",
+        "seed": 100,
+        "total_params": 5245536,
+        "train_seconds_total": 341.27115879996563,
+        "R": [
+          [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.2666666805744171,
+            0.2666666805744171,
+            0.2666666805744171,
+            0.2666666805744171,
+            0.2666666805744171,
+            0.2666666805744171
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342,
+            0.5333333611488342
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5333333611488342
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.7416666746139526,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.9333333373069763,
+            1.0,
+            0.2666666805744171,
+            0.8666666746139526,
+            0.5333333611488342,
+            1.0,
+            0.800000011920929,
+            0.5333333611488342
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.7749999999999999,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.8666666666666667,
+            0.9333333333333333,
+            0.26666666666666666,
+            1.0,
+            0.7333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.7333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.44166666666666665,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.6666666666666666,
+            0.0,
+            0.3333333333333333,
+            0.2,
+            0.4,
+            0.9333333333333333,
+            0.5333333333333333,
+            0.4666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "coarse_idx": 0,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.0,
+            "fine_idx": 0,
+            "fine_expanded": true,
+            "fine_max_sim": 0.0,
+            "total_coarse": 1,
+            "total_fine": 1,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "coarse_idx": 1,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5325726270675659,
+            "fine_idx": 1,
+            "fine_expanded": true,
+            "fine_max_sim": 0.48989489674568176,
+            "total_coarse": 2,
+            "total_fine": 2,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "coarse_idx": 2,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.533867359161377,
+            "fine_idx": 2,
+            "fine_expanded": true,
+            "fine_max_sim": 0.43901029229164124,
+            "total_coarse": 3,
+            "total_fine": 3,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "coarse_idx": 3,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5460501909255981,
+            "fine_idx": 3,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4914816617965698,
+            "total_coarse": 4,
+            "total_fine": 4,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "coarse_idx": 4,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6633478999137878,
+            "fine_idx": 4,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5975286960601807,
+            "total_coarse": 5,
+            "total_fine": 5,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "coarse_idx": 5,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6286752223968506,
+            "fine_idx": 5,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5588802099227905,
+            "total_coarse": 6,
+            "total_fine": 6,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "coarse_idx": 6,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5000506043434143,
+            "fine_idx": 6,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4701855182647705,
+            "total_coarse": 7,
+            "total_fine": 7,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "coarse_idx": 7,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.7216659188270569,
+            "fine_idx": 7,
+            "fine_expanded": true,
+            "fine_max_sim": 0.6326357126235962,
+            "total_coarse": 8,
+            "total_fine": 8,
+            "would_expand_fine_at_096": true
+          }
+        ],
+        "alpha_stats": {
+          "coarse_alphas": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fine_alphas": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "paraphrased_instructions": {
+          "avg_sr": 0.21666666666666667,
+          "avg_route_acc": 0.65,
+          "per_task_sr": [
+            0.6666666666666666,
+            0.26666666666666666,
+            0.13333333333333333,
+            0.0,
+            0.0,
+            0.06666666666666667,
+            0.3333333333333333,
+            0.26666666666666666
+          ],
+          "per_task_route": [
+            1.0,
+            0.8666666666666667,
+            0.3333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.6666666666666666
+          ]
+        },
+        "snapback_telemetry": {
+          "clean_id": {
+            "ep_delta_z_star_mean": 0.0,
+            "ep_delta_z_star_max": 0.0,
+            "coarse_delta_z_star_mean": 0.0,
+            "fine_delta_z_star_mean": 0.0,
+            "raw_pull_norm_mean": 0.16423902159003798,
+            "raw_pull_norm_max": 0.26516032218933105,
+            "gate_act_mean": 0.824712636239262,
+            "pre_snap_buf_abs_mean": 0.0,
+            "pre_snap_buf_abs_max": 0.0,
+            "pre_snap_buf_l2_max": 0.0,
+            "post_snap_buf_abs_max": 0.0
+          },
+          "ood_severe": {
+            "ep_delta_z_star_mean": 0.0,
+            "ep_delta_z_star_max": 0.0,
+            "coarse_delta_z_star_mean": 0.0,
+            "fine_delta_z_star_mean": 0.0,
+            "raw_pull_norm_mean": 0.18501385852786983,
+            "raw_pull_norm_max": 0.3308766633272171,
+            "gate_act_mean": 0.8158276643597084,
+            "pre_snap_buf_abs_mean": 0.0,
+            "pre_snap_buf_abs_max": 0.0,
+            "pre_snap_buf_l2_max": 0.0,
+            "post_snap_buf_abs_max": 0.0
+          }
+        }
+      },
+      "arm6_dtra_full_multimodal": {
+        "arm_key": "arm6_dtra_full_multimodal",
+        "title": "[Arm 6] DTRA Full (Multimodal, alpha=learned)",
+        "seed": 100,
+        "total_params": 5245536,
+        "train_seconds_total": 358.52861940002185,
+        "R": [
+          [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.5333333611488342
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.7166666984558105,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.9333333373069763,
+            0.46666666865348816,
+            0.3333333432674408,
+            1.0,
+            0.6666666865348816,
+            1.0,
+            0.800000011920929,
+            0.5333333611488342
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.7416666666666667,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.8666666666666667,
+            0.5333333333333333,
+            0.4666666666666667,
+            1.0,
+            0.8,
+            1.0,
+            0.5333333333333333,
+            0.7333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.49166666666666664,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.8666666666666667,
+            0.4666666666666667,
+            0.26666666666666666,
+            0.9333333333333333,
+            0.13333333333333333,
+            0.2,
+            0.6,
+            0.4666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "coarse_idx": 0,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.0,
+            "fine_idx": 0,
+            "fine_expanded": true,
+            "fine_max_sim": 0.0,
+            "total_coarse": 1,
+            "total_fine": 1,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "coarse_idx": 1,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5325777530670166,
+            "fine_idx": 1,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4860297441482544,
+            "total_coarse": 2,
+            "total_fine": 2,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "coarse_idx": 2,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5338031053543091,
+            "fine_idx": 2,
+            "fine_expanded": true,
+            "fine_max_sim": 0.42311111092567444,
+            "total_coarse": 3,
+            "total_fine": 3,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "coarse_idx": 3,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5460531711578369,
+            "fine_idx": 3,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5046718716621399,
+            "total_coarse": 4,
+            "total_fine": 4,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "coarse_idx": 4,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.663271427154541,
+            "fine_idx": 4,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5718216896057129,
+            "total_coarse": 5,
+            "total_fine": 5,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "coarse_idx": 5,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6277395486831665,
+            "fine_idx": 5,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5536133646965027,
+            "total_coarse": 6,
+            "total_fine": 6,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "coarse_idx": 6,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5000482201576233,
+            "fine_idx": 6,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4508357644081116,
+            "total_coarse": 7,
+            "total_fine": 7,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "coarse_idx": 7,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.7216575145721436,
+            "fine_idx": 7,
+            "fine_expanded": true,
+            "fine_max_sim": 0.6476345062255859,
+            "total_coarse": 8,
+            "total_fine": 8,
+            "would_expand_fine_at_096": true
+          }
+        ],
+        "alpha_stats": {
+          "coarse_alphas": [
+            0.806,
+            0.8233,
+            0.7979,
+            0.8192,
+            0.8558,
+            0.8636,
+            0.7971,
+            0.8738
+          ],
+          "fine_alphas": [
+            0.2588,
+            0.3202,
+            0.3148,
+            0.3012,
+            0.2832,
+            0.2942,
+            0.2699,
+            0.2615
+          ]
+        },
+        "paraphrased_instructions": {
+          "avg_sr": 0.25,
+          "avg_route_acc": 0.65,
+          "per_task_sr": [
+            0.8,
+            0.0,
+            0.06666666666666667,
+            0.6,
+            0.0,
+            0.13333333333333333,
+            0.06666666666666667,
+            0.3333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            0.8666666666666667,
+            0.3333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.6666666666666666
+          ]
+        },
+        "snapback_telemetry": {
+          "clean_id": {
+            "ep_delta_z_star_mean": 0.16479715190537852,
+            "ep_delta_z_star_max": 0.3181396536529064,
+            "coarse_delta_z_star_mean": 0.290545695891466,
+            "fine_delta_z_star_mean": 0.043485323593883574,
+            "raw_pull_norm_mean": 0.29278140986904977,
+            "raw_pull_norm_max": 0.485668882727623,
+            "gate_act_mean": 0.848922156525429,
+            "pre_snap_buf_abs_mean": 0.10211915406674542,
+            "pre_snap_buf_abs_max": 0.2531396448612213,
+            "pre_snap_buf_l2_max": 0.5579487681388855,
+            "post_snap_buf_abs_max": 0.0
+          },
+          "ood_severe": {
+            "ep_delta_z_star_mean": 0.17018086832205792,
+            "ep_delta_z_star_max": 0.32146458327770233,
+            "coarse_delta_z_star_mean": 0.29629414915121843,
+            "fine_delta_z_star_mean": 0.049008944006065015,
+            "raw_pull_norm_mean": 0.310085160240216,
+            "raw_pull_norm_max": 0.5037378370761871,
+            "gate_act_mean": 0.8429544308444343,
+            "pre_snap_buf_abs_mean": 0.10443798424389736,
+            "pre_snap_buf_abs_max": 0.26225951313972473,
+            "pre_snap_buf_l2_max": 0.5586255192756653,
+            "post_snap_buf_abs_max": 0.0
+          }
+        }
+      }
+    },
+    "2026": {
+      "arm1_abk_dog_vision": {
+        "arm_key": "arm1_abk_dog_vision",
+        "title": "[Arm 1] ABK-VLA (15x15 DoG, Vision-Only)",
+        "seed": 2026,
+        "total_params": 5253943,
+        "train_seconds_total": 72.00474769994617,
+        "R": [
+          [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6666666865348816
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.8416666984558105,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.9333333373069763,
+            0.8666666746139526,
+            0.6666666865348816,
+            0.9333333373069763,
+            0.800000011920929,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.6666666865348816
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.8666666666666667,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            1.0,
+            0.8,
+            0.6666666666666666,
+            1.0,
+            0.8666666666666667,
+            0.8666666666666667,
+            0.9333333333333333,
+            0.8
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.008333333333333333,
+          "avg_route_acc": 0.35833333333333334,
+          "per_task_sr": [
+            0.06666666666666667,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "per_task_route": [
+            0.2,
+            1.0,
+            0.9333333333333333,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.7333333333333333
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "slot_idx": 0,
+            "expanded": true,
+            "max_sim": 0.0
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "slot_idx": 1,
+            "expanded": true,
+            "max_sim": 0.8054004311561584
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "slot_idx": 2,
+            "expanded": true,
+            "max_sim": 0.9668973684310913
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "slot_idx": 3,
+            "expanded": true,
+            "max_sim": 0.9770735502243042
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "slot_idx": 4,
+            "expanded": true,
+            "max_sim": 0.9654989242553711
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "slot_idx": 5,
+            "expanded": true,
+            "max_sim": 0.9875091314315796
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "slot_idx": 6,
+            "expanded": true,
+            "max_sim": 0.9788163900375366
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "slot_idx": 7,
+            "expanded": true,
+            "max_sim": 0.9697935581207275
+          }
+        ],
+        "alpha_stats": null,
+        "abk_blend_clean": {
+          "R": [
+            [
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763,
+              0.9333333373069763
+            ],
+            [
+              0.0,
+              0.8666666746139526,
+              0.8666666746139526,
+              0.8666666746139526,
+              0.8666666746139526,
+              0.8666666746139526,
+              0.9333333373069763,
+              0.9333333373069763
+            ],
+            [
+              0.0,
+              0.0,
+              0.6000000238418579,
+              0.46666666865348816,
+              0.46666666865348816,
+              0.46666666865348816,
+              0.46666666865348816,
+              0.5333333611488342
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.800000011920929,
+              0.800000011920929,
+              0.800000011920929,
+              0.800000011920929,
+              0.800000011920929
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.8666666746139526,
+              0.6666666865348816,
+              0.6666666865348816,
+              0.6666666865348816
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.8666666746139526,
+              0.9333333373069763,
+              0.9333333373069763
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.9333333373069763,
+              0.9333333373069763
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.800000011920929
+            ]
+          ],
+          "avg_final_f1": 0.8166667222976685,
+          "avg_forgetting": 0.03809523582458496,
+          "avg_bwt": -0.01904761791229248,
+          "test_avg_sr": 0.85,
+          "ood_severe_sr": 0.0
+        }
+      },
+      "arm2_frozen_mlp_vision": {
+        "arm_key": "arm2_frozen_mlp_vision",
+        "title": "[Arm 2] Matched Frozen MLP (Vision-Only, lang=0)",
+        "seed": 2026,
+        "total_params": 5249288,
+        "train_seconds_total": 76.84838930002297,
+        "R": [
+          [
+            1.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.800000011920929,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.06666667014360428,
+            0.06666667014360428,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.3333333432674408,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.13333334028720856,
+            0.13333334028720856,
+            0.13333334028720856
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.4000000059604645,
+            0.4000000059604645,
+            0.4000000059604645
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.4000000059604645
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.4333333373069763,
+          "avg_forgetting": 0.20952381087200983,
+          "avg_bwt": -0.20952381087200983,
+          "avg_route_acc": 0.991666667163372,
+          "per_task_sr": [
+            0.8666666746139526,
+            0.800000011920929,
+            0.0,
+            0.0,
+            0.13333334028720856,
+            0.4000000059604645,
+            0.8666666746139526,
+            0.4000000059604645
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.9333333373069763
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.42500000000000004,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.8666666666666667,
+            0.7333333333333333,
+            0.0,
+            0.0,
+            0.2,
+            0.13333333333333333,
+            1.0,
+            0.4666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.20833333333333331,
+          "avg_route_acc": 0.925,
+          "per_task_sr": [
+            0.4,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6,
+            0.5333333333333333,
+            0.13333333333333333
+          ],
+          "per_task_route": [
+            0.9333333333333333,
+            1.0,
+            0.8666666666666667,
+            1.0,
+            0.8,
+            0.8666666666666667,
+            1.0,
+            0.9333333333333333
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "slot_idx": 0,
+            "expanded": true,
+            "max_sim": 0.0,
+            "would_expand_at_096": true,
+            "total_slots": 1
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "slot_idx": 1,
+            "expanded": true,
+            "max_sim": 0.8996411561965942,
+            "would_expand_at_096": true,
+            "total_slots": 2
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "slot_idx": 2,
+            "expanded": true,
+            "max_sim": 0.9674957394599915,
+            "would_expand_at_096": false,
+            "total_slots": 3
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "slot_idx": 3,
+            "expanded": true,
+            "max_sim": 0.9838416576385498,
+            "would_expand_at_096": false,
+            "total_slots": 4
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "slot_idx": 4,
+            "expanded": true,
+            "max_sim": 0.9451444149017334,
+            "would_expand_at_096": true,
+            "total_slots": 5
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "slot_idx": 5,
+            "expanded": true,
+            "max_sim": 0.9937080144882202,
+            "would_expand_at_096": false,
+            "total_slots": 6
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "slot_idx": 6,
+            "expanded": true,
+            "max_sim": 0.9759477376937866,
+            "would_expand_at_096": false,
+            "total_slots": 7
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "slot_idx": 7,
+            "expanded": true,
+            "max_sim": 0.9718455672264099,
+            "would_expand_at_096": false,
+            "total_slots": 8
+          }
+        ],
+        "alpha_stats": null
+      },
+      "arm3_dtra_full_vision": {
+        "arm_key": "arm3_dtra_full_vision",
+        "title": "[Arm 3] DTRA Full (Vision-Only, lang=0)",
+        "seed": 2026,
+        "total_params": 5245536,
+        "train_seconds_total": 357.77032099998905,
+        "R": [
+          [
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.6916666626930237,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 0.991666667163372,
+          "per_task_sr": [
+            0.6666666865348816,
+            0.800000011920929,
+            0.3333333432674408,
+            0.800000011920929,
+            0.3333333432674408,
+            1.0,
+            0.6666666865348816,
+            0.9333333373069763
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.9333333373069763
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.6916666666666667,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.8,
+            0.6,
+            0.3333333333333333,
+            1.0,
+            0.2,
+            1.0,
+            0.7333333333333333,
+            0.8666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.48333333333333334,
+          "avg_route_acc": 0.9333333333333333,
+          "per_task_sr": [
+            0.7333333333333333,
+            0.26666666666666666,
+            0.4,
+            0.6,
+            0.2,
+            0.5333333333333333,
+            0.5333333333333333,
+            0.6
+          ],
+          "per_task_route": [
+            0.8666666666666667,
+            1.0,
+            0.9333333333333333,
+            1.0,
+            0.9333333333333333,
+            0.8,
+            1.0,
+            0.9333333333333333
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "coarse_idx": 0,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.0,
+            "fine_idx": 0,
+            "fine_expanded": true,
+            "fine_max_sim": 0.0,
+            "total_coarse": 1,
+            "total_fine": 1,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "coarse_idx": 1,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.8996269702911377,
+            "fine_idx": 1,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8161260485649109,
+            "total_coarse": 2,
+            "total_fine": 2,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "coarse_idx": 2,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.967494547367096,
+            "fine_idx": 2,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8220064640045166,
+            "total_coarse": 3,
+            "total_fine": 3,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "coarse_idx": 3,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9835684895515442,
+            "fine_idx": 3,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8664500713348389,
+            "total_coarse": 4,
+            "total_fine": 4,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "coarse_idx": 4,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9469914436340332,
+            "fine_idx": 4,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8177257776260376,
+            "total_coarse": 5,
+            "total_fine": 5,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "coarse_idx": 5,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9937018156051636,
+            "fine_idx": 5,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8583862781524658,
+            "total_coarse": 6,
+            "total_fine": 6,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "coarse_idx": 6,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9760854244232178,
+            "fine_idx": 6,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8397226333618164,
+            "total_coarse": 7,
+            "total_fine": 7,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "coarse_idx": 7,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.9718843698501587,
+            "fine_idx": 7,
+            "fine_expanded": true,
+            "fine_max_sim": 0.8627713918685913,
+            "total_coarse": 8,
+            "total_fine": 8,
+            "would_expand_fine_at_096": true
+          }
+        ],
+        "alpha_stats": {
+          "coarse_alphas": [
+            0.7998,
+            0.8722,
+            0.8803,
+            0.8762,
+            0.8886,
+            0.8873,
+            0.8895,
+            0.8929
+          ],
+          "fine_alphas": [
+            0.2755,
+            0.3523,
+            0.4037,
+            0.3646,
+            0.3482,
+            0.4037,
+            0.4006,
+            0.4293
+          ]
+        },
+        "snapback_telemetry": {
+          "clean_id": {
+            "ep_delta_z_star_mean": 0.3508986377647746,
+            "ep_delta_z_star_max": 0.49837424978613853,
+            "coarse_delta_z_star_mean": 0.6168117848056125,
+            "fine_delta_z_star_mean": 0.09400872988259884,
+            "raw_pull_norm_mean": 0.5228947831227209,
+            "raw_pull_norm_max": 0.766163170337677,
+            "gate_act_mean": 0.8891119686173428,
+            "pre_snap_buf_abs_mean": 0.20347121397142465,
+            "pre_snap_buf_abs_max": 0.35077372193336487,
+            "pre_snap_buf_l2_max": 0.8780626058578491,
+            "post_snap_buf_abs_max": 0.0
+          },
+          "ood_severe": {
+            "ep_delta_z_star_mean": 0.3514766149419668,
+            "ep_delta_z_star_max": 0.5124369487166405,
+            "coarse_delta_z_star_mean": 0.6144213045846572,
+            "fine_delta_z_star_mean": 0.10256366080397139,
+            "raw_pull_norm_mean": 0.552190272709547,
+            "raw_pull_norm_max": 0.7942669987678528,
+            "gate_act_mean": 0.8571896371448562,
+            "pre_snap_buf_abs_mean": 0.20054910082184818,
+            "pre_snap_buf_abs_max": 0.35784029960632324,
+            "pre_snap_buf_l2_max": 0.8847640156745911,
+            "post_snap_buf_abs_max": 0.0
+          }
+        }
+      },
+      "arm4_frozen_mlp_multimodal": {
+        "arm_key": "arm4_frozen_mlp_multimodal",
+        "title": "[Arm 4] Matched Frozen MLP (Multimodal)",
+        "seed": 2026,
+        "total_params": 5249288,
+        "train_seconds_total": 78.818361200043,
+        "R": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.8999999761581421,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            1.0,
+            0.8666666746139526,
+            0.6666666865348816,
+            1.0,
+            1.0,
+            0.8666666746139526,
+            0.9333333373069763,
+            0.8666666746139526
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.9416666666666667,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            1.0,
+            1.0,
+            0.8,
+            1.0,
+            1.0,
+            0.9333333333333333,
+            1.0,
+            0.8
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.2916666666666667,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.3333333333333333,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.7333333333333333,
+            0.8,
+            0.4666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "slot_idx": 0,
+            "expanded": true,
+            "max_sim": 0.0,
+            "would_expand_at_096": true,
+            "total_slots": 1
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "slot_idx": 1,
+            "expanded": true,
+            "max_sim": 0.5325741171836853,
+            "would_expand_at_096": true,
+            "total_slots": 2
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "slot_idx": 2,
+            "expanded": true,
+            "max_sim": 0.5806899070739746,
+            "would_expand_at_096": true,
+            "total_slots": 3
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "slot_idx": 3,
+            "expanded": true,
+            "max_sim": 0.5939333438873291,
+            "would_expand_at_096": true,
+            "total_slots": 4
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "slot_idx": 4,
+            "expanded": true,
+            "max_sim": 0.7203882932662964,
+            "would_expand_at_096": true,
+            "total_slots": 5
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "slot_idx": 5,
+            "expanded": true,
+            "max_sim": 0.7679805159568787,
+            "would_expand_at_096": true,
+            "total_slots": 6
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "slot_idx": 6,
+            "expanded": true,
+            "max_sim": 0.6064609289169312,
+            "would_expand_at_096": true,
+            "total_slots": 7
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "slot_idx": 7,
+            "expanded": true,
+            "max_sim": 0.7216682434082031,
+            "would_expand_at_096": true,
+            "total_slots": 8
+          }
+        ],
+        "alpha_stats": null,
+        "paraphrased_instructions": {
+          "avg_sr": 0.675,
+          "avg_route_acc": 0.7083333333333333,
+          "per_task_sr": [
+            0.6666666666666666,
+            0.7333333333333333,
+            0.3333333333333333,
+            0.9333333333333333,
+            0.6666666666666666,
+            0.3333333333333333,
+            0.8,
+            0.9333333333333333
+          ],
+          "per_task_route": [
+            0.6666666666666666,
+            1.0,
+            0.3333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.6666666666666666,
+            0.3333333333333333,
+            1.0
+          ]
+        }
+      },
+      "arm5_dtra_rigid_alpha0": {
+        "arm_key": "arm5_dtra_rigid_alpha0",
+        "title": "[Arm 5] DTRA Rigid (Multimodal, alpha=0)",
+        "seed": 2026,
+        "total_params": 5245536,
+        "train_seconds_total": 341.1867479000648,
+        "R": [
+          [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579,
+            0.6000000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053,
+            0.7333333492279053
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6000000238418579,
+            0.6000000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6666666865348816
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.7666666507720947,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.9333333373069763,
+            0.6000000238418579,
+            0.6000000238418579,
+            1.0,
+            0.7333333492279053,
+            1.0,
+            0.6000000238418579,
+            0.6666666865348816
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.7999999999999999,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            1.0,
+            0.5333333333333333,
+            0.5333333333333333,
+            1.0,
+            0.9333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.7333333333333333
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.5666666666666667,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.4666666666666667,
+            0.4666666666666667,
+            0.26666666666666666,
+            0.6666666666666666,
+            0.5333333333333333,
+            0.9333333333333333,
+            0.7333333333333333,
+            0.4666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "coarse_idx": 0,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.0,
+            "fine_idx": 0,
+            "fine_expanded": true,
+            "fine_max_sim": 0.0,
+            "total_coarse": 1,
+            "total_fine": 1,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "coarse_idx": 1,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.532572865486145,
+            "fine_idx": 1,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4959545433521271,
+            "total_coarse": 2,
+            "total_fine": 2,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "coarse_idx": 2,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5338859558105469,
+            "fine_idx": 2,
+            "fine_expanded": true,
+            "fine_max_sim": 0.46008676290512085,
+            "total_coarse": 3,
+            "total_fine": 3,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "coarse_idx": 3,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5460556745529175,
+            "fine_idx": 3,
+            "fine_expanded": true,
+            "fine_max_sim": 0.47969871759414673,
+            "total_coarse": 4,
+            "total_fine": 4,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "coarse_idx": 4,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6633833646774292,
+            "fine_idx": 4,
+            "fine_expanded": true,
+            "fine_max_sim": 0.54982590675354,
+            "total_coarse": 5,
+            "total_fine": 5,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "coarse_idx": 5,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6288414001464844,
+            "fine_idx": 5,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5768660306930542,
+            "total_coarse": 6,
+            "total_fine": 6,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "coarse_idx": 6,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5000520348548889,
+            "fine_idx": 6,
+            "fine_expanded": true,
+            "fine_max_sim": 0.44558185338974,
+            "total_coarse": 7,
+            "total_fine": 7,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "coarse_idx": 7,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.7216675281524658,
+            "fine_idx": 7,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5553760528564453,
+            "total_coarse": 8,
+            "total_fine": 8,
+            "would_expand_fine_at_096": true
+          }
+        ],
+        "alpha_stats": {
+          "coarse_alphas": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fine_alphas": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "paraphrased_instructions": {
+          "avg_sr": 0.3666666666666667,
+          "avg_route_acc": 0.65,
+          "per_task_sr": [
+            0.8666666666666667,
+            0.4,
+            0.2,
+            0.5333333333333333,
+            0.0,
+            0.3333333333333333,
+            0.13333333333333333,
+            0.4666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            0.8666666666666667,
+            0.3333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.6666666666666666
+          ]
+        },
+        "snapback_telemetry": {
+          "clean_id": {
+            "ep_delta_z_star_mean": 0.0,
+            "ep_delta_z_star_max": 0.0,
+            "coarse_delta_z_star_mean": 0.0,
+            "fine_delta_z_star_mean": 0.0,
+            "raw_pull_norm_mean": 0.16319495401152048,
+            "raw_pull_norm_max": 0.2975142002105713,
+            "gate_act_mean": 0.8264457716373739,
+            "pre_snap_buf_abs_mean": 0.0,
+            "pre_snap_buf_abs_max": 0.0,
+            "pre_snap_buf_l2_max": 0.0,
+            "post_snap_buf_abs_max": 0.0
+          },
+          "ood_severe": {
+            "ep_delta_z_star_mean": 0.0,
+            "ep_delta_z_star_max": 0.0,
+            "coarse_delta_z_star_mean": 0.0,
+            "fine_delta_z_star_mean": 0.0,
+            "raw_pull_norm_mean": 0.18387854647246715,
+            "raw_pull_norm_max": 0.34452876448631287,
+            "gate_act_mean": 0.8158032667519424,
+            "pre_snap_buf_abs_mean": 0.0,
+            "pre_snap_buf_abs_max": 0.0,
+            "pre_snap_buf_l2_max": 0.0,
+            "post_snap_buf_abs_max": 0.0
+          }
+        }
+      },
+      "arm6_dtra_full_multimodal": {
+        "arm_key": "arm6_dtra_full_multimodal",
+        "title": "[Arm 6] DTRA Full (Multimodal, alpha=learned)",
+        "seed": 2026,
+        "total_params": 5245536,
+        "train_seconds_total": 357.71853639997425,
+        "R": [
+          [
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763,
+            0.9333333373069763
+          ],
+          [
+            0.0,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          [
+            0.0,
+            0.0,
+            0.4000000059604645,
+            0.4000000059604645,
+            0.4000000059604645,
+            0.4000000059604645,
+            0.4000000059604645,
+            0.4000000059604645
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526,
+            0.8666666746139526
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816,
+            0.46666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.6666666865348816,
+            0.6666666865348816
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.46666666865348816
+          ]
+        ],
+        "R_route": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "clean_id": {
+          "avg_final_f1": 0.6416666507720947,
+          "avg_forgetting": 0.0,
+          "avg_bwt": 0.0,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.9333333373069763,
+            0.3333333432674408,
+            0.4000000059604645,
+            0.8666666746139526,
+            0.46666666865348816,
+            1.0,
+            0.6666666865348816,
+            0.46666666865348816
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "official_test_split": {
+          "avg_sr": 0.675,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.8666666666666667,
+            0.26666666666666666,
+            0.4,
+            0.9333333333333333,
+            0.4666666666666667,
+            1.0,
+            0.6666666666666666,
+            0.8
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "ood_severe_sigma020": {
+          "avg_sr": 0.47500000000000003,
+          "avg_route_acc": 1.0,
+          "per_task_sr": [
+            0.5333333333333333,
+            0.13333333333333333,
+            0.4,
+            0.5333333333333333,
+            0.4,
+            0.7333333333333333,
+            0.6,
+            0.4666666666666667
+          ],
+          "per_task_route": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expansion_logs": [
+          {
+            "step": 0,
+            "task": "button-press-v3",
+            "coarse_idx": 0,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.0,
+            "fine_idx": 0,
+            "fine_expanded": true,
+            "fine_max_sim": 0.0,
+            "total_coarse": 1,
+            "total_fine": 1,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 1,
+            "task": "door-open-v3",
+            "coarse_idx": 1,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5325738191604614,
+            "fine_idx": 1,
+            "fine_expanded": true,
+            "fine_max_sim": 0.4585287570953369,
+            "total_coarse": 2,
+            "total_fine": 2,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 2,
+            "task": "window-open-v3",
+            "coarse_idx": 2,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5337993502616882,
+            "fine_idx": 2,
+            "fine_expanded": true,
+            "fine_max_sim": 0.46957889199256897,
+            "total_coarse": 3,
+            "total_fine": 3,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 3,
+            "task": "faucet-open-v3",
+            "coarse_idx": 3,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5460532903671265,
+            "fine_idx": 3,
+            "fine_expanded": true,
+            "fine_max_sim": 0.46372589468955994,
+            "total_coarse": 4,
+            "total_fine": 4,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 4,
+            "task": "drawer-open-v3",
+            "coarse_idx": 4,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6632990837097168,
+            "fine_idx": 4,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5422340631484985,
+            "total_coarse": 5,
+            "total_fine": 5,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 5,
+            "task": "drawer-close-v3",
+            "coarse_idx": 5,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.6269554495811462,
+            "fine_idx": 5,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5866761803627014,
+            "total_coarse": 6,
+            "total_fine": 6,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 6,
+            "task": "handle-press-v3",
+            "coarse_idx": 6,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.5000529885292053,
+            "fine_idx": 6,
+            "fine_expanded": true,
+            "fine_max_sim": 0.42545607686042786,
+            "total_coarse": 7,
+            "total_fine": 7,
+            "would_expand_fine_at_096": true
+          },
+          {
+            "step": 7,
+            "task": "coffee-button-v3",
+            "coarse_idx": 7,
+            "coarse_expanded": true,
+            "coarse_max_sim": 0.7216650247573853,
+            "fine_idx": 7,
+            "fine_expanded": true,
+            "fine_max_sim": 0.5496937036514282,
+            "total_coarse": 8,
+            "total_fine": 8,
+            "would_expand_fine_at_096": true
+          }
+        ],
+        "alpha_stats": {
+          "coarse_alphas": [
+            0.7909,
+            0.7909,
+            0.8185,
+            0.8209,
+            0.8327,
+            0.8581,
+            0.7931,
+            0.87
+          ],
+          "fine_alphas": [
+            0.2649,
+            0.2737,
+            0.2957,
+            0.3218,
+            0.2763,
+            0.2996,
+            0.2586,
+            0.2564
+          ]
+        },
+        "paraphrased_instructions": {
+          "avg_sr": 0.21666666666666667,
+          "avg_route_acc": 0.6083333333333333,
+          "per_task_sr": [
+            0.4666666666666667,
+            0.0,
+            0.0,
+            0.5333333333333333,
+            0.06666666666666667,
+            0.0,
+            0.26666666666666666,
+            0.4
+          ],
+          "per_task_route": [
+            0.6666666666666666,
+            0.8666666666666667,
+            0.3333333333333333,
+            1.0,
+            0.6666666666666666,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.6666666666666666
+          ]
+        },
+        "snapback_telemetry": {
+          "clean_id": {
+            "ep_delta_z_star_mean": 0.17541111377906055,
+            "ep_delta_z_star_max": 0.3483274541795254,
+            "coarse_delta_z_star_mean": 0.3117914998870893,
+            "fine_delta_z_star_mean": 0.04448372131903379,
+            "raw_pull_norm_mean": 0.31262072810489006,
+            "raw_pull_norm_max": 0.5632555335760117,
+            "gate_act_mean": 0.85189133954002,
+            "pre_snap_buf_abs_mean": 0.09933511399280144,
+            "pre_snap_buf_abs_max": 0.26597267389297485,
+            "pre_snap_buf_l2_max": 0.620481550693512,
+            "post_snap_buf_abs_max": 0.0
+          },
+          "ood_severe": {
+            "ep_delta_z_star_mean": 0.18277979092500904,
+            "ep_delta_z_star_max": 0.35164933651685715,
+            "coarse_delta_z_star_mean": 0.3194520795796201,
+            "fine_delta_z_star_mean": 0.05274412211059625,
+            "raw_pull_norm_mean": 0.3384778820859641,
+            "raw_pull_norm_max": 0.567187562584877,
+            "gate_act_mean": 0.8417128728462993,
+            "pre_snap_buf_abs_mean": 0.10313811669333137,
+            "pre_snap_buf_abs_max": 0.27041691541671753,
+            "pre_snap_buf_l2_max": 0.6284239888191223,
+            "post_snap_buf_abs_max": 0.0
+          }
+        }
+      }
+    }
+  },
+  "aggregated": {
+    "arm1_abk_dog_vision": {
+      "title": "[Arm 1] ABK-VLA (15x15 DoG, Vision-Only)",
+      "total_params": 5253943,
+      "clean_avg_sr_mean": 0.8277778029441833,
+      "clean_avg_sr_std": 0.025760054661459118,
+      "clean_fr_mean": 0.0,
+      "clean_fr_std": 0.0,
+      "clean_bwt_mean": 0.0,
+      "clean_bwt_std": 0.0,
+      "clean_route_mean": 0.9972222223877907,
+      "test_avg_sr_mean": 0.8388888888888889,
+      "test_avg_sr_std": 0.023895347964007302,
+      "ood_severe_sr_mean": 0.022222222222222223,
+      "ood_severe_sr_std": 0.010393492741038726,
+      "ood_severe_route_mean": 0.34722222222222227,
+      "paraphrase_sr_mean": null,
+      "paraphrase_sr_std": null,
+      "paraphrase_route_mean": null,
+      "cpu_latency": {
+        "K=1": {
+          "trunk_key_ms": 3.407862500171177,
+          "key_search_ok_ms": 0.07109500002115965,
+          "active_exec_ms": 0.2730824999161996,
+          "e2e_chunk_ms": 3.7930225000309292
+        },
+        "K=8": {
+          "trunk_key_ms": 3.3966650000365917,
+          "key_search_ok_ms": 0.08547500001441222,
+          "active_exec_ms": 0.8251949999248609,
+          "e2e_chunk_ms": 4.467279999880702
+        }
+      }
+    },
+    "arm2_frozen_mlp_vision": {
+      "title": "[Arm 2] Matched Frozen MLP (Vision-Only, lang=0)",
+      "total_params": 5249288,
+      "clean_avg_sr_mean": 0.4583333333333333,
+      "clean_avg_sr_std": 0.035355333439747574,
+      "clean_fr_mean": 0.2000000026254427,
+      "clean_fr_std": 0.007776157015575583,
+      "clean_bwt_mean": -0.19682539964006063,
+      "clean_bwt_std": 0.011878276331043488,
+      "clean_route_mean": 0.991666667163372,
+      "test_avg_sr_mean": 0.44722222222222224,
+      "test_avg_sr_std": 0.020786985482077427,
+      "ood_severe_sr_mean": 0.25,
+      "ood_severe_sr_std": 0.02965855070008699,
+      "ood_severe_route_mean": 0.9444444444444445,
+      "paraphrase_sr_mean": null,
+      "paraphrase_sr_std": null,
+      "paraphrase_route_mean": null,
+      "cpu_latency": {
+        "K=1": {
+          "trunk_key_ms": 2.4516362500435207,
+          "key_search_ok_ms": 0.03152124991174787,
+          "active_exec_ms": 0.20649625002988614,
+          "e2e_chunk_ms": 2.7799537499959115
+        },
+        "K=8": {
+          "trunk_key_ms": 2.4992962502437877,
+          "key_search_ok_ms": 0.03225624968763441,
+          "active_exec_ms": 0.21070250004413538,
+          "e2e_chunk_ms": 2.762214999893331
+        }
+      }
+    },
+    "arm3_dtra_full_vision": {
+      "title": "[Arm 3] DTRA Full (Vision-Only, lang=0)",
+      "total_params": 5245536,
+      "clean_avg_sr_mean": 0.7583333253860474,
+      "clean_avg_sr_std": 0.05137011604679843,
+      "clean_fr_mean": 0.0,
+      "clean_fr_std": 0.0,
+      "clean_bwt_mean": 0.0,
+      "clean_bwt_std": 0.0,
+      "clean_route_mean": 0.991666667163372,
+      "test_avg_sr_mean": 0.7666666666666666,
+      "test_avg_sr_std": 0.058134582045712105,
+      "ood_severe_sr_mean": 0.525,
+      "ood_severe_sr_std": 0.10296529440472575,
+      "ood_severe_route_mean": 0.9499999999999998,
+      "paraphrase_sr_mean": null,
+      "paraphrase_sr_std": null,
+      "paraphrase_route_mean": null,
+      "cpu_latency": {
+        "K=1": {
+          "trunk_key_ms": 2.433394999752636,
+          "key_search_ok_ms": 0.20766500019817613,
+          "active_exec_ms": 1.9692800000484567,
+          "e2e_chunk_ms": 4.871341249963734
+        },
+        "K=8": {
+          "trunk_key_ms": 2.4096687498968095,
+          "key_search_ok_ms": 0.20150374984950759,
+          "active_exec_ms": 1.8731675001617987,
+          "e2e_chunk_ms": 4.955771250024554
+        }
+      },
+      "snapback_telemetry_mean": {
+        "clean_id": {
+          "ep_delta_z_star_mean": 0.349728763439116,
+          "ep_delta_z_star_max": 0.5009149027367433,
+          "coarse_delta_z_star_mean": 0.61896648980387,
+          "fine_delta_z_star_mean": 0.0896127061274259,
+          "raw_pull_norm_mean": 0.5148079953206072,
+          "raw_pull_norm_max": 0.7480422655741373,
+          "gate_act_mean": 0.8901640189304313,
+          "pre_snap_buf_abs_mean": 0.19334463134940516,
+          "pre_snap_buf_abs_max": 0.3164100746313731,
+          "pre_snap_buf_l2_max": 0.8734533985455831,
+          "post_snap_buf_abs_max": 0.0
+        },
+        "ood_severe": {
+          "ep_delta_z_star_mean": 0.3497509273458204,
+          "ep_delta_z_star_max": 0.512351755052805,
+          "coarse_delta_z_star_mean": 0.6135515771782782,
+          "fine_delta_z_star_mean": 0.09884950027009036,
+          "raw_pull_norm_mean": 0.5428489886103604,
+          "raw_pull_norm_max": 0.7731248140335083,
+          "gate_act_mean": 0.858593674424102,
+          "pre_snap_buf_abs_mean": 0.1923147049020587,
+          "pre_snap_buf_abs_max": 0.31716002027193707,
+          "pre_snap_buf_l2_max": 0.8866848349571228,
+          "post_snap_buf_abs_max": 0.0
+        }
+      }
+    },
+    "arm4_frozen_mlp_multimodal": {
+      "title": "[Arm 4] Matched Frozen MLP (Multimodal)",
+      "total_params": 5249288,
+      "clean_avg_sr_mean": 0.855555534362793,
+      "clean_avg_sr_std": 0.03142696617954218,
+      "clean_fr_mean": 0.0,
+      "clean_fr_std": 0.0,
+      "clean_bwt_mean": 0.0,
+      "clean_bwt_std": 0.0,
+      "clean_route_mean": 1.0,
+      "test_avg_sr_mean": 0.875,
+      "test_avg_sr_std": 0.04762896722078402,
+      "ood_severe_sr_mean": 0.23611111111111108,
+      "ood_severe_sr_std": 0.039283710065919325,
+      "ood_severe_route_mean": 1.0,
+      "paraphrase_sr_mean": 0.611111111111111,
+      "paraphrase_sr_std": 0.04530418452861141,
+      "paraphrase_route_mean": 0.7083333333333334,
+      "cpu_latency": {
+        "K=1": {
+          "trunk_key_ms": 2.4558074997912627,
+          "key_search_ok_ms": 0.032079999800771475,
+          "active_exec_ms": 0.21081625018268824,
+          "e2e_chunk_ms": 2.760889999990468
+        },
+        "K=8": {
+          "trunk_key_ms": 2.4069050003163284,
+          "key_search_ok_ms": 0.032541250038775615,
+          "active_exec_ms": 0.19820374982373323,
+          "e2e_chunk_ms": 2.762213749883813
+        }
+      }
+    },
+    "arm5_dtra_rigid_alpha0": {
+      "title": "[Arm 5] DTRA Rigid (Multimodal, alpha=0)",
+      "total_params": 5245536,
+      "clean_avg_sr_mean": 0.7777777910232544,
+      "clean_avg_sr_std": 0.03491614569275737,
+      "clean_fr_mean": 0.0,
+      "clean_fr_std": 0.0,
+      "clean_bwt_mean": 0.0,
+      "clean_bwt_std": 0.0,
+      "clean_route_mean": 1.0,
+      "test_avg_sr_mean": 0.8027777777777777,
+      "test_avg_sr_std": 0.02389534796400735,
+      "ood_severe_sr_mean": 0.5361111111111111,
+      "ood_severe_sr_std": 0.06815468970214053,
+      "ood_severe_route_mean": 1.0,
+      "paraphrase_sr_mean": 0.26666666666666666,
+      "paraphrase_sr_std": 0.07071067811865477,
+      "paraphrase_route_mean": 0.65,
+      "cpu_latency": {
+        "K=1": {
+          "trunk_key_ms": 2.458021249913145,
+          "key_search_ok_ms": 0.20030999985465314,
+          "active_exec_ms": 1.862832500046352,
+          "e2e_chunk_ms": 4.912972499732859
+        },
+        "K=8": {
+          "trunk_key_ms": 2.432020000196644,
+          "key_search_ok_ms": 0.2088812500005588,
+          "active_exec_ms": 1.8722362499829615,
+          "e2e_chunk_ms": 5.017494999992778
+        }
+      },
+      "snapback_telemetry_mean": {
+        "clean_id": {
+          "ep_delta_z_star_mean": 0.0,
+          "ep_delta_z_star_max": 0.0,
+          "coarse_delta_z_star_mean": 0.0,
+          "fine_delta_z_star_mean": 0.0,
+          "raw_pull_norm_mean": 0.16425072001881866,
+          "raw_pull_norm_max": 0.29162049293518066,
+          "gate_act_mean": 0.8242278297637599,
+          "pre_snap_buf_abs_mean": 0.0,
+          "pre_snap_buf_abs_max": 0.0,
+          "pre_snap_buf_l2_max": 0.0,
+          "post_snap_buf_abs_max": 0.0
+        },
+        "ood_severe": {
+          "ep_delta_z_star_mean": 0.0,
+          "ep_delta_z_star_max": 0.0,
+          "coarse_delta_z_star_mean": 0.0,
+          "fine_delta_z_star_mean": 0.0,
+          "raw_pull_norm_mean": 0.18499703409689852,
+          "raw_pull_norm_max": 0.3381934811671575,
+          "gate_act_mean": 0.8142538753181215,
+          "pre_snap_buf_abs_mean": 0.0,
+          "pre_snap_buf_abs_max": 0.0,
+          "pre_snap_buf_l2_max": 0.0,
+          "post_snap_buf_abs_max": 0.0
+        }
+      }
+    },
+    "arm6_dtra_full_multimodal": {
+      "title": "[Arm 6] DTRA Full (Multimodal, alpha=learned)",
+      "total_params": 5245536,
+      "clean_avg_sr_mean": 0.7222222288449606,
+      "clean_avg_sr_std": 0.06815469677411673,
+      "clean_fr_mean": 0.0,
+      "clean_fr_std": 0.0,
+      "clean_bwt_mean": 0.0,
+      "clean_bwt_std": 0.0,
+      "clean_route_mean": 1.0,
+      "test_avg_sr_mean": 0.75,
+      "test_avg_sr_std": 0.06490734136415512,
+      "ood_severe_sr_mean": 0.513888888888889,
+      "ood_severe_sr_std": 0.04374448818895448,
+      "ood_severe_route_mean": 1.0,
+      "paraphrase_sr_mean": 0.2611111111111111,
+      "paraphrase_sr_std": 0.0415739709641549,
+      "paraphrase_route_mean": 0.6361111111111111,
+      "cpu_latency": {
+        "K=1": {
+          "trunk_key_ms": 2.4430825000308687,
+          "key_search_ok_ms": 0.20891375024802983,
+          "active_exec_ms": 1.8656150001334026,
+          "e2e_chunk_ms": 4.885743750128313
+        },
+        "K=8": {
+          "trunk_key_ms": 2.4675837499671616,
+          "key_search_ok_ms": 0.21305249974830076,
+          "active_exec_ms": 1.8659025001397822,
+          "e2e_chunk_ms": 4.93164874969807
+        }
+      },
+      "snapback_telemetry_mean": {
+        "clean_id": {
+          "ep_delta_z_star_mean": 0.16835534370175465,
+          "ep_delta_z_star_max": 0.3313806112855673,
+          "coarse_delta_z_star_mean": 0.2993170686480869,
+          "fine_delta_z_star_mean": 0.04228811170153011,
+          "raw_pull_norm_mean": 0.29924974132805815,
+          "raw_pull_norm_max": 0.5151128321886063,
+          "gate_act_mean": 0.8477959779707432,
+          "pre_snap_buf_abs_mean": 0.0992623568369197,
+          "pre_snap_buf_abs_max": 0.25320153931776684,
+          "pre_snap_buf_l2_max": 0.594949205716451,
+          "post_snap_buf_abs_max": 0.0
+        },
+        "ood_severe": {
+          "ep_delta_z_star_mean": 0.1742286159586939,
+          "ep_delta_z_star_max": 0.3376633475224177,
+          "coarse_delta_z_star_mean": 0.3051533303055467,
+          "fine_delta_z_star_mean": 0.049240649227517024,
+          "raw_pull_norm_mean": 0.32033407446830703,
+          "raw_pull_norm_max": 0.5324151068925858,
+          "gate_act_mean": 0.8399898331148988,
+          "pre_snap_buf_abs_mean": 0.10203916197949814,
+          "pre_snap_buf_abs_max": 0.25956691304842633,
+          "pre_snap_buf_l2_max": 0.6020772457122803,
+          "post_snap_buf_abs_max": 0.0
+        }
+      }
+    }
+  }
+}

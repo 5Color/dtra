@@ -37,13 +37,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(line_buffering=True)
 
-from tools.bspline_core import BSplineDecoder
+from dtra.core.bspline_core import BSplineDecoder
 
 
 def set_seed(seed: int = 42) -> None:
@@ -1463,7 +1463,7 @@ def main() -> None:
         f"Incompatible={myelin_stats['incompat_boost']:.1f} (Zero Misfire)"
     )
 
-    out_img = PROJECT_ROOT / "outputs" / "dtra_step1_dynamics_clean.png"
+    out_img = PROJECT_ROOT / "outputs" / "figures" / "dtra_step1_dynamics_clean.png"
     saved_path = render_four_panel_visualization(
         model=model,
         sample_query=test_query,
@@ -1476,7 +1476,7 @@ def main() -> None:
     )
     print(f"\n[SAVED] 4-Panel Close-up Visualization -> {saved_path}")
     if args.ko:
-        out_img_ko = PROJECT_ROOT / "outputs" / "dtra_step1_dynamics_clean_ko.png"
+        out_img_ko = PROJECT_ROOT / "outputs" / "figures" / "dtra_step1_dynamics_clean_ko.png"
         saved_ko = render_four_panel_visualization(
             model=model,
             sample_query=test_query,

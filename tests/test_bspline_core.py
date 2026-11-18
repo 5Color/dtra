@@ -10,9 +10,15 @@ B-Spline 핵심 모듈 검증 단위 테스트:
 import unittest
 import numpy as np
 import scipy.interpolate as interp
+import sys
+from pathlib import Path
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+for _sp in (str(_REPO_ROOT), str(_REPO_ROOT / "v1_drawing_vla" / "src"), str(_REPO_ROOT / "v1_drawing_vla" / "handvsai")):
+    if _sp not in sys.path:
+        sys.path.insert(0, _sp)
 import torch
 
-from tools.bspline_core import (
+from dtra.core.bspline_core import (
     build_clamped_knot_vector,
     parameterize_points,
     build_design_matrix,

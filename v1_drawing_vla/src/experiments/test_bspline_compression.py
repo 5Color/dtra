@@ -38,9 +38,10 @@ import scipy.interpolate as interp
 import scipy.optimize as opt
 
 # 프로젝트 루트 경로 등록
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+for _p in (str(PROJECT_ROOT), str(PROJECT_ROOT / "v1_drawing_vla" / "src")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 try:
     from train.dataset import pen_down_runs

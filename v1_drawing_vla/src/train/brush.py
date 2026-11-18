@@ -173,7 +173,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="사람 시연을 붓 렌더러로 다시 그려 보기")
     ap.add_argument("--demo", required=True, help="data/raw/demo_*.json")
     ap.add_argument("--size", type=int, default=512)
-    ap.add_argument("--out", default=str(Path(__file__).resolve().parents[1] / "outputs" / "brush_demo.png"))
+    ap.add_argument("--out", default=str(Path(__file__).resolve().parents[3] / "outputs" / "v1_archive" / "brush_demo.png"))
     args = ap.parse_args()
     d = json.loads(Path(args.demo).read_text(encoding="utf-8"))
     st = d["strokes"]

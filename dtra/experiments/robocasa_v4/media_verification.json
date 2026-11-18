@@ -1,0 +1,19 @@
+{
+  "mp4": {
+    "width": 740,
+    "height": 390,
+    "fps": 20.0,
+    "frames": 1058,
+    "duration_sec": 52.9
+  },
+  "gif": {
+    "frames": 1058,
+    "duration_ms": 52900,
+    "size": [
+      740,
+      390
+    ]
+  },
+  "all_4_atomic_demo_episodes_solved": true,
+  "composite_episode_cap": 180
+}

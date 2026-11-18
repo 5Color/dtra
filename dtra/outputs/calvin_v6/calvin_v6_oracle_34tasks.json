@@ -1,0 +1,26 @@
+{
+  "mode": "oracle",
+  "num_tasks": 34,
+  "single_task_mean_sr": 46.47,
+  "route_acc": 97.65,
+  "parameter_drift": 0.0,
+  "closed_loop_latency_ms": 8.4917,
+  "Ablation_HardSwitch_NoBridge": {
+    "avg_5step_chain_len": 1.9,
+    "chain_5step_full_sr": 10.0,
+    "mean_boundary_jerk": 0.0807,
+    "myelinated_edges": 0,
+    "backtrack_recoveries": 0,
+    "ood_spawn_events": 4
+  },
+  "DTRA_V6_System1_Bridge_System2_Organ": {
+    "avg_5step_chain_len": 2.53,
+    "chain_5step_full_sr": 16.67,
+    "mean_boundary_jerk": 0.0684,
+    "myelinated_edges": 25,
+    "backtrack_recoveries": 30,
+    "ood_spawn_events": 13
+  },
+  "boundary_jerk_reduction_pct": 15.24,
+  "elapsed_sec": 753.5
+}

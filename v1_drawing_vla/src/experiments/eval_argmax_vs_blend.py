@@ -21,9 +21,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+for _p in (str(PROJECT_ROOT), str(PROJECT_ROOT / "v1_drawing_vla" / "src")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(line_buffering=True)
 
@@ -35,7 +36,7 @@ from experiments.benchmark_autonomous_cl import (
 from experiments.benchmark_three_models import pick_device, safe_savefig
 from train.bspline_policy import AutonomousABKPolicy
 
-OUT_DIR = PROJECT_ROOT / "outputs"
+OUT_DIR = PROJECT_ROOT / "outputs" / "v1_archive"
 
 
 def load_canonical_targets(tasks: List[str]) -> Dict[str, np.ndarray]:

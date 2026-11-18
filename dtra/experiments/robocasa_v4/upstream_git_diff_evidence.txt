@@ -1,0 +1,44 @@
+RoboCasa upstream integrity evidence
+Captured after benchmark and recording completion: 2026-11-18T07:19:56+00:00
+Tracked diff cleanliness and complete porcelain status are reported separately.
+
+Repository: robosuite
+Path: /home/team03/dtra_a6000_lab/robocasa_lab/robosuite
+$ git rev-parse HEAD
+5ce6643f3092639d08f7b0f90ed1c6a84f50552c
+
+$ git remote -v
+origin	https://github.com/ARISE-Initiative/robosuite.git (fetch)
+origin	https://github.com/ARISE-Initiative/robosuite.git (push)
+
+$ git status --porcelain=v1
+(empty)
+$ git diff --no-ext-diff --no-textconv
+(empty)
+$ git diff --cached --no-ext-diff --no-textconv
+(empty)
+WORKTREE_TRACKED_DIFF: CLEAN
+INDEX_TRACKED_DIFF: CLEAN
+
+Repository: robocasa
+Path: /home/team03/dtra_a6000_lab/robocasa_lab/robocasa
+$ git rev-parse HEAD
+425684d332f135f5b30a40b321f52d15a0fe9250
+
+$ git remote -v
+origin	https://github.com/robocasa/robocasa.git (fetch)
+origin	https://github.com/robocasa/robocasa.git (push)
+
+$ git status --porcelain=v1
+?? robocasa/models/assets/README.md
+
+$ git diff --no-ext-diff --no-textconv
+(empty)
+$ git diff --cached --no-ext-diff --no-textconv
+(empty)
+WORKTREE_TRACKED_DIFF: CLEAN
+INDEX_TRACKED_DIFF: CLEAN
+
+RoboCasa untracked asset README preserved as upstream_asset_README.md.
+SHA256: d63365f91a29f39ac89eb7fb42192e31ea7edc3c143e3ecc58340e1b1cd7dfa9
+A completely empty RoboCasa git status is not claimed.

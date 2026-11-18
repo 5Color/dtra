@@ -30,11 +30,12 @@ import numpy as np
 import torch
 from PIL import Image, ImageDraw, ImageFont
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+for _p in (str(PROJECT_ROOT), str(PROJECT_ROOT / "v1_drawing_vla" / "src")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
-from tools.bspline_core import (
+from dtra.core.bspline_core import (
     BSplineDecoder,
     build_clamped_knot_vector,
     reconstruct_bspline_np,
@@ -51,7 +52,7 @@ from train.dataset import (
     render_polyline,
 )
 
-OUT_DIR = PROJECT_ROOT / "outputs"
+OUT_DIR = PROJECT_ROOT / "outputs" / "v1_archive"
 TILE = 384
 SCALE = TILE // OBS_SIZE
 
@@ -159,7 +160,7 @@ class IncrementalCanvas:
 def load_target_image(target_name: str) -> np.ndarray:
     """타겟 도안의 정답 128x128 캔버스 로드."""
     # 1. targets_128.json 탐색
-    targets_json = PROJECT_ROOT / "targets_128.json"
+    targets_json = PROJECT_ROOT / "v1_drawing_vla" / "handvsai" / "targets_128.json"
     if targets_json.exists():
         with open(targets_json, "r", encoding="utf-8") as f:
             d = json.load(f)

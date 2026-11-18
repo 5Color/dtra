@@ -1,0 +1,110 @@
+{
+  "config": {
+    "suite": "libero_goal",
+    "max_tasks": 1,
+    "task_indices": null,
+    "max_demos": null,
+    "stride": 1,
+    "epochs": 35,
+    "batch_size": 128,
+    "lr": 0.0005,
+    "horizon": 16,
+    "num_cp": 8,
+    "exec_steps": 8,
+    "n_eval": 5,
+    "max_rollout_steps": null,
+    "seed": 42,
+    "arms": [
+      "arm_frozen_mlp",
+      "arm_dtra_elastic"
+    ],
+    "fast_eval_endpoints": false,
+    "out_json": "outputs\\libero_t0_sanity.json"
+  },
+  "tasks": [
+    {
+      "idx": 0,
+      "name": "open_the_middle_drawer_of_the_cabinet",
+      "language": "open the middle drawer of the cabinet",
+      "chunks": 6927
+    }
+  ],
+  "arms": {
+    "arm_frozen_mlp": {
+      "mean_final_sr": 1.0,
+      "forgetting_rate": 0.0,
+      "bwt": 0.0,
+      "mean_final_route_acc": 1.0,
+      "max_vram_mb": 1265.7,
+      "mean_samples_per_sec": 9044.7,
+      "R_sr": [
+        [
+          1.0
+        ]
+      ],
+      "R_route": [
+        [
+          1.0
+        ]
+      ],
+      "train_logs": [
+        {
+          "train_time_s": 26.81,
+          "samples_per_sec": 9044.7,
+          "peak_vram_mb": 1265.7,
+          "final_loss": 0.03538,
+          "trainable_params": 397584
+        }
+      ],
+      "final_eval": {
+        "T0": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.0,
+          "mean_delta_z": 0.0,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 120.0,
+          "eval_time_s": 17.88
+        }
+      }
+    },
+    "arm_dtra_elastic": {
+      "mean_final_sr": 1.0,
+      "forgetting_rate": 0.0,
+      "bwt": 0.0,
+      "mean_final_route_acc": 1.0,
+      "max_vram_mb": 1283.0,
+      "mean_samples_per_sec": 6089.8,
+      "R_sr": [
+        [
+          1.0
+        ]
+      ],
+      "R_route": [
+        [
+          1.0
+        ]
+      ],
+      "train_logs": [
+        {
+          "train_time_s": 39.81,
+          "samples_per_sec": 6089.8,
+          "peak_vram_mb": 1283.0,
+          "final_loss": 0.03126,
+          "trainable_params": 424332
+        }
+      ],
+      "final_eval": {
+        "T0": {
+          "sr": 1.0,
+          "route_acc": 1.0,
+          "mean_alpha": 0.4621487557888031,
+          "mean_delta_z": 0.05787716108636978,
+          "post_snap_norm": 0.0,
+          "mean_success_steps": 120.4,
+          "eval_time_s": 15.97
+        }
+      }
+    }
+  }
+}

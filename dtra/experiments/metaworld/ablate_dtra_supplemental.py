@@ -27,13 +27,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+V1_SRC_DIR = PROJECT_ROOT / "v1_drawing_vla" / "src"
+for _p in (str(PROJECT_ROOT), str(V1_SRC_DIR)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(line_buffering=True)
 
-from experiments.ablate_dtra_scientific import (
+from dtra.experiments.metaworld.ablate_dtra_scientific import (
     ControlledDTRAPolicy,
     HybridVisualKeyExtractor,
     MatchedABK3DPolicy,
@@ -43,8 +45,8 @@ from experiments.ablate_dtra_scientific import (
     eval_arm_task,
     train_arm_task_fast,
 )
-from experiments.benchmark_autonomous_cl import calc_cl_metrics, set_seed
-from experiments.benchmark_dtra_3d_metaworld import (
+from v1_drawing_vla.src.experiments.benchmark_autonomous_cl import calc_cl_metrics, set_seed
+from dtra.experiments.metaworld.benchmark_dtra_3d_metaworld import (
     LightweightTextEncoder,
     OUT_DIR,
     TASK_INSTRUCTIONS,
@@ -53,11 +55,11 @@ from experiments.benchmark_dtra_3d_metaworld import (
     pick_device,
     sync,
 )
-from experiments.benchmark_metaworld_cl import (
+from v1_drawing_vla.src.experiments.benchmark_metaworld_cl import (
     build_rgb_spatial_encoder,
     collect_or_load_task_data,
 )
-from tools.bspline_core import BSplineDecoder, build_difference_matrices
+from dtra.core.bspline_core import BSplineDecoder, build_difference_matrices
 
 
 # ==============================================================================

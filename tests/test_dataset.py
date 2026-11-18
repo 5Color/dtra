@@ -4,6 +4,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import sys
+from pathlib import Path
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+for _sp in (str(_REPO_ROOT), str(_REPO_ROOT / "v1_drawing_vla" / "src"), str(_REPO_ROOT / "v1_drawing_vla" / "handvsai")):
+    if _sp not in sys.path:
+        sys.path.insert(0, _sp)
 import numpy as np
 from torch.utils.data import DataLoader
 

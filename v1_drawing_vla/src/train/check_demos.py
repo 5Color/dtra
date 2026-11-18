@@ -24,7 +24,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 INDEX_HTML = ROOT / "collector" / "index.html"
 TEMPLATES_JSON = ROOT / "templates.json"
 UNITS = 512.0

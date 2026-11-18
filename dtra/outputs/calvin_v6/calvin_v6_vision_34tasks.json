@@ -1,0 +1,26 @@
+{
+  "mode": "vision",
+  "num_tasks": 34,
+  "single_task_mean_sr": 55.88,
+  "route_acc": 97.65,
+  "parameter_drift": 0.0,
+  "closed_loop_latency_ms": 9.3022,
+  "Ablation_HardSwitch_NoBridge": {
+    "avg_5step_chain_len": 1.9,
+    "chain_5step_full_sr": 6.67,
+    "mean_boundary_jerk": 0.0886,
+    "myelinated_edges": 0,
+    "backtrack_recoveries": 0,
+    "ood_spawn_events": 4
+  },
+  "DTRA_V6_System1_Bridge_System2_Organ": {
+    "avg_5step_chain_len": 2.37,
+    "chain_5step_full_sr": 16.67,
+    "mean_boundary_jerk": 0.0752,
+    "myelinated_edges": 22,
+    "backtrack_recoveries": 30,
+    "ood_spawn_events": 9
+  },
+  "boundary_jerk_reduction_pct": 15.12,
+  "elapsed_sec": 869.97
+}

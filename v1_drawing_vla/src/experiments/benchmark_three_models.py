@@ -26,9 +26,10 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+for _p in (str(PROJECT_ROOT), str(PROJECT_ROOT / "v1_drawing_vla" / "src")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(line_buffering=True)
 
@@ -36,7 +37,7 @@ from tools.bspline_augment import BSplineGeometricAugmentor
 from train.bspline_policy import BSplineModelCPolicy, BSplineSlotPolicy, BSplineVisuomotorPolicy
 from train.rollout_bspline import compute_smoothness, match_scores, rollout_bspline
 
-OUT_DIR = PROJECT_ROOT / "outputs"
+OUT_DIR = PROJECT_ROOT / "outputs" / "v1_archive"
 
 
 def pick_device() -> torch.device:

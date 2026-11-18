@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT), str(ROOT / "train")]
+sys.path[:0] = [str(ROOT), str(ROOT / "v1_drawing_vla" / "src" / "train")]
 
 import brush  # noqa: E402
 

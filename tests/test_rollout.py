@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "train"))
+sys.path.insert(0, str(ROOT / "v1_drawing_vla" / "src" / "train"))
 
 import rollout_eval as R  # noqa: E402
 from dataset import encode_png_gray  # noqa: E402

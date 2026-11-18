@@ -28,7 +28,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from tools.bspline_core import BSplineDecoder
+from dtra.core.bspline_core import BSplineDecoder
 
 
 def balanced_pen_transition_loss(

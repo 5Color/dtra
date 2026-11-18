@@ -8,6 +8,12 @@ B-Spline VLA 정책 아키텍처 단위 테스트:
 """
 
 import unittest
+import sys
+from pathlib import Path
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+for _sp in (str(_REPO_ROOT), str(_REPO_ROOT / "v1_drawing_vla" / "src"), str(_REPO_ROOT / "v1_drawing_vla" / "handvsai")):
+    if _sp not in sys.path:
+        sys.path.insert(0, _sp)
 import torch
 import torch.nn.functional as F
 

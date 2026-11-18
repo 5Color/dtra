@@ -1,6 +1,6 @@
 {
-  "title": "DTRA: Real-Time Continual 3D Manipulation via Two-Stage Docking and Elastic Snap-Back of Hypertube Rings",
-  "description": "Official open-source implementation, Step 1 hyperspherical hypertube dynamics simulation, 8-task 3D Meta-World continual manipulation benchmark, mathematical specification, and 7-page preprint PDF for DTRA (Dynamic Topological Ring Architecture).",
+  "title": "DTRA: Dynamic Topology Ring Architecture for Replay-Free Continual Visuomotor Control via Hyperspherical Isolation and Shared Motor Bases",
+  "description": "DTRA v3.0 preprints and verified results for replay-free, Task-ID-free continual visuomotor control. The 20-page manuscripts report LIBERO-100 results across three seeds for Frozen MLP and DTRA Elastic and two seeds for ER 5% and DTRA Rigid, plus three-seed 8-task Meta-World experiments. The approach combines hyperspherical routing, shared motor bases, parameter freezing, and temporary state reset. Five-rollout evaluation limits, measured parameter footprints, and clean/OOD trade-offs are documented.",
   "creators": [
     {
       "name": "Son, Seungjoon",
@@ -15,7 +15,9 @@
     "pytorch",
     "hypertube-rings",
     "b-spline",
-    "task-id-free"
+    "task-id-free",
+    "libero-100",
+    "replay-free-learning"
   ],
   "related_identifiers": [
     {
