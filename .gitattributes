@@ -1,1 +1,5 @@
 * text=auto eol=lf
+
+# Preserve the published checkpoint bytes for SHA256 verification.
+/outputs/libero/*.json -text
+/outputs/libero/SHA256SUMS.txt -text

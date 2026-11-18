@@ -5,7 +5,7 @@
 [![Preprint (DTRA v3.0)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](dtra/paper_v2/DTRA_v3.0_Preprint.pdf)
 [![arXiv Manuscript](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](dtra/paper_v2/dtra_preprint.pdf)
 [![Zenodo v3.0 DOI Slot](https://img.shields.io/badge/Zenodo%20v3.0-Pending%20DOI%20Minting-informational.svg)](RELEASE_NOTES_v3.0.0.md)
-[![Zenodo DTRA Archive](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.24218483-blue)](https://doi.org/10.5281/zenodo.24218483)
+[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24218483.svg)](https://doi.org/10.5281/zenodo.24218483)
 [![Zenodo ABK-VLA](https://img.shields.io/badge/Gen1%20DOI-10.5281%2Fzenodo.24208545-lightgrey)](https://doi.org/10.5281/zenodo.24208545)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
