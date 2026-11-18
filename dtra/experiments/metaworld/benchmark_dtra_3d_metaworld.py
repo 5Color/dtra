@@ -23,7 +23,7 @@
   4. 3D OOD 카메라 노이즈(sigma=0.10, 0.20) 및 밝기 섭동 하 성공률·라우팅 방어 효과
 
 사용법:
-  python experiments/benchmark_dtra_3d_metaworld.py --epochs 55 --n-demos 30 --n-eval 15
+  python -m dtra.experiments.metaworld.benchmark_dtra_3d_metaworld --epochs 55 --n-demos 30 --n-eval 15
 """
 
 from __future__ import annotations

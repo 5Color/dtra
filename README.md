@@ -139,21 +139,23 @@ On Meta-World, DTRA Full has lower clean success (**72.2 ± 6.8%** vs. **85.6 ±
 
 ## 3. Reproduction and Code Availability
 
-The public release contains preprints, LaTeX sources, figures, and locked result JSONs. The benchmark harness and reproduction dependencies are not yet fully included. Experimental commands below describe the local research checkout and are not a complete setup recipe for the public checkout.
+Core DTRA modules, unit tests, figure/paper build scripts, locked result JSONs, and the Meta-World / LIBERO / post-v3 benchmark scripts are included in this repository. Installing `requirements.txt` covers the core modules, unit tests, and figure/LaTeX regeneration scripts; full simulator rollouts additionally require installing the external simulation packages (`metaworld`, `mujoco`, `gymnasium` for Meta-World; `libero`, `robosuite`, `bddl`, `h5py`, and LIBERO HDF5 demos for LIBERO-100). Use `python scripts/check_remote_env.py` to inspect which simulator dependencies are available in your environment.
 
 ```bash
-# 0. Install dependencies & run invariant unit tests
+# 0. Install core dependencies, inspect environment & run invariant unit tests
 pip install -r requirements.txt
+python scripts/check_remote_env.py --env dtra
 python -m unittest discover -s tests -v
+python dtra/tests/test_topological_bridge.py
 
 # 1. Step-1 Hypertube manifold invariants (6 automated checks)
 python dtra/core/sim_dtra_tube_dynamics.py
 
-# 2. 3D Meta-World 8-task 3-seed scientific ablation & supplemental stress suite
+# 2. 3D Meta-World 8-task 3-seed scientific ablation & supplemental stress suite (requires metaworld/mujoco)
 python -m dtra.experiments.metaworld.ablate_dtra_scientific --seeds 42 100 2026 --epochs 80
 python -m dtra.experiments.metaworld.ablate_dtra_supplemental --seed 42 --epochs 80
 
-# 3. LIBERO-100 (K=100) continual scaling stream (inside `libero` conda env)
+# 3. LIBERO-100 (K=100) continual scaling stream (requires `libero` conda env + LIBERO HDF5 demos)
 python -m dtra.experiments.libero.benchmark_dtra_libero \
   --suites libero_10,libero_90 --max-tasks 100 \
   --stream-tasks --eval-milestones 10,30,50,70,100 \

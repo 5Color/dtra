@@ -32,9 +32,9 @@ DTRA v2.1 가설의 인과적 분리·공정 통제·스트레스 검증을 위�
 
 사용 예시:
   1) 단일 시드 무결성 및 1차 검증:
-     python experiments/ablate_dtra_scientific.py --seeds 42
+     python -m dtra.experiments.metaworld.ablate_dtra_scientific --seeds 42
   2) 다중 시드(3-seed) 전체 과학 검증:
-     python experiments/ablate_dtra_scientific.py --seeds 42 100 2026
+     python -m dtra.experiments.metaworld.ablate_dtra_scientific --seeds 42 100 2026
 """
 
 from __future__ import annotations

@@ -1,9 +1,17 @@
 torch>=2.0
+torchvision>=0.15
 numpy>=1.24
 scipy>=1.10
 pillow>=10.0
 matplotlib>=3.7
-# Optional dependencies for Experiment 4 (3D Meta-World continual manipulation):
+
+# Optional dependencies for 3D Meta-World continual manipulation:
 # gymnasium>=1.0
 # mujoco>=3.3
 # metaworld>=3.1
+
+# Optional dependencies for LIBERO-Goal / LIBERO-100 continual manipulation:
+# h5py>=3.8
+# bddl
+# robosuite
+# libero (install from upstream LIBERO repository inside a dedicated conda env)

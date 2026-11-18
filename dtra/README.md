@@ -178,20 +178,24 @@ dtra/
 
 ## 5. Quickstart (Run from Repository Root)
 
-The public release contains preprints, LaTeX sources, figures, and locked result JSONs. The benchmark harness and reproduction dependencies are not yet fully included. Experimental commands below describe the local research checkout and are not a complete setup recipe for the public checkout.
+Core modules, unit tests, figure/paper generation scripts, locked JSON results, and the Meta-World / LIBERO / post-v3 benchmark scripts are included in the repository. Installing `requirements.txt` supports the unit tests, core invariant checks, and figure/PDF rebuilds; running live simulator benchmarks requires installing the external simulator packages (`metaworld`/`mujoco`/`gymnasium`, or `libero`/`robosuite`/`bddl`/`h5py` plus LIBERO HDF5 demos) separately. Run `python scripts/check_remote_env.py` to verify your local environment.
 
 ```bash
-# Unit Tests (No-Encroachment, CMC, Two-Timescale Snap-Back, SharedBasisBank Zero-Drift)
+# Environment Check & Unit Tests (No-Encroachment, CMC, Snap-Back, SharedBasisBank, Bridge)
+pip install -r requirements.txt
+python scripts/check_remote_env.py --env dtra
 python -m unittest discover -s tests -v
+python dtra/tests/test_topological_bridge.py
+python dtra/core/sim_dtra_tube_dynamics.py
 
-# LIBERO-100 (K=100) Continual Benchmark (runs inside `libero` conda env)
+# LIBERO-100 (K=100) Continual Benchmark (requires `libero` conda env + LIBERO HDF5 demos)
 python -m dtra.experiments.libero.benchmark_dtra_libero \
   --suites libero_10,libero_90 --max-tasks 100 \
   --stream-tasks --eval-milestones 10,30,50,70,100 \
   --epochs 25 --batch-size 128 --n-eval 5 --seed 42 \
   --out-json outputs/libero/benchmark_dtra_libero_10_libero_90_k100.json
 
-# 3D Meta-World 3-Seed Scientific Ablation
+# 3D Meta-World 3-Seed Scientific Ablation (requires metaworld/mujoco)
 python -m dtra.experiments.metaworld.ablate_dtra_scientific --seeds 42 100 2026 --epochs 80
 
 # Rebuild 3-Seed Tables, Figures & 20-Page Manuscripts

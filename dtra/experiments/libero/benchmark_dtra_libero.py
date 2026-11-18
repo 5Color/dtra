@@ -17,8 +17,8 @@
   - 순차 태스크 학습 후 전체 하삼각 R 행렬 평가: Mean SR, FR, BWT, RouteAcc, VRAM Peak, Throughput
 
 사용법:
-  python experiments/benchmark_dtra_libero.py --suite libero_goal --max-tasks 5 --epochs 25 --n-eval 5
-  python experiments/benchmark_dtra_libero.py --suite libero_10 --max-tasks 5 --epochs 30 --n-eval 5
+  python -m dtra.experiments.libero.benchmark_dtra_libero --suite libero_goal --max-tasks 5 --epochs 25 --n-eval 5
+  python -m dtra.experiments.libero.benchmark_dtra_libero --suite libero_10 --max-tasks 5 --epochs 30 --n-eval 5
 """
 
 from __future__ import annotations

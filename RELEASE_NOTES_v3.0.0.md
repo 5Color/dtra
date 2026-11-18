@@ -49,7 +49,7 @@ Only single-ring `Region` implementations (`K=100` `LIBERO-100`, `LIBERO-Goal`, 
 
 ## Verification and Code Availability
 
-The public release contains preprints, LaTeX sources, figures, and locked result JSONs. The benchmark harness and reproduction dependencies are not yet fully included. Experimental commands below describe the local research checkout and are not a complete setup recipe for the public checkout.
+This repository includes the preprints, LaTeX sources, figures, locked result JSONs, core DTRA modules, unit tests, and benchmark scripts (`dtra/experiments/`). Installing `requirements.txt` supports the core modules, unit tests, and figure/PDF rebuild scripts; full simulator rollouts require installing the external simulation environments (`metaworld`/`mujoco`/`gymnasium`, or `libero`/`robosuite`/`bddl`/`h5py` with LIBERO HDF5 demos) separately. Use `python scripts/check_remote_env.py` to check local simulator availability.
 
 ```bash
 python -m unittest discover -s tests -v

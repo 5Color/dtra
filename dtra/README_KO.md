@@ -161,20 +161,24 @@ dtra/
 
 ## 5. 빠른 시작 (저장소 루트 기준)
 
-공개 릴리스에는 프리프린트, LaTeX 소스, 그림과 결과 JSON이 포함됩니다. 벤치마크 실행 코드와 재현 의존성이 모두 공개 체크아웃에 포함된 것은 아닙니다. 아래 명령은 로컬 연구 체크아웃 기준이며, 빈 환경에서 완전 재현하는 설치 절차는 아닙니다.
+이 저장소에는 프리프린트, LaTeX 소스, 그림, 고정 결과 JSON과 함께 핵심 DTRA 모듈, 단위 테스트 및 Meta-World / LIBERO / 후속 트랙 벤치마크 스크립트가 포함되어 있습니다. `pip install -r requirements.txt`로 핵심 모듈, 단위 테스트, 그림 및 원고 재생성을 실행할 수 있으며, 실제 시뮬레이터 롤아웃 벤치마크에는 외부 시뮬레이터(`metaworld`/`mujoco`/`gymnasium` 또는 `libero`/`robosuite`/`bddl`/`h5py` 및 LIBERO 데모 데이터)의 별도 설치가 필요합니다. `python scripts/check_remote_env.py`로 현재 환경 상태를 확인할 수 있습니다.
 
 ```bash
-# 핵심 유닛 테스트
+# 환경 진단 및 핵심 유닛 테스트
+pip install -r requirements.txt
+python scripts/check_remote_env.py --env dtra
 python -m unittest discover -s tests -v
+python dtra/tests/test_topological_bridge.py
+python dtra/core/sim_dtra_tube_dynamics.py
 
-# LIBERO-100 (libero conda 환경에서 실행)
+# LIBERO-100 (`libero` conda 환경 + LIBERO 데모 필요)
 python -m dtra.experiments.libero.benchmark_dtra_libero \
   --suites libero_10,libero_90 --max-tasks 100 \
   --stream-tasks --eval-milestones 10,30,50,70,100 \
   --epochs 25 --batch-size 128 --n-eval 5 --seed 42 \
   --out-json outputs/libero/benchmark_dtra_libero_10_libero_90_k100.json
 
-# Meta-World 3개 시드 절제 실험
+# Meta-World 3개 시드 절제 실험 (`metaworld`/`mujoco` 필요)
 python -m dtra.experiments.metaworld.ablate_dtra_scientific \
   --seeds 42 100 2026 --epochs 80
 
