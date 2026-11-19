@@ -4,31 +4,49 @@
 
 [![프리프린트 (DTRA v3.0)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](dtra/paper_v2/DTRA_v3.0_Preprint.pdf)
 [![arXiv 원고](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](dtra/paper_v2/dtra_preprint.pdf)
-[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24218483.svg)](https://doi.org/10.5281/zenodo.24218483)
+[![Zenodo v3.0.0 DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24297711.svg)](https://doi.org/10.5281/zenodo.24297711)
+[![Zenodo Concept DOI](https://img.shields.io/badge/Zenodo%20All%20Versions-10.5281%2Fzenodo.24218482-blue.svg)](https://doi.org/10.5281/zenodo.24218482)
+[![Zenodo ABK-VLA](https://img.shields.io/badge/Gen1%20ABK--VLA-10.5281%2Fzenodo.24212130-lightgrey)](https://doi.org/10.5281/zenodo.24212130)
 [![MIT 라이선스](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **초구면 라우팅과 공유 운동 기저를 이용한 재생 없는 지속 시각운동 제어.** DTRA v3.0은 3개 학습 시드에서 LIBERO-100 최종 성공률 `87.00 ± 0.86%`를 보고합니다.
 
-> **연구 세대와 범위:** 이 저장소는 Gen 1 Drawing-VLA/ABK-VLA와 Gen 2 DTRA v3.0을 함께 보관합니다. 본 README의 DTRA 실험 수치는 LIBERO-100, LIBERO-Goal 파일럿, 8태스크 Meta-World 범위입니다. CALVIN v4/v5, RoboCasa, Organ은 후속 v4.0 연구 트랙이며 v3.0 결과에 포함하지 않습니다. 연구 이력은 [RESEARCH_LINEAGE.md](RESEARCH_LINEAGE.md), 버전 경계는 [DTRA 논문 개요](dtra/PAPER_20P_OUTLINE.md)를 참고하세요.
+> **연구 세대와 범위 분리:** 이 저장소는 **ARIN $\to$ Drawing-VLA $\to$ ABK-VLA $\to$ DTRA v3.0–v6.0** 전체 연구 계보를 보관합니다.
+> 1. **1세대 (`v1_drawing_vla`):** `Drawing-VLA` v1.0.0 (ACT $K=16$ 폐루프 스케치 청킹 + Catmull-Rom 브러시, DOI `10.5281/zenodo.24122154`) 및 `ABK-VLA` v1.1.3 (클램프드 3차 B-스플라인 제어점 압축 $N_k=6 \to H=16$ 및 시각 프로토타입 라우팅, DOI `10.5281/zenodo.24212130`).
+> 2. **2세대 본편 (`dtra`, DTRA v3.0):** LIBERO-100($K=100$), LIBERO-Goal 파일럿($K=5$), 3D Meta-World($K=8$) 단일 링 `Region` 아키텍처 본편 결과입니다.
+> 3. **v3 이후 체화 연속학습 확장 트랙 (`v4.0`–`v6.0`):** `DTRA v3.0` 프리프린트 본편 표와 엄격히 분리되어 `dtra/experiments/{robocasa_v4,calvin_v4,calvin_v5}/` 및 `dtra/outputs/calvin_v6/`에 아카이빙되어 있습니다. `v6.0`의 `OrganSystem2Planner`는 선행 **ARIN** 로드맵의 `Organ` 명칭을 차용한 경량 System 2 프로토타입입니다.
+>
+> 전체 연구 이력은 [RESEARCH_LINEAGE.md](RESEARCH_LINEAGE.md), 공식 릴리즈 노트는 [RELEASE_NOTES_v3.0.0.md](RELEASE_NOTES_v3.0.0.md), 상세 한국어 기술 안내는 [dtra/README_KO.md](dtra/README_KO.md), 버전 경계는 [dtra/PAPER_20P_OUTLINE.md](dtra/PAPER_20P_OUTLINE.md)를 참고하세요.
 
-## 아키텍처 개요
+> **입력 조건:** 여기서 **Task-ID-free**는 추론 때 정수형 태스크 인덱스를 정책에 직접 전달하지 않는다는 뜻입니다. 라우팅 입력에는 두 카메라 특징(순수 RGB-D 트랙은 깊이 포함), 고유수용성 상태와 언어 임베딩이 포함됩니다. 언어 지시를 제공하는 평가는 순수 시각·고유수용성 관측만 사용하는 평가와 구분해야 합니다.
 
-Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우팅 영역 침범과 태스크별 행동 헤드의 선형 증가가 문제가 됩니다. DTRA v3.0은 동결된 ResNet-18 DualCam 인코더, 고유수용성 입력, `LightweightTextEncoder`를 공통 인식 경로로 사용하고 네 요소를 결합합니다.
+---
 
-1. **라우팅 마진 보정:** 이전 태스크의 쿼리 기준점과 자기 유사도 하한을 보존하고, 이전 라우팅 영역을 침범하는 키 업데이트를 투영해 제거합니다.
-2. **2단계 Top-M 공통 성분 제거(CMC):** 전체 키 코사인 스캔으로 후보 5개를 고른 뒤, 후보들이 공유하는 언어·장면 성분을 제거하고 세부 카메라 특징과 고유수용성 잔차로 재순위화합니다. 동일 지시어 태스크의 LIBERO-100 라우팅 정확도는 `41.76%`에서 `99.68 ± 0.45%`로 보고되었습니다.
-3. **공유 운동 기저(SharedBasisBank):** 길이 16의 행동 청크를 6개 제어점의 클램프드 `C²` 큐빅 B-스플라인으로 나타내고, 100개 태스크에서 27개 동결 기저를 공유합니다. 73% 감소는 기저 개수 기준이며 전체 모델 메모리 감소를 뜻하지 않습니다.
+## 시각 롤아웃 데모 (v3 이후 체화 확장 트랙)
+
+| DTRA v6.0 — CALVIN 순수 비전 5-Step 체인 (`System 1 + System 2`) | DTRA v4.0 — RoboCasa 순수 RGB-D 주방 조작 (`Hypertube Transport`) |
+| :---: | :---: |
+| ![DTRA v6.0 CALVIN 순수 비전 5-Step 체인](dtra/assets/calvin_v6_pure_vision_chain_preview.gif) | ![DTRA v4.0 RoboCasa 순수 RGB-D 롤아웃](dtra/assets/robocasa_v4_pure_rgbd_preview.gif) |
+| 표준 `5/5` 연속 시퀀스 (`Chain #1`, `Mode: VISION`, `Leak: ZERO`, `Drift: 0.0000`, 실시간 System 2 복구 `CELL #108 -> #100`). 34태스크·30체인 전체: **라우팅 `97.65%`**, **평균 체인 길이 `2.37`**(기준 `1.90`), **5/5 완주율 `16.67%`**(기준 `6.67%`), **저크 감소 `+15.12%`**, **지연 `9.30 ms`**. ([범위·한계 문서](dtra/outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md)) | 주방 12태스크(`8` 단일 + `4` 복합, `0%` 리플레이, `object-state` 미사용, `Drift: 0.000000`): `Arm4_DTRA_v4_Hypertube`가 **단일(Atomic) SR `29.17%`**(`OpenMicrowave 100.0%`), **라우팅 `100.0%`**, **지연 `1.928 ms`** 달성(`Flat_MLP`와 `ER_5%`는 `0.00%` 붕괴). 복합 `0.00%` 병목이 `v5.0`/`v6.0` 도입의 근거가 됨. ([결과 JSON](dtra/experiments/robocasa_v4/robocasa_continual_results_4arms.json)) |
+
+---
+
+## 아키텍처 개요 (`DTRA v3.0`)
+
+Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우팅 영역 침범과 태스크별 행동 헤드의 선형 증가가 문제가 됩니다. DTRA v3.0은 동결된 ResNet-18 DualCam 인코더(`conv1..layer3`), 고유수용성 입력, `LightweightTextEncoder`(LIBERO-100은 CRC32 부호 해싱 128차원, Meta-World는 SHA-256 + 512→64 QR 사영)를 공통 인식 경로로 사용하고 네 요소를 결합합니다.
+
+1. **라우팅 마진 보정 (No-Encroachment):** 이전 태스크의 쿼리 기준점과 자기 유사도 하한을 보존하고, 이전 라우팅 영역을 침범하는 키 업데이트를 투영해 제거합니다.
+2. **2단계 Top-M 공통 성분 제거 (CMC):** 전체 키 코사인 스캔으로 후보 5개를 고른 뒤, 후보들이 공유하는 언어·장면 성분을 제거하고 세부 카메라 특징과 고유수용성 잔차로 재순위화합니다. 동일 지시어 태스크(`Dup-Lang`)의 LIBERO-100 라우팅 정확도는 `41.76 ± 2.09%`에서 **`99.68 ± 0.45%`**로 향상되었습니다.
+3. **공유 운동 기저 (SharedBasisBank):** 길이 16의 행동 청크를 클램프드 `C²` 큐빅 B-스플라인 제어점(7-DoF LIBERO-100은 `num_cp=8` 제어점·공유 기저 내부 매듭 차원 `num_knots=6`; 2D/Meta-World는 `N_k=6` 제어점)으로 나타내고, 100개 태스크에서 27개 동결 기저를 공유합니다. 73% 감소는 기저 개수 기준이며 전체 모델 메모리 감소를 뜻하지 않습니다.
 4. **두 시간척도의 Snap-Back:** 청크 사이 임시 변형 상태를 되돌리는 `chunk_snap_back()`과 에피소드 종료 시 `episode_snap_back()`을 구분합니다. `post_snap_norm = 0.0000`은 상태 초기화를 뜻하며 파라미터 보존을 독립적으로 입증하는 수치는 아닙니다.
 
-### 입력 조건
-
-여기서 **Task-ID-free**는 추론 때 정수형 태스크 인덱스를 정책에 직접 전달하지 않는다는 뜻입니다. 라우팅 입력에는 두 카메라 특징, 고유수용성 상태와 언어 임베딩이 포함됩니다. 언어 지시를 제공하는 평가는 순수 시각·고유수용성 관측만 사용하는 평가와 구분해야 합니다.
+---
 
 ## 벤치마크 결과
 
-### LIBERO-100 (K=100)
+### A. LIBERO-100 ($K=100$, `DTRA v3.0` 본편)
 
-각 마일스톤에서 시드당 5회 롤아웃을 평가했습니다. 전체 4개 비교군은 2개 시드, `Frozen MLP`와 `DTRA Elastic` 핵심 비교는 3개 시드를 사용했습니다.
+각 마일스톤에서 시드당 5회 롤아웃을 평가했습니다(시드당 `1,775` 에피소드/arm). 전체 4개 비교군은 2개 시드(`42, 100`), `Frozen MLP`와 `DTRA Elastic` 핵심 비교는 3개 시드(`42, 100, 2026`, 모표준편차 `ddof=0`)를 사용했습니다.
 
 | 방법 | 최종 성공률 | 망각률 | BWT | 라우팅 정확도 | 동일 지시어 라우팅 | 기저 수 | 활성 추론 지연 |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -39,14 +57,14 @@ Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우
 
 `arm_dtra_elastic`의 시드별 최종 성공률은 42번 시드 `87.80%`, 100번 시드 `87.40%`, 2026번 시드 `85.80%`입니다.
 
-### Meta-World 및 LIBERO-Goal
+### B. Meta-World 및 LIBERO-Goal (`DTRA v3.0` 본편)
 
 | 벤치마크 | 방법 | 성공률 | 망각률 | 라우팅 | OOD 성공률 / VRAM |
 | :--- | :--- | ---: | ---: | ---: | :--- |
 | Meta-World 8태스크 (3개 시드) | Frozen MLP 멀티모달 | 85.6 ± 3.1% | 0.0 ± 0.0% | 100.0% | 심한 OOD 23.6 ± 3.9% |
-| Meta-World 8태스크 (3개 시드) | **DTRA Full 멀티모달** | **72.2 ± 6.8%** | **0.0 ± 0.0%** | **100.0%** | **심한 OOD 51.4 ± 4.4%** |
+| Meta-World 8태스크 (3개 시드) | **DTRA Full 멀티모달** | **72.2 ± 6.8%** | **0.0 ± 0.0%** | **100.0%** | **심한 OOD 51.4 ± 4.4%** (`1.87 ms` CPU) |
 | Meta-World 역순 (T7→T0, 시드 42) | DTRA Full 멀티모달 | 74.2% | 0.0% | 100.0% | OOD 64.2% |
-| LIBERO-Goal 5태스크 파일럿 (시드 42) | DTRA Elastic | 92.0% | 5.0% | 100.0% | VRAM 3,696 MB |
+| LIBERO-Goal 5태스크 파일럿 (시드 42) | Frozen MLP / **DTRA Elastic** | 100.0% / **92.0%** | 0.0% / 5.0% | 100.0% | VRAM 3,696 MB (`post_snap_norm = 0.0`) |
 
 ### 평가 범위와 수치 해석
 
@@ -56,20 +74,34 @@ Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우
 - Meta-World에서 DTRA는 Frozen MLP보다 정상 조건 성공률이 낮고 심한 OOD 성공률이 높았습니다. 이는 관측된 성능 절충이며 인과적 설명이 입증된 것은 아닙니다.
 - LIBERO의 `9.55 ± 0.20 ms`는 정책 추론 측정입니다. 전체 후보 검색은 `O(K)`이며, 선택 후보의 디코딩 코어가 상수 비용입니다. 이 수치를 종단 간 로봇 제어 지연으로 해석하면 안 됩니다.
 
+### C. v3 이후 체화 연속학습 확장 트랙 (`DTRA v4.0 – v6.0`, v3.0 프리프린트와 분리)
+
+| 트랙 / 벤치마크 | 방법 / 모드 | 핵심 지표 | 드리프트 | 출처 |
+| :--- | :--- | :--- | :---: | :--- |
+| **v4.0 RoboCasa (`12`태스크: `8` 단일 + `4` 복합, `0%` 리플레이)** | `Arm4_DTRA_v4_Hypertube` *(vs `Flat_MLP`/`ER_5%` `0.00%`)* | 단일 SR **`29.17%`**(`OpenMicrowave 100.0%`), 전체 `19.44%`, 라우팅 **`100.0%`**, BWT `+0.00%`, `1.928 ms` *(복합 `0.00%` $\to$ System 2 도입 근거)* | `0.000000` | [`robocasa_continual_results_4arms.json`](dtra/experiments/robocasa_v4/robocasa_continual_results_4arms.json) |
+| **v5.0 + v6.0 CALVIN (`34`태스크, `30` 5-Step 체인)** | `Pure Vision` (`Leak: ZERO`) | 라우팅 **`97.65%`**, 단일 SR `55.88%`, 5-Chain 길이 **`2.37`** *(vs `1.90`)*, 5/5 SR **`16.67%`** *(vs `6.67%`)*, 저크 감소 **`+15.12%`**, `22` 간선, `9.30 ms` | **`0.0000`** | [`calvin_v6_vision_34tasks.json`](dtra/outputs/calvin_v6/calvin_v6_vision_34tasks.json) |
+| **v5.0 + v6.0 CALVIN (`34`태스크, `30` 5-Step 체인)** | `Oracle Anchor` *(상한 비교군)* | 라우팅 `97.65%`, 단일 SR `46.47%`, 5-Chain 길이 `2.53` *(vs `1.90`)*, 5/5 SR `16.67%` *(vs `10.00%`)*, 저크 감소 `+15.24%`, `25` 간선, `8.49 ms` | `0.0000` | [`calvin_v6_oracle_34tasks.json`](dtra/outputs/calvin_v6/calvin_v6_oracle_34tasks.json) |
+
+---
+
 ## 저장소 구조
 
 ```text
 v1_drawing_vla/          # Gen 1 Drawing-VLA 및 ABK-VLA 보관
-dtra/                    # DTRA v3.0 핵심 코드와 실험
-  core/                  # B-스플라인 디코더 및 링 동역학
-  experiments/libero/    # LIBERO-Goal 및 LIBERO-100
-  experiments/metaworld/ # Meta-World 평가와 절제 실험
-  experiments/calvin_v4/, calvin_v5/, robocasa_v4/  # v4.0 후속 연구
+dtra/                    # DTRA v3.0 핵심 코드 및 후속 트랙
+  assets/                # README용 경량 프리뷰 GIF (< 8 MB, 640x360 @ 12 fps)
+  core/                  # B-스플라인 디코더(N_k=6 / num_cp=8 -> H=16) 및 링·브리지 동역학
+  experiments/libero/    # [v3.0] LIBERO-Goal 및 LIBERO-100
+  experiments/metaworld/ # [v3.0] Meta-World 평가와 절제 실험
+  experiments/calvin_v4/, calvin_v5/, robocasa_v4/  # [v3 이후 트랙]
+  outputs/calvin_v6/     # [v3 이후 트랙] CALVIN v6 System 1+2 JSON, HUD 및 범위 문서
   paper_v2/              # 프리프린트 PDF와 LaTeX 소스
-outputs/                 # 고정 결과 JSON, 체크포인트와 그림
+outputs/                 # 고정 결과 JSON, 체크포인트와 300 DPI 그림(fig0..fig8)
 scripts/                 # 결과 집계, 그림 및 프리프린트 생성
 tests/                   # 모듈 및 불변량 테스트
 ```
+
+---
 
 ## 재현과 코드 공개 범위
 
@@ -100,21 +132,38 @@ python scripts/generate_libero100_figures.py
 python scripts/build_dtra_v3_paper.py
 ```
 
+---
+
 ## 그림과 프리프린트
 
 - [DTRA v3.0 프리프린트 PDF](dtra/paper_v2/DTRA_v3.0_Preprint.pdf) · [arXiv용 PDF](dtra/paper_v2/dtra_preprint.pdf)
 - [아키텍처 그림](outputs/figures/fig6_dtra_v3_architecture_schematic.png) · [LIBERO-100 확장 그래프](outputs/figures/fig7_libero100_scaling_curves.png) · [기저 및 호출 경로](outputs/figures/fig8_libero100_basis_and_callstack.png)
 
+---
+
 ## 인용
 
 ```bibtex
 @misc{son2026dtra,
-  author = {Son, Seungjoon},
-  title  = {{DTRA}: Dynamic Topology Ring Architecture for Replay-Free Continual Visuomotor Control via Hyperspherical Isolation and Shared Motor Bases},
-  year   = {2026},
-  month  = nov,
-  doi    = {10.5281/zenodo.24218483},
-  url    = {https://doi.org/10.5281/zenodo.24218483}
+  author    = {Son, Seungjoon},
+  title     = {{DTRA}: Dynamic Topology Ring Architecture for Replay-Free Continual Visuomotor Control via Hyperspherical Isolation and Shared Motor Bases},
+  year      = {2026},
+  month     = nov,
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24297711},
+  url       = {https://doi.org/10.5281/zenodo.24297711},
+  note      = {v3.0.0; Concept DOI: 10.5281/zenodo.24218482; prior v2.1.0: 10.5281/zenodo.24218483}
+}
+
+@misc{son2026abkvla,
+  author    = {Son, Seungjoon},
+  title     = {{ABK-VLA}: Task-ID-Free Continual Visuomotor Policy Learning via Autonomous B-Spline Knot Compression and Visual Prototype Routing},
+  year      = {2026},
+  month     = nov,
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24212130},
+  url       = {https://doi.org/10.5281/zenodo.24212130},
+  note      = {v1.1.3; v1.1.1: 10.5281/zenodo.24208545; Concept DOI: 10.5281/zenodo.24208544}
 }
 ```
 

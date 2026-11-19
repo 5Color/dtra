@@ -2,7 +2,8 @@
 
 [![Preprint (20 Pages)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](dtra/paper_v2/DTRA_v3.0_Preprint.pdf)
 [![arXiv Build (20 Pages)](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](dtra/paper_v2/dtra_preprint.pdf)
-[![Zenodo v3.0 DOI Slot](https://img.shields.io/badge/Zenodo%20v3.0-Pending%20DOI%20Minting-informational.svg)](https://doi.org/10.5281/zenodo.24218483)
+[![Zenodo v3.0.0 DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24297711.svg)](https://doi.org/10.5281/zenodo.24297711)
+[![Zenodo Concept DOI](https://img.shields.io/badge/Zenodo%20All%20Versions-10.5281%2Fzenodo.24218482-blue.svg)](https://doi.org/10.5281/zenodo.24218482)
 
 This release (`v3.0.0`) publishes the finalized **20-page single-column research preprint** ([`DTRA_v3.0_Preprint.pdf`](dtra/paper_v2/DTRA_v3.0_Preprint.pdf) and clean ASCII [`dtra_preprint.pdf`](dtra/paper_v2/dtra_preprint.pdf)) together with **LIBERO-100 results with three seeds for Frozen MLP and DTRA Elastic and two seeds for ER 5% and DTRA Rigid, plus three-seed Meta-World results** under strict matched-encoder parity.
 
@@ -61,7 +62,7 @@ python scripts/build_dtra_v3_paper.py
 **Release Assets Checklist:**
 - Preprint PDFs: `dtra/paper_v2/DTRA_v3.0_Preprint.pdf` (20p), `dtra/paper_v2/dtra_preprint.pdf` (20p arXiv clean)
 - Locked Checkpoints: `outputs/libero/benchmark_dtra_libero_10_libero_90_k100_seed{42,100,2026}_locked.json`
-- Zenodo DOI Slot (for release minting): Replace `Pending DOI Minting` badge in `README.md` / `dtra/README.md` upon upload to Zenodo (`prior DOI: 10.5281/zenodo.24218483`).
+- Zenodo DOI (Minted): **`10.5281/zenodo.24297711`** (v3.0.0) | Concept DOI (All Versions): `10.5281/zenodo.24218482` | prior v2.1.0: `10.5281/zenodo.24218483`.
 ## Editorial revision (2026-11-17)
 
 The title and abstract now describe replay-free continual control, without a SOTA ranking claim or epigraph. Parameter freezing, temporary state reset, and empirical success retention are distinguished. Memory claims refer to observed basis counts and measured parameter footprints; no logarithmic growth or future break-even point is claimed. Clean/OOD trade-offs and the five-rollout evaluation limit are stated explicitly. Both PDF assets are refreshed without changing the benchmark JSONs or figures. The v3.0.0 tag remains at its original release commit; refreshed editorial assets correspond to the current main revision.

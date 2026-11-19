@@ -1279,7 +1279,7 @@ def generate_fig0_architecture_schematic() -> None:
             "lines": [
                 "- Only fine_tubes[i*].head()\n  runs (zeros untouched!)",
                 "- Conf Gate = clip(cos_max)\n  throttles OOD residual",
-                "- 6 Control Points p* in [0,1]^4\n  Linear B-Spline Basis",
+                "- 6 Control Points p* in [0,1]^4\n  Cubic B-Spline Basis (MatMul)",
                 "-> 16-Step Action Chunk\n   (~1.87 ms O(1) Exec!)",
             ],
         },

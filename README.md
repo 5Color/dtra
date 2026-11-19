@@ -4,9 +4,9 @@
 
 [![Preprint (DTRA v3.0)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](dtra/paper_v2/DTRA_v3.0_Preprint.pdf)
 [![arXiv Manuscript](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](dtra/paper_v2/dtra_preprint.pdf)
-[![Zenodo v3.0 DOI Slot](https://img.shields.io/badge/Zenodo%20v3.0-Pending%20DOI%20Minting-informational.svg)](RELEASE_NOTES_v3.0.0.md)
-[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24218483.svg)](https://doi.org/10.5281/zenodo.24218483)
-[![Zenodo ABK-VLA](https://img.shields.io/badge/Gen1%20DOI-10.5281%2Fzenodo.24208545-lightgrey)](https://doi.org/10.5281/zenodo.24208545)
+[![Zenodo v3.0.0 DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24297711.svg)](https://doi.org/10.5281/zenodo.24297711)
+[![Zenodo Concept DOI](https://img.shields.io/badge/Zenodo%20All%20Versions-10.5281%2Fzenodo.24218482-blue.svg)](https://doi.org/10.5281/zenodo.24218482)
+[![Zenodo ABK-VLA](https://img.shields.io/badge/Gen1%20ABK--VLA-10.5281%2Fzenodo.24212130-lightgrey)](https://doi.org/10.5281/zenodo.24212130)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.x](https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg)](https://pytorch.org/)
@@ -14,7 +14,7 @@
 **Replay-free, Task-ID-free continual visuomotor control with hyperspherical routing and shared motor bases: 87.00 ± 0.86% final LIBERO-100 success across three training seeds.**
 
 > **Repository Separation Note:** This repository tracks the full **ARIN $\to$ Drawing-VLA $\to$ ABK-VLA $\to$ DTRA v3.0–v6.0** research lineage across two generations:
-> 1. **Gen 1 — `v1_drawing_vla` (`Drawing-VLA` v1.1.2 & `ABK-VLA` v1.1.3):** Clamped cubic B-Spline action chunking ($N_k=6, H=16$), geometric DoG prototype routing, and continual 2D stroke benchmarks.
+> 1. **Gen 1 — `v1_drawing_vla` (`Drawing-VLA` v1.0.0 & `ABK-VLA` v1.1.3):** Closed-loop ACT sketch chunking ($K=16$, Catmull-Rom brush rendering in `Drawing-VLA`, DOI `10.5281/zenodo.24122154`) followed by clamped cubic B-Spline control-knot compression ($N_k=6 \to H=16$), geometric DoG prototype routing, and continual 2D/3D benchmarks (`ABK-VLA`, DOI `10.5281/zenodo.24212130`).
 > 2. **Gen 2 — `dtra` (**DTRA v3.0 — Dynamic Topology Ring Architecture**, corresponding to [`5Color/dtra`](https://github.com/5Color/dtra)):** Resolves Voronoi encroachment, duplicate-instruction routing collapse, and $O(K)$ task-specific head growth across $K=100$ sequential 7-DoF LIBERO tasks via $\mathbb{S}^{63}$ topological ring isolation, Two-Stage Top-$M$ CMC, `SharedBasisBank` ($100 \to 27$ frozen primitive bases, `-73%`), and Two-Timescale Snap-Back (`post_snap_norm = 0.0000`).
 > 3. **Post-v3 Embodied Continual Tracks (`v4.0`–`v6.0`):** Strictly excluded from **DTRA v3.0** preprint tables and isolated under `dtra/experiments/{robocasa_v4,calvin_v4,calvin_v5}/` and `dtra/outputs/calvin_v6/` (archived alongside `outputs/{organ_v4,calvin_v4,calvin_v5,calvin_v6,robocasa}/`). Note that `v6.0`'s `OrganSystem2Planner` borrows the `Organ` name from **ARIN** as a lightweight System 2 routing prototype, distinct from the conceptual multi-ring $10^4\text{--}10^8$ `Organ` roadmap.
 
@@ -38,7 +38,7 @@ For the complete hypothesis-by-hypothesis chronology, see [**RESEARCH_LINEAGE.md
 ```text
 drawing-vla/
 ├── README.md                              # Project landing page, 3-seed v3.0 tables & reproduction guide
-├── RELEASE_NOTES_v3.0.0.md                # Official DTRA v3.0.0 release notes & Zenodo DOI slot
+├── RELEASE_NOTES_v3.0.0.md                # Official DTRA v3.0.0 release notes & Zenodo DOI (10.5281/zenodo.24297711)
 ├── RESEARCH_LINEAGE.md                    # Gen-1 -> Gen-2 research chronology & milestone ledger
 ├── requirements.txt                       # Core Python dependencies
 │
@@ -51,7 +51,7 @@ drawing-vla/
 │   ├── assets/                            # Lightweight README preview GIFs (< 8 MB, 640x360 @ 12 fps)
 │   ├── PAPER_20P_OUTLINE.md               # Exact 20-page NeurIPS/CoRL 1-col structure & version isolation spec
 │   ├── core/
-│   │   ├── bspline_core.py                # Frozen clamped C^2 cubic B-Spline basis decoder (N_k=6 -> H=16)
+│   │   ├── bspline_core.py                # Frozen clamped C^2 cubic B-Spline basis decoder (N_k=6 [2D/Meta-World] or num_cp=8 [7-DoF LIBERO] -> H=16)
 │   │   ├── hypertube_transport.py         # [v4.0+ Track] Object-centric C^2 hypertube transport adapter
 │   │   ├── sim_dtra_tube_dynamics.py      # HypertubeRingLayer, TwoStageDTRA & 6 invariant checks
 │   │   └── topological_bridge.py          # C^2 geodesic bridge & myelinated transition graph core
@@ -187,9 +187,9 @@ python scripts/build_dtra_v3_paper.py
   year         = {2026},
   month        = nov,
   publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.24218483},
-  url          = {https://doi.org/10.5281/zenodo.24218483},
-  note         = {Repository: \url{https://github.com/5Color/dtra} (v3.0.0 20-page Preprint)}
+  doi          = {10.5281/zenodo.24297711},
+  url          = {https://doi.org/10.5281/zenodo.24297711},
+  note         = {v3.0.0 20-page Preprint; Concept DOI: 10.5281/zenodo.24218482; prior v2.1.0: 10.5281/zenodo.24218483; Repository: \url{https://github.com/5Color/dtra}}
 }
 
 @misc{son2026abkvla,
@@ -198,8 +198,9 @@ python scripts/build_dtra_v3_paper.py
   year         = {2026},
   month        = nov,
   publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.24208545},
-  url          = {https://doi.org/10.5281/zenodo.24208545}
+  doi          = {10.5281/zenodo.24212130},
+  url          = {https://doi.org/10.5281/zenodo.24212130},
+  note         = {v1.1.3; v1.1.1: 10.5281/zenodo.24208545; Concept DOI: 10.5281/zenodo.24208544}
 }
 ```
 

@@ -4,11 +4,11 @@
 
 [![프리프린트 (DTRA v3.0, 20쪽)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](paper_v2/DTRA_v3.0_Preprint.pdf)
 [![arXiv 원고 (20쪽)](https://img.shields.io/badge/arXiv%20Manuscript-dtra__preprint.pdf-9e1c20.svg)](paper_v2/dtra_preprint.pdf)
-[![Zenodo v3.0 DOI Slot](https://img.shields.io/badge/Zenodo%20v3.0-Pending%20DOI%20Minting-informational.svg)](../RELEASE_NOTES_v3.0.0.md)
-[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24218483.svg)](https://doi.org/10.5281/zenodo.24218483)
+[![Zenodo v3.0.0 DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24297711.svg)](https://doi.org/10.5281/zenodo.24297711)
+[![Zenodo Concept DOI](https://img.shields.io/badge/Zenodo%20All%20Versions-10.5281%2Fzenodo.24218482-blue.svg)](https://doi.org/10.5281/zenodo.24218482)
 [![LaTeX 소스](https://img.shields.io/badge/LaTeX-dtra__preprint.tex-008080.svg)](paper_v2/dtra_preprint.tex)
 [![선행 연구: ABK-VLA](https://img.shields.io/badge/Prior%20Work-5Color%2Fabk--vla-2969d8.svg)](https://github.com/5Color/abk-vla)
-[![ABK-VLA DOI](https://img.shields.io/badge/ABK--VLA%20DOI-10.5281%2Fzenodo.24208545-blue.svg)](https://doi.org/10.5281/zenodo.24208545)
+[![ABK-VLA DOI](https://img.shields.io/badge/ABK--VLA%20DOI-10.5281%2Fzenodo.24212130-blue.svg)](https://doi.org/10.5281/zenodo.24212130)
 [![MIT 라이선스](https://img.shields.io/badge/License-MIT-108a43.svg)](../LICENSE)
 
 > *"어제의 기억을 지워야만 오늘을 배울 수 있다면, 그것은 지능이 아니라 단순한 계산기다."* — 손승준 (Seungjoon Son)
@@ -18,7 +18,7 @@
 > **버전과 실험 범위 분리:**
 > - **공식 프리프린트 본편 (`DTRA v3.0`):** 단일 링 `Region` 아키텍처(System 1)로서 3개 시드 3D Meta-World($K=8$), LIBERO-Goal($K=5$), 3개 시드 7-DoF LIBERO-100($K=100$) 범위입니다.
 > - **v3 이후 체화 연속학습 확장 트랙 (`v4.0`–`v6.0`):** [`PAPER_20P_OUTLINE.md`](PAPER_20P_OUTLINE.md)에 따라 `v3.0` 프리프린트 실측 표와는 엄격히 분리되어 [`experiments/robocasa_v4/`](experiments/robocasa_v4/), [`experiments/calvin_v4/`](experiments/calvin_v4/), [`experiments/calvin_v5/`](experiments/calvin_v5/), [`outputs/calvin_v6/`](outputs/calvin_v6/)에 아카이빙되어 있습니다. `v6.0`의 `OrganSystem2Planner`는 선행 **ARIN** 계보의 `Organ` 명칭을 차용한 경량 System 2 라우팅 프로토타입이며, 개념적 다중 링 `Organ`($10^4\text{--}10^8$) 로드맵과는 구분됩니다.
-> - **1세대 선행 연구 (`ABK-VLA`):** [`../v1_drawing_vla/`](../v1_drawing_vla/)에 보관되어 있습니다 (DOI: [`10.5281/zenodo.24208545`](https://doi.org/10.5281/zenodo.24208545)).
+> - **1세대 선행 연구 (`Drawing-VLA` & `ABK-VLA`):** [`../v1_drawing_vla/`](../v1_drawing_vla/)에 보관되어 있습니다 (`Drawing-VLA` v1.0.0 DOI: [`10.5281/zenodo.24122154`](https://doi.org/10.5281/zenodo.24122154), `ABK-VLA` v1.1.3 DOI: [`10.5281/zenodo.24212130`](https://doi.org/10.5281/zenodo.24212130) / v1.1.1: `24208545`).
 
 > **입력 프로토콜:** 정책 라우팅은 카메라 영상(순수 RGB-D 트랙은 깊이 포함), 고유수용성 상태와 언어 임베딩을 입력으로 받습니다. **Task-ID-free**는 추론 함수에 정수형 태스크 인덱스를 직접 전달하지 않는다는 의미이며, 언어 지시가 제공되는 설정은 순수 관측 전용 평가와 구별됩니다.
 
@@ -43,9 +43,9 @@ DTRA는 단일 거대 행렬을 키우는 대신, 유계 기억 단위인 **Cell
 
 | 단계 | 프로젝트 / 버전 | 핵심 기법 및 계층적 위치 | 검증 환경 및 확정 성과 |
 | :--- | :--- | :--- | :--- |
-| **0단계** | **ARIN** *(DYN-39 – DYN-66)* | 제한된 Cell 간 경험 공유 및 독립 감사 규약; 읽기 보존(`DYN-63: 99.57%`) vs 후속 쓰기 간섭(`DYN-65`) 경계 규명 | `Cell -> Coalition -> Region -> Organ` 계층 분화 기준 정립 |
-| **1단계** | **Drawing-VLA** | 태블릿 펜 드로잉에서 착안한 ACT 기반 폐루프 제어 | 직접 구축한 `Hand vs AI` 인간 스케치 획 데이터 검증 |
-| **2단계** | **ABK-VLA** *(DOI: `10.5281/zenodo.24208545`)* | $C^2$ 클램프드 3차 B-스플라인 압축($N_k=6 \rightarrow H=16$) 및 순수 코사인 라우팅 | $K=4$ 순차 드로잉·Meta-World: **라우팅 `99.98%`**, **망각률 `1.66%`** (Oracle `0.00%`) |
+| **0단계** | **ARIN** *(DYN-39~65 실증 · DYN-66 사전 명세)* | 제한된 Cell 간 경험 공유(`+34.18%p`) 및 독립 감사 규약; 읽기 보존(`DYN-63: 99.57%`) vs 후속 쓰기 간섭(`DYN-65`) 경계 규명 | `Cell -> Coalition -> Region -> Organ` 계층 분화 기준 정립 |
+| **1단계** | **Drawing-VLA** *(v1.0.0 DOI: `24122154`)* | 태블릿 펜 드로잉에서 착안한 ACT(`K=16`, `q=6`, `w_up=10.0`) + Catmull-Rom 브러시 기반 폐루프 제어 | `HandVsAI` 인간 시연 `324`건: `99.9/100` S-Tier, F1 `1.000`, `+20px` 복구 검증 |
+| **2단계** | **ABK-VLA** *(v1.1.1 `24208545` / v1.1.3 `24212130`)* | $C^2$ 클램프드 3차 B-스플라인 압축($N_k=6 \rightarrow H=16$) 및 순수 코사인 라우팅(`Select-then-Blend`) | 2D($K=4$): **대각 신뢰도 `99.98%`**, **망각률 `1.66%`**(Hard Argmax·Oracle `0.00%`), F1 `85.59%` / 3D Meta-World($K=4$): **평균 SR `91.7%`**, **FR `0.00%`**, **라우팅 `100.0%`** |
 | **3단계** | **DTRA v3.0** *(`v3.0.0` 프리프린트 본편)* | $\mathbb{S}^{63}$ 위상 격리 + No-Encroachment + Top-$M$ CMC + `SharedBasisBank` + Elastic Snap-Back (**단일 `Region`, System 1**) | LIBERO-100 ($K=100$, 3시드): **평균 SR `87.00 ± 0.86%`** (Seed 42 `87.80%`), **라우팅 `99.90%`**, **Dup-Lang `99.68%`**, **기저 `27`개(`73%` 압축)**, **드리프트 `0.0`** |
 | **4단계** | **DTRA v4.0** *(주방 조작 확장)* | 순수 RGB-D 스테레오 3D `Hypertube Transport` 및 피크 마진 게이팅 | RoboCasa 12태스크(`0%` 리플레이): **단일 SR `29.17%`**, **라우팅 `100.0%`**; 복합 `0.00%`로 System 2 필요성 입증 |
 | **5단계** | **DTRA v5.0** *(CALVIN System 1 백본)* | 34태스크 System 1 백본 + `CalvinCameraVisionAnchorEstimatorV5` 3D $Z$-게이팅 및 수초화 전이 그래프 추출 | 상단 미닫이문($Z\in[0.52,0.65]\text{ m}$), 테이블 블록($[0.43,0.50]\text{ m}$), 서랍($[0.31,0.44]\text{ m}$) 물리 분리 |
@@ -59,7 +59,7 @@ Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우
 
 1. **라우팅 마진 보정(No-Encroachment Margin Refinement):** 이전 태스크의 원시 쿼리 기준점과 자기 유사도 하한을 보존하고, 이전 라우팅 영역을 침범하는 키 업데이트를 투영해 제거합니다.
 2. **2단계 Top-M 공통 성분 제거(CMC):** 1단계에서 전체 키에 대한 멀티모달 코사인 스캔으로 후보 5개를 찾고, 2단계에서 후보들이 공유하는 언어·장면 성분을 빼 세부 카메라 특징과 고유수용성 잔차로 재순위화합니다. LIBERO-100에서 동일 지시어 태스크(`Dup-Lang`) 라우팅 정확도는 3개 시드 평균 `41.76%`에서 `99.68 ± 0.45%`로(Seed 42 기준 `38.92%` $\rightarrow$ `99.05%`) 보고되었습니다.
-3. **공유 운동 기저(SharedBasisBank):** 길이 16의 행동 청크를 6개 제어점의 클램프드 `C²` 큐빅 B-스플라인으로 나타내고, 태스크별 표현을 동결된 공유 원시동작 기저로 분해합니다. 100개 태스크에서 27개 기저를 사용했습니다. 이는 기저 개수 기준 73% 감소이며, 전체 모델 메모리가 감소했다는 뜻은 아닙니다.
+3. **공유 운동 기저(SharedBasisBank):** 길이 16의 행동 청크를 클램프드 `C²` 큐빅 B-스플라인 제어점(7-DoF LIBERO-100은 `num_cp=8` 제어점·내부 매듭 잠재 차원 `num_knots=6`; 2D/Meta-World는 `N_k=6` 제어점)으로 나타내고, 태스크별 표현을 동결된 공유 원시동작 기저로 분해합니다. 100개 태스크에서 27개 기저를 사용했습니다. 이는 기저 개수 기준 73% 감소이며, 전체 모델 메모리가 감소했다는 뜻은 아닙니다.
 4. **두 시간척도의 Snap-Back:** 청크 사이의 임시 변형 상태를 되돌리는 `chunk_snap_back()`과 에피소드 종료 시의 `episode_snap_back()`을 구분합니다. `post_snap_norm = 0.0000`은 해당 상태가 초기화되었음을 뜻하며, 학습 파라미터가 보존되었다는 독립적인 전후 비교 수치는 아닙니다.
 
 ---
@@ -142,7 +142,7 @@ dtra/
 ├── assets/                          # README용 경량 프리뷰 GIF (< 8 MB, 640x360 @ 12 fps)
 ├── PAPER_20P_OUTLINE.md             # 20쪽 프리프린트 구성 및 v3.0/v4.0+ 경계
 ├── core/
-│   ├── bspline_core.py              # C² 클램프드 큐빅 B-스플라인 디코더 (N_k=6 -> H=16)
+│   ├── bspline_core.py              # C² 클램프드 큐빅 B-스플라인 디코더 (N_k=6 [2D/Meta-World] 또는 num_cp=8 [7-DoF LIBERO] -> H=16)
 │   ├── hypertube_transport.py       # [v4.0+ 트랙] 객체 중심 하이퍼튜브 좌표 트랜스포트
 │   ├── sim_dtra_tube_dynamics.py    # 링 동역학과 탄성 복원 커널
 │   └── topological_bridge.py        # C² 측지선 브리지 및 수초화 전이 그래프 코어
@@ -194,20 +194,24 @@ python scripts/build_dtra_v3_paper.py
 
 ```bibtex
 @misc{son2026dtra,
-  author = {Son, Seungjoon},
-  title  = {{DTRA}: Dynamic Topology Ring Architecture for Replay-Free Continual Visuomotor Control via Hyperspherical Isolation and Shared Motor Bases},
-  year   = {2026},
-  month  = nov,
-  doi    = {10.5281/zenodo.24218483},
-  url    = {https://doi.org/10.5281/zenodo.24218483}
+  author    = {Son, Seungjoon},
+  title     = {{DTRA}: Dynamic Topology Ring Architecture for Replay-Free Continual Visuomotor Control via Hyperspherical Isolation and Shared Motor Bases},
+  year      = {2026},
+  month     = nov,
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24297711},
+  url       = {https://doi.org/10.5281/zenodo.24297711},
+  note      = {v3.0.0; Concept DOI: 10.5281/zenodo.24218482; prior v2.1.0: 10.5281/zenodo.24218483}
 }
 
 @misc{son2026abkvla,
-  author = {Son, Seungjoon},
-  title  = {{ABK-VLA}: Task-ID-Free Continual Visuomotor Policy Learning via Autonomous B-Spline Knot Compression and Visual Prototype Routing},
-  year   = {2026},
-  month  = nov,
-  doi    = {10.5281/zenodo.24208545},
-  url    = {https://doi.org/10.5281/zenodo.24208545}
+  author    = {Son, Seungjoon},
+  title     = {{ABK-VLA}: Task-ID-Free Continual Visuomotor Policy Learning via Autonomous B-Spline Knot Compression and Visual Prototype Routing},
+  year      = {2026},
+  month     = nov,
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24212130},
+  url       = {https://doi.org/10.5281/zenodo.24212130},
+  note      = {v1.1.3; v1.1.1: 10.5281/zenodo.24208545; Concept DOI: 10.5281/zenodo.24208544}
 }
 ```

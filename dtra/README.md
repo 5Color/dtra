@@ -4,11 +4,11 @@
 
 [![Preprint (DTRA v3.0, 20p)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](paper_v2/DTRA_v3.0_Preprint.pdf)
 [![arXiv Manuscript (20p)](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](paper_v2/dtra_preprint.pdf)
-[![Zenodo v3.0 DOI Slot](https://img.shields.io/badge/Zenodo%20v3.0-Pending%20DOI%20Minting-informational.svg)](../RELEASE_NOTES_v3.0.0.md)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24218483.svg)](https://doi.org/10.5281/zenodo.24218483)
+[![Zenodo v3.0.0 DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24297711.svg)](https://doi.org/10.5281/zenodo.24297711)
+[![Zenodo Concept DOI](https://img.shields.io/badge/Zenodo%20All%20Versions-10.5281%2Fzenodo.24218482-blue.svg)](https://doi.org/10.5281/zenodo.24218482)
 [![LaTeX Source](https://img.shields.io/badge/LaTeX-dtra__preprint.tex-008080.svg)](paper_v2/dtra_preprint.tex)
 [![Prior Work: ABK-VLA](https://img.shields.io/badge/Prior%20Work-5Color%2Fabk--vla-2969d8.svg)](https://github.com/5Color/abk-vla)
-[![ABK-VLA DOI](https://img.shields.io/badge/ABK--VLA%20DOI-10.5281%2Fzenodo.24208545-blue.svg)](https://doi.org/10.5281/zenodo.24208545)
+[![ABK-VLA DOI](https://img.shields.io/badge/ABK--VLA%20DOI-10.5281%2Fzenodo.24212130-blue.svg)](https://doi.org/10.5281/zenodo.24212130)
 [![License: MIT](https://img.shields.io/badge/License-MIT-108a43.svg)](../LICENSE)
 
 > *"If a mind must erase yesterday to learn today, it is not intelligence—it is merely a calculator."* — Seungjoon Son
@@ -18,7 +18,7 @@ Research materials, 20-page preprint manuscripts, and continual-learning benchma
 > **Repository & Scope Separation:**
 > - **Published Preprint Core (`DTRA v3.0`):** Single-ring `Region` architecture (System 1) verified on 3-seed 3D Meta-World ($K=8$), LIBERO-Goal ($K=5$), and 3-seed 7-DoF LIBERO-100 ($K=100$).
 > - **Post-v3 Embodied Extension Tracks (`v4.0`–`v6.0`):** Strictly separated from the `v3.0` preprint tables per [`PAPER_20P_OUTLINE.md`](PAPER_20P_OUTLINE.md) and archived under [`experiments/robocasa_v4/`](experiments/robocasa_v4/), [`experiments/calvin_v4/`](experiments/calvin_v4/), [`experiments/calvin_v5/`](experiments/calvin_v5/), and [`outputs/calvin_v6/`](outputs/calvin_v6/). Note that `v6.0`'s `OrganSystem2Planner` borrows the `Organ` name from the prior **ARIN** hierarchy as a lightweight System 2 routing prototype, distinct from the conceptual multi-ring $10^4\text{--}10^8$ `Organ` roadmap.
-> - **Generation 1 Predecessor (`ABK-VLA`):** Archived in [`../v1_drawing_vla/`](../v1_drawing_vla/) (DOI: [`10.5281/zenodo.24208545`](https://doi.org/10.5281/zenodo.24208545)).
+> - **Generation 1 Predecessors (`Drawing-VLA` & `ABK-VLA`):** Archived in [`../v1_drawing_vla/`](../v1_drawing_vla/) (`Drawing-VLA` v1.0.0 DOI: [`10.5281/zenodo.24122154`](https://doi.org/10.5281/zenodo.24122154); `ABK-VLA` v1.1.3 DOI: [`10.5281/zenodo.24212130`](https://doi.org/10.5281/zenodo.24212130), v1.1.1: `24208545`).
 
 > **Inference-input scope:** Task-ID-free means no integer task index is passed to the policy at inference. Routing uses onboard camera features (plus depth in pure RGB-D tracks), proprioception, and a language embedding; evaluations that provide language commands are command-conditioned, not observation-only.
 
@@ -43,9 +43,9 @@ Rather than scaling a single monolithic parameter matrix, DTRA builds sensorimot
 
 | Stage | Version / Work | Key Mechanism & Hierarchy Role | Benchmark & Verified Milestone |
 | :--- | :--- | :--- | :--- |
-| **Stage 0** | **ARIN** *(DYN-39 – DYN-66)* | Bounded Cell experience sharing & independent audit protocol; isolated the `Read Preservation` (`DYN-63: 99.57%`) vs. `Next WRITE` interference (`DYN-65`) boundary | Established `Cell -> Coalition -> Region -> Organ` emergent taxonomy |
-| **Stage 1** | **Drawing-VLA** | Closed-loop Action Chunking (ACT) inspired by tablet stylus sketching | Multi-stroke human sketch data (`Hand vs AI` web app) |
-| **Stage 2** | **ABK-VLA** *(DOI: `10.5281/zenodo.24208545`)* | $C^2$ clamped cubic B-Spline compression ($N_k=6 \rightarrow H=16$) & pure cosine routing (single Cell trajectory) | $K=4$ sequential drawing & Meta-World: **`99.98%` RouteAcc**, **`1.66%` FR** (`0.00%` Oracle) |
+| **Stage 0** | **ARIN** *(DYN-39–65 empirical; DYN-66 spec)* | Bounded Cell experience sharing (`+34.18%p`) & independent audit protocol; isolated `Read Preservation` (`DYN-63: 99.57%`) vs. `Next WRITE` interference (`DYN-65`) | Established `Cell -> Coalition -> Region -> Organ` emergent taxonomy |
+| **Stage 1** | **Drawing-VLA** *(v1.0.0 DOI: `24122154`)* | Closed-loop ACT (`K=16`, `q=6`, `w_up=10.0`) + Catmull-Rom brush rendering | `HandVsAI` (`324` human demos): `99.9/100` S-Tier, `1.000` F1, `+20px` recovery |
+| **Stage 2** | **ABK-VLA** *(v1.1.1 `24208545` / v1.1.3 `24212130`)* | $C^2$ clamped cubic B-Spline compression ($N_k=6 \rightarrow H=16$) & pure cosine routing (`Select-then-Blend`) | 2D ($K=4$): **`99.98%` conf**, **`1.66%` FR** (`0.00%` Hard Argmax/Oracle), `85.59%` F1; 3D Meta-World ($K=4$): **`91.7%` SR**, **`0.00%` FR**, **`100.0%` RouteAcc** |
 | **Stage 3** | **DTRA v3.0** *(`v3.0.0` Preprint Core)* | $\mathbb{S}^{63}$ hyperspherical isolation + No-Encroachment + Top-$M$ CMC + `SharedBasisBank` + Two-Timescale Snap-Back (**Single-Ring `Region`, System 1**) | LIBERO-100 ($K=100$, 3-seed): **`87.00 ± 0.86%` SR** (Seed 42 `87.80%`), **`99.90%` RouteAcc**, **`99.68%` Dup-Lang**, **`27` bases** (`73%` reduction), **`0.0` drift** |
 | **Stage 4** | **DTRA v4.0** *(Kitchen Extension)* | Pure RGB-D stereo 3D `Hypertube Transport` & peak-margin gating | RoboCasa 12 tasks (`0%` replay): **`29.17%` Atomic SR**, **`100.0%` RouteAcc**; `0.00%` Composite diagnosed need for System 2 |
 | **Stage 5** | **DTRA v5.0** *(CALVIN System 1 Backbone)* | 34-task System 1 backbone + `CalvinCameraVisionAnchorEstimatorV5` 3D $Z$-gating & myelinated transition graph extraction | Physically separates upper slider ($Z\in[0.52,0.65]\text{ m}$), tabletop blocks ($[0.43,0.50]\text{ m}$), and drawer ($[0.31,0.44]\text{ m}$) |
@@ -59,7 +59,7 @@ Scaling continual visuomotor control from $K=8$ Meta-World tasks to $K=100$ sequ
 
 1. **No-Encroachment Margin Refinement:** Caches prior task raw query anchors $\mu_j$ and self-similarity floors $s_{jj} = \cos(\mu_j, \mathbf{k}_j)$, projecting out repulsive key updates that would steal routing territory from prior Voronoi cells $0 \dots i-1$ on $\mathbb{S}^{63}$.
 2. **Two-Stage Top-$M$ Common-Mode Cancellation (CMC):** Stage 1 retrieves Top-$M$ ($M=5$) candidates via $O(K)$ multimodal cosine scan; Stage 2 subtracts the candidate set's shared language/scene mean to isolate fine DualCam spatial grids ($4 \times 4 / 2 \times 2$ + DoG) and proprioceptive residuals, lifting $K=100$ `Dup-Lang` routing accuracy across 3 seeds from **41.76%** to **99.68 ± 0.45%** (Seed 42: `38.92%` $\rightarrow$ `99.05%`).
-3. **SharedBasisBank + Zero AdamW Silent Drift:** Factorizes $H=16$ action chunks via clamped $C^2$ cubic B-Spline knots ($N_k=6$) into a dynamically shared library of frozen primitive bases, compressing $K=100$ tasks into **27 bases** (**73% basis reduction**) while enforcing `requires_grad=False` and optimizer exclusion ($L_\infty\text{ drift} = 0.0$).
+3. **SharedBasisBank + Zero AdamW Silent Drift:** Factorizes $H=16$ action chunks via clamped $C^2$ cubic B-Spline control points (`num_cp=8` for 7-DoF LIBERO-100 with `num_knots=6` internal basis width; `N_k=6` for 2D/Meta-World) into a dynamically shared library of frozen primitive bases, compressing $K=100$ tasks into **27 bases** (**73% basis-count reduction**) while enforcing `requires_grad=False` and optimizer exclusion ($L_\infty\text{ drift} = 0.0$).
 4. **Two-Timescale Snap-Back:** Separates intra-episode chunk reset (`chunk_snap_back()`, $\Delta \mathbf{z}_i \leftarrow \mathbf{0}$) from episode-end refractory reset (`episode_snap_back()`, `post_snap_norm = 0.0000`) while retaining progress traces to prevent long-horizon perseveration.
 
 ---
@@ -149,7 +149,7 @@ dtra/
 ├── assets/                              # Lightweight README preview GIFs (< 8 MB, 640x360 @ 12 fps)
 ├── PAPER_20P_OUTLINE.md                 # Exact 20-page NeurIPS/CoRL outline & v3.0/v4.0 boundary ledger
 ├── core/
-│   ├── bspline_core.py                  # C^2 clamped cubic B-Spline trajectory decoder (N_k=6 -> H=16)
+│   ├── bspline_core.py                  # C^2 clamped cubic B-Spline trajectory decoder (N_k=6 [2D/Meta-World] or num_cp=8 [7-DoF LIBERO] -> H=16)
 │   ├── hypertube_transport.py           # [v4.0+ Track] Object-centric hypertube coordinate transport
 │   ├── sim_dtra_tube_dynamics.py        # Hypertube ring dynamics, elastic attraction & snap-back kernel
 │   └── topological_bridge.py            # C^2 geodesic bridge & myelinated transition graph core
@@ -214,8 +214,10 @@ python scripts/build_dtra_v3_paper.py
   title        = {{DTRA}: Dynamic Topology Ring Architecture for Replay-Free Continual Visuomotor Control via Hyperspherical Isolation and Shared Motor Bases},
   year         = {2026},
   month        = nov,
-  doi          = {10.5281/zenodo.24218483},
-  url          = {https://doi.org/10.5281/zenodo.24218483}
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.24297711},
+  url          = {https://doi.org/10.5281/zenodo.24297711},
+  note         = {v3.0.0; Concept DOI: 10.5281/zenodo.24218482; prior v2.1.0: 10.5281/zenodo.24218483}
 }
 
 @misc{son2026abkvla,
@@ -223,7 +225,9 @@ python scripts/build_dtra_v3_paper.py
   title        = {{ABK-VLA}: Task-ID-Free Continual Visuomotor Policy Learning via Autonomous B-Spline Knot Compression and Visual Prototype Routing},
   year         = {2026},
   month        = nov,
-  doi          = {10.5281/zenodo.24208545},
-  url          = {https://doi.org/10.5281/zenodo.24208545}
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.24212130},
+  url          = {https://doi.org/10.5281/zenodo.24212130},
+  note         = {v1.1.3; v1.1.1: 10.5281/zenodo.24208545; Concept DOI: 10.5281/zenodo.24208544}
 }
 ```
