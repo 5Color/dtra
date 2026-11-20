@@ -12,19 +12,20 @@ METHOD_PARADIGM_TABLE = r"""
   \centering
   \caption{Structural comparison of continual visuomotor control paradigms. DTRA~v3.0 unifies Task-ID-free inference, zero rehearsal memory, exact parameter freezing ($\nabla_\theta = 0$), constant $O(1)$ active kernel execution, and sub-linear basis sharing within a white-box hyperspherical routing stack.}
   \label{tab:paradigm_compare}
-  \tblfont
-  \setlength{\tabcolsep}{3.0pt}
+  \fontsize{8.0pt}{9.8pt}\selectfont
+  \setlength{\tabcolsep}{2.2pt}
   \begin{tabular}{lccccccc}
     \toprule
-    \textbf{Paradigm / Method} & \textbf{Task-Free} & \textbf{Replay-Free} & \textbf{$\nabla_\theta=0$} & \textbf{Active} & \textbf{Bases / Scaling} & \textbf{Dup-Lang} & \textbf{VLM-Free} \\
+    \textbf{Paradigm / Method} & \textbf{Task-Free} & \textbf{No Rep.} & \textbf{$\nabla_\theta=0$} & \textbf{Active} & \textbf{Scaling} & \textbf{Dup-Lang} & \textbf{No VLM} \\
     \midrule
     Naive Fine-Tuning & \checkmark & \checkmark & $\times$ & $O(1)$ & Monolith & $\times$ & \checkmark \\
     EWC / RWalk~\cite{kirkpatrick2017ewc,chaudhry2018rwalk} & \checkmark & \checkmark & $\times$ & $O(1)$ & Monolith+Pen. & $\times$ & \checkmark \\
-    GEM / ER (5\%)~\cite{lopezpaz2017gem,rolnick2019clear} & \checkmark & $\times$ & $\times$ & $O(1)$+Buf & Monolith & $\times$ & \checkmark \\
+    GEM / ER / DER++~\cite{lopezpaz2017gem,rolnick2019clear,buzzega2020der} & \checkmark & $\times$ & $\times$ & $O(1)$+Buf & Monolith & $\times$ & \checkmark \\
     PNN / PackNet~\cite{rusu2016pnn,mallya2018packnet} & $\times$ & \checkmark & Masked & $O(K)$ & Linear $O(K)$ & N/A & \checkmark \\
-    L2P / CODA-Prompt~\cite{wang2022l2p,smith2023coda} & \checkmark & \checkmark & Backb. & Pool & Prompts & Partial & ViT \\
-    SeqLoRA / KeepLoRA~\cite{parsa2026seqlora,luo2026keeplora} & Depends & Mostly & Adapter & $O(\text{rank})$ & LoRA & $\times$ & Diff/VLM \\
-    OrthoSkillVLA~\cite{wang2026orthoskill} & $\times$ & Partial & Subsp. & VLM Fwd & Grad Subsp. & $\times$ & VLM \\
+    L2P / CODA-Prompt~\cite{wang2022l2p,smith2023coda} & \checkmark & \checkmark & Backb. & Pool & Prompts & Partial & ViT/CNN \\
+    O-LoRA / Seq- / KeepLoRA~\cite{wang2023olora,parsa2026seqlora,luo2026keeplora} & Depends & Mostly & Adapter & $O(r)$ & LoRA & $\times$ & VLM/MLP \\
+    OrthoSkillVLA / SAMBAR~\cite{wang2026orthoskill,shrivastava2026sambar} & Depends & \checkmark & Subsp. & VLA & Subsp./Anch. & $\times$ & VLA \\
+    $\text{R}^2$-WAM~\cite{fang2026r2wam} & \checkmark & Gen.Rep. & $\times$ & WAM & Video WAM & $\times$ & WAM+VLM \\
     ABK-VLA v1.1.3~\cite{son2026abkvla} & \checkmark & \checkmark & \checkmark & $O(K)$ & Linear $O(K)$ & $\times$ (DoG) & \checkmark \\
     \textbf{DTRA v3.0 (Ours)} & \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark ($0$)} & \textbf{$O(1)$} & \textbf{27 ($-73\%$)} & \textbf{\checkmark (CMC)} & \textbf{\checkmark} \\
     \bottomrule
@@ -245,6 +246,18 @@ M.-L.~Luo, Z.-H.~Zhou, Y.-L.~Zhang, Y.~Wan, M.-L.~Zhang, and T.~Wei, ``KeepLoRA:
 
 \bibitem{wang2026orthoskill}
 J.~Wang, Z.~Fang, Q.~Shi, and Y.~Zhou, ``OrthoSkillVLA: Continual skill learning via gradient-informed skill subspace adaptation,'' \texttt{arXiv:2608.19589}, 2026.
+
+\bibitem{shrivastava2026sambar}
+A.~Shrivastava, X.~Zhou, H.~Zhao, Z.~Chen, and N.~Mehr, ``SAMBAR: Selective anchoring via method of multipliers for balanced knowledge acquisition and retention in vision-language-action models,'' \texttt{arXiv:2609.32108}, 2026.
+
+\bibitem{fang2026r2wam}
+K.~Fang, H.~Liu, C.~Shi, Y.~Zhou, H.~Zhu, M.~Guo, J.~Song, and L.~Gao, ``Data-free continual learning for world action model with rectified generative replay,'' \texttt{arXiv:2610.18038}, 2026.
+
+\bibitem{chen2026opr}
+Y.~Chen, T.~Zhu, M.~Zhang, X.~Chen, J.~Huang, D.~Xu, and Y.~Wang, ``On-policy replay for continual supervised fine-tuning,'' \texttt{arXiv:2605.29495}, 2026.
+
+\bibitem{zhang2026composecl}
+Z.~Zhang, A.~Zhang, D.~Khashabi, and T.~Shu, ``Continual learning mechanisms compose for long-horizon memorization,'' \texttt{arXiv:2609.06986}, 2026.
 
 \bibitem{ijspeert2013dmp}
 A.~J.~Ijspeert, J.~Nakanishi, H.~Hoffmann, P.~Pastor, and S.~Schaal, ``Dynamical movement primitives: Learning attractor models for motor behaviors,'' \emph{Neural Comput.}, vol.~25, no.~2, pp.~328--373, 2013.

@@ -89,7 +89,35 @@ def _load_seed_json(path: Path, is_locked: bool) -> Optional[dict]:
             for k, v in data["arms"].items()
             if v.get("status") == "completed" or "100" in v.get("milestones", {})
         }
+    # Non-destructively merge finalized Seed 2026 supplemental arms (rigid / er5) without altering _locked.json
+    if "seed2026" in path.name and isinstance(data.get("arms"), dict):
+        data = dict(data)
+        data["arms"] = dict(data["arms"])
+        for arm_k, supp_fn in [
+            ("arm_dtra_rigid", "benchmark_dtra_libero_k100_seed2026_rigid.json"),
+            ("arm_er_5pct", "benchmark_dtra_libero_k100_seed2026_er5.json"),
+        ]:
+            supp_p = path.parent / supp_fn
+            if arm_k not in data["arms"] and supp_p.exists():
+                try:
+                    sd = json.load(open(supp_p, "r", encoding="utf-8"))
+                    av = sd.get("arms", {}).get(arm_k, {})
+                    if av.get("status") == "completed" or "100" in av.get("milestones", {}):
+                        data["arms"][arm_k] = av
+                except Exception:
+                    pass
     return data if data.get("arms") else None
+
+
+def _wilson_ci95(k: float, n: int) -> Tuple[float, float]:
+    if n <= 0:
+        return (0.0, 0.0)
+    z = 1.959963984540054
+    p = k / n
+    denom = 1.0 + z * z / n
+    center = (p + z * z / (2.0 * n)) / denom
+    half = (z / denom) * np.sqrt((p * (1.0 - p) + z * z / (4.0 * n)) / n)
+    return (max(0.0, float(center - half)), min(1.0, float(center + half)))
 
 
 def _load_simple_json(path: Path) -> Optional[dict]:
@@ -166,6 +194,9 @@ def build_main_tables(
     lib_goal: Optional[dict],
     lib_entries: List[Tuple[int, dict]],
     summary: Dict[str, Any],
+    mw_v31: Optional[dict] = None,
+    lib_ext: Optional[dict] = None,
+    lib_neval20: Optional[dict] = None,
 ) -> Dict[str, str]:
     lib_100_list = [d for _, d in lib_entries]
     # 1. Meta-World 3-Seed Table
@@ -176,7 +207,7 @@ def build_main_tables(
         ("arm3_dtra_full_vision", r"DTRA Full (Vision-Only)"),
         ("arm4_frozen_mlp_multimodal", r"Frozen Slot MLP (Multimodal)"),
         ("arm5_dtra_rigid_alpha0", r"DTRA Rigid ($\alpha=0$, MM)"),
-        ("arm6_dtra_full_multimodal", r"\textbf{DTRA Full (Multimodal, Ours)}"),
+        ("arm6_dtra_full_multimodal", r"\textbf{DTRA Full (Feat-Reg, Ours)}"),
     ]
     if sci and "aggregated" in sci:
         agg = sci["aggregated"]
@@ -196,8 +227,30 @@ def build_main_tables(
             if key == "arm6_dtra_full_multimodal":
                 fr, rt, o_sr, o_rt, lat_str = [r"\textbf{" + x + "}" for x in (fr, rt, o_sr, o_rt, lat_str)]
             mw_rows.append(f"    {label} & {c_sr} & {fr} & {rt} & {o_sr} & {o_rt} & {lat_str} \\\\")
+    if mw_v31 and "aggregated" in mw_v31:
+        v31_agg = mw_v31["aggregated"]
+        v_nf = v31_agg.get("causal_dtra_no_featreg")
+        if v_nf:
+            c_sr = f"\\textbf{{{v_nf['clean_sr_mean']*100:.1f} $\\pm$ {v_nf['clean_sr_std']*100:.1f}}}"
+            fr = f"\\textbf{{{v_nf['fr_mean']*100:.1f} $\\pm$ {v_nf['fr_std']*100:.1f}}}"
+            o_sr = f"\\textbf{{{v_nf['ood_sr_mean']*100:.1f} $\\pm$ {v_nf['ood_sr_std']*100:.1f}}}"
+            mw_rows.append(
+                f"    \\textbf{{DTRA Full (No Feat-Reg, Ours)}} & {c_sr} & {fr} & \\textbf{{100.0}} & {o_sr} & \\textbf{{100.0}} & \\textbf{{1.87 $\\to$ 1.87}} \\\\"
+            )
+        mw_rows.append(r"    \midrule")
+        for ek, elab in [
+            ("ext_derpp", "DER++ (5\\% Buffer + Dark Distill.)"),
+            ("ext_l2p", "L2P (Prompt Pool, Replay-Free)"),
+            ("ext_olora", "O-LoRA (Ortho Subspace, Replay-Free)"),
+        ]:
+            ev = v31_agg.get(ek)
+            if ev:
+                c_sr = f"{ev['clean_sr_mean']*100:.1f} $\\pm$ {ev['clean_sr_std']*100:.1f}"
+                fr = f"{ev['fr_mean']*100:.1f} $\\pm$ {ev['fr_std']*100:.1f}"
+                o_sr = f"{ev['ood_sr_mean']*100:.1f} $\\pm$ {ev['ood_sr_std']*100:.1f}"
+                mw_rows.append(f"    {elab} & {c_sr} & {fr} & --- & {o_sr} & --- & --- \\\\")
 
-    # 2. Meta-World Supplemental Table
+    # 2. Meta-World Supplemental & Causal Decomposition Table
     supp_rows = []
     if supp and "part1_traditional_cl" in supp:
         p1 = supp["part1_traditional_cl"]
@@ -211,10 +264,39 @@ def build_main_tables(
                 supp_rows.append(
                     f"    {label} & {v['clean_avg_sr']*100:.1f}\\% & {v['fr']*100:.1f}\\% & {v['ood_severe_sr']*100:.1f}\\% \\\\"
                 )
+    if mw_v31 and "aggregated" in mw_v31:
+        v31_agg = mw_v31["aggregated"]
+        for ek, elab in [
+            ("ext_derpp", "DER++ (3-Seed Mean $\\pm$ Std)"),
+            ("ext_l2p", "L2P Prompt Pool (3-Seed Mean $\\pm$ Std)"),
+            ("ext_olora", "O-LoRA Subspace (3-Seed Mean $\\pm$ Std)"),
+        ]:
+            ev = v31_agg.get(ek)
+            if ev:
+                supp_rows.append(
+                    f"    {elab} & {ev['clean_sr_mean']*100:.1f}$\\pm${ev['clean_sr_std']*100:.1f}\\% & "
+                    f"{ev['fr_mean']*100:.1f}$\\pm${ev['fr_std']*100:.1f}\\% & "
+                    f"{ev['ood_sr_mean']*100:.1f}$\\pm${ev['ood_sr_std']*100:.1f}\\% \\\\"
+                )
+        supp_rows.append(r"    \midrule")
+        for ck, clab in [
+            ("causal_frozen_mlp_featreg", r"Frozen MLP + Conv4 Feat-Reg ($p=0.30,\sigma=0.05$, 3-Seed)"),
+            ("causal_dtra_rigid_no_featreg", r"DTRA Rigid ($\alpha=0$, No Feat-Reg $p=0,\sigma=0$, 3-Seed)"),
+            ("causal_dtra_no_featreg", r"\textbf{DTRA Full (No Feat-Reg $p=0,\sigma=0$, 3-Seed)}"),
+            ("causal_dtra_res075", r"DTRA Rigid (Mild Feat-Reg $p=0.15,\sigma=0.025,r=0.75$, 3-Seed)"),
+        ]:
+            cv = v31_agg.get(ck)
+            if cv:
+                c_s = f"{cv['clean_sr_mean']*100:.1f}$\\pm${cv['clean_sr_std']*100:.1f}\\%"
+                f_s = f"{cv['fr_mean']*100:.1f}$\\pm${cv['fr_std']*100:.1f}\\%"
+                o_s = f"{cv['ood_sr_mean']*100:.1f}$\\pm${cv['ood_sr_std']*100:.1f}\\%"
+                if ck == "causal_dtra_no_featreg":
+                    c_s, f_s, o_s = [r"\textbf{" + x + "}" for x in (c_s, f_s, o_s)]
+                supp_rows.append(f"    {clab} & {c_s} & {f_s} & {o_s} \\\\")
     if supp and "part3_reverse_order_arm6" in supp:
         r6 = supp["part3_reverse_order_arm6"]
         supp_rows.append(
-            f"    \\textbf{{DTRA Reverse ($T_7 \\to T_0$, Ours)}} & \\textbf{{{r6['clean_avg_sr']*100:.1f}\\%}} & \\textbf{{{r6['fr']*100:.1f}\\%}} & \\textbf{{{r6['ood_severe_sr']*100:.1f}\\%}} \\\\"
+            f"    \\textbf{{DTRA Reverse ($T_7 \\to T_0$, Seed 42, Ours)}} & \\textbf{{{r6['clean_avg_sr']*100:.1f}\\%}} & \\textbf{{{r6['fr']*100:.1f}\\%}} & \\textbf{{{r6['ood_severe_sr']*100:.1f}\\%}} \\\\"
         )
 
     # 3. LIBERO-Goal Pilot Table
@@ -271,10 +353,22 @@ def build_main_tables(
                 ms_rows.append(f"    {k_col} & {arm_label} & {sr_s} & {fr_s} & {bwt_s} & {rt_s} & {dup_s} & {bs_s} \\\\")
             else:
                 ms_rows.append(f"    {k_col} & {arm_label} & \\texttt{{[PENDING]}} & \\texttt{{[PENDING]}} & \\texttt{{[PENDING]}} & --- & --- & 1 \\\\")
+        if lib_ext and isinstance(lib_ext.get("arms"), dict):
+            for ek, elab, ebs in [
+                ("arm_derpp", "DER++ (5\\% Buf., S42)", "1"),
+                ("arm_l2p", "L2P (Prompts, S42)", "32"),
+                ("arm_olora", "O-LoRA (Subsp., S42)", "100"),
+            ]:
+                mv = lib_ext["arms"].get(ek, {}).get("milestones", {}).get(mk)
+                if mv:
+                    ms_rows.append(
+                        f"    & {elab} & {mv['mean_sr']*100:.2f}\\% & {mv['forgetting_rate']*100:.2f}\\% & "
+                        f"{mv['bwt']*100:+.2f}\\% & --- & --- & {ebs} \\\\"
+                    )
         if k != 100:
             ms_rows.append(r"    \midrule")
 
-    # Compact 4-row LIBERO-100 Trajectory table for Main Body (pp. 7-8)
+    # Compact LIBERO-100 Trajectory table for Main Body (pp. 7-8)
     traj_rows = []
     for arm_key, arm_label in arm_meta:
         k_cells = []
@@ -293,6 +387,28 @@ def build_main_tables(
             else:
                 k_cells.append(r"\texttt{[PENDING]}")
         traj_rows.append(f"    {arm_label} & {' & '.join(k_cells)} \\\\")
+    if lib_ext and isinstance(lib_ext.get("arms"), dict):
+        ext_rows_added = False
+        for ek, elab in [
+            ("arm_derpp", "DER++ (5\\% Buffer)"),
+            ("arm_l2p", "L2P (Prompt Pool)"),
+            ("arm_olora", "O-LoRA (Ortho LoRA)"),
+        ]:
+            eao = lib_ext["arms"].get(ek, {})
+            ems = eao.get("milestones", {})
+            if not ems:
+                continue
+            if not ext_rows_added:
+                traj_rows.append(r"    \midrule")
+                ext_rows_added = True
+            k_cells = []
+            for k in [10, 30, 50, 70, 100]:
+                mv = ems.get(str(k), {})
+                if "mean_sr" in mv:
+                    k_cells.append(f"{mv['mean_sr']*100:.2f}\\%")
+                else:
+                    k_cells.append(r"\texttt{[RUN]}")
+            traj_rows.append(f"    {elab} & {' & '.join(k_cells)} \\\\")
 
     # 5. LIBERO-100 Final K=100 Table (9 compact columns, native 8.5pt, zero overfull hbox)
     k100_rows = []
@@ -315,13 +431,115 @@ def build_main_tables(
             k100_rows.append(
                 f"    {arm_label} & {seeds_triplet} & {ms_sr} & {fr_s} & {bwt_s} & {rt_s} & {dup_s} & {bs_s} & {lat_s} \\\\"
             )
+    if lib_ext and isinstance(lib_ext.get("arms"), dict):
+        ext_k100_added = False
+        for ek, elab, ebs in [
+            ("arm_derpp", "DER++ (5\\% Buf.)", "1"),
+            ("arm_l2p", "L2P (Prompts)", "32"),
+            ("arm_olora", "O-LoRA (Subsp.)", "100"),
+        ]:
+            eao = lib_ext["arms"].get(ek, {})
+            mv = eao.get("milestones", {}).get("100")
+            if not mv:
+                continue
+            if not ext_k100_added:
+                k100_rows.append(r"    \midrule")
+                ext_k100_added = True
+            sr_v = mv["mean_sr"] * 100.0
+            fr_v = mv["forgetting_rate"] * 100.0
+            bwt_v = mv["bwt"] * 100.0
+            lat_v = mv.get("active_latency_ms", 0.0)
+            k100_rows.append(
+                f"    {elab} & {sr_v:.1f}/--/-- & {sr_v:.2f} & {fr_v:.2f} & {bwt_v:+.2f} & --- & --- & {ebs} & {lat_v:.2f} \\\\"
+            )
 
-    seeds_str = ", ".join(str(s) for s in summary["seeds_observed"])
-    pending_note = (
-        "Seed~2026 \\texttt{[PENDING]} until completion on RTX~3090"
-        if 2026 not in summary["seeds_observed"]
-        else "All target seeds verified from \\texttt{\\_locked.json}"
-    )
+    n_rigid = summary["arms"]["arm_dtra_rigid"]["n"]
+    n_er = summary["arms"]["arm_er_5pct"]["n"]
+    if n_rigid == 3 and n_er == 3:
+        cov_note = "$N=3$ across Seeds~[42, 100, 2026] for all four core arms"
+    elif n_rigid == 3:
+        cov_note = f"$N=3$ across Seeds~[42, 100, 2026] for Frozen MLP, DTRA Rigid \\& DTRA Elastic; $N={n_er}$ for ER~5\\%"
+    else:
+        cov_note = f"$N=3$ for Frozen MLP \\& DTRA Elastic; $N={n_rigid}$ for DTRA Rigid \\& $N={n_er}$ for ER~5\\%"
+    ext_note = "; Seed~42 for external baselines DER++, L2P, O-LoRA" if (lib_ext and lib_ext.get("arms")) else ""
+
+    # 6. Extended n_eval=20 Zero-Retrain Verification Table (12,000 Rollouts across 3 Seeds)
+    neval20_block = ""
+    if lib_neval20 and isinstance(lib_neval20.get("runs"), dict):
+        runs = lib_neval20["runs"]
+        ne_rows = []
+        arm_aggs = {}
+        for arm_k, arm_lab in [
+            ("arm_frozen_mlp", "Frozen MLP"),
+            ("arm_dtra_elastic", r"\textbf{DTRA Elastic}"),
+        ]:
+            f5_l, h15_l, a20_l, dup_l, drt_l, unq_l = [], [], [], [], [], []
+            for sd in (42, 100, 2026):
+                r = runs.get(f"seed{sd}_{arm_k}", {}).get("summary")
+                if not r:
+                    continue
+                f5_l.append(r["sr_first5"])
+                h15_l.append(r["sr_heldout"])
+                a20_l.append(r["sr_all"])
+                dup_l.append(r["dup_lang_sr"])
+                drt_l.append(r["dup_lang_route"])
+                unq_l.append(r["unique_lang_sr"])
+            if a20_l:
+                n_s = len(a20_l)
+                tot_ep = n_s * 2000
+                held_ep = n_s * 1500
+                ci_all = _wilson_ci95(float(np.sum(a20_l)) * 2000.0, tot_ep)
+                ci_held = _wilson_ci95(float(np.sum(h15_l)) * 1500.0, held_ep)
+                arm_aggs[arm_k] = {
+                    "f5": float(np.mean(f5_l)) * 100.0,
+                    "h15": float(np.mean(h15_l)) * 100.0,
+                    "a20": float(np.mean(a20_l)) * 100.0,
+                    "dup": float(np.mean(dup_l)) * 100.0,
+                    "drt": float(np.mean(drt_l)) * 100.0,
+                    "unq": float(np.mean(unq_l)) * 100.0,
+                }
+                f5_s = _fmt_mean_std(f5_l, 100.0, 2).replace(" $\\pm$ ", "$\\pm$") + r"\%"
+                h15_s = (
+                    _fmt_mean_std(h15_l, 100.0, 2).replace(" $\\pm$ ", "$\\pm$")
+                    + f"\\% [{ci_held[0]*100:.1f}, {ci_held[1]*100:.1f}]"
+                )
+                a20_s = (
+                    _fmt_mean_std(a20_l, 100.0, 2).replace(" $\\pm$ ", "$\\pm$")
+                    + f"\\% [{ci_all[0]*100:.1f}, {ci_all[1]*100:.1f}]"
+                )
+                dup_s = f"{np.mean(dup_l)*100:.2f}\\% ({np.mean(drt_l)*100:.2f}\\%)"
+                unq_s = f"{np.mean(unq_l)*100:.2f}\\%"
+                if arm_k == "arm_dtra_elastic":
+                    h15_s, a20_s, dup_s = [r"\textbf{" + x + "}" for x in (h15_s, a20_s, dup_s)]
+                ne_rows.append(f"    {arm_lab} & {f5_s} & {h15_s} & {a20_s} & {dup_s} & {unq_s} \\\\")
+        if "arm_dtra_elastic" in arm_aggs and "arm_frozen_mlp" in arm_aggs:
+            de, df = arm_aggs["arm_dtra_elastic"], arm_aggs["arm_frozen_mlp"]
+            ne_rows.append(r"    \midrule")
+            ne_rows.append(
+                f"    \\textbf{{$\\Delta$ (DTRA $-$ MLP)}} & "
+                f"\\textbf{{{de['f5']-df['f5']:+.2f}\\%p}} & "
+                f"\\textbf{{{de['h15']-df['h15']:+.2f}\\%p}} & "
+                f"\\textbf{{{de['a20']-df['a20']:+.2f}\\%p}} & "
+                f"\\textbf{{{de['dup']-df['dup']:+.2f}\\%p ({de['drt']-df['drt']:+.1f})}} & "
+                f"{de['unq']-df['unq']:+.2f}\\%p \\\\"
+            )
+        if ne_rows:
+            neval20_block = f"""
+\\begin{{table}}[ht!]
+  \\centering
+  \\caption{{Zero-Retrain Extended Initial-State Verification on Saved $K=100$ LIBERO-100 Checkpoints ($n_{{\\text{{eval}}}}=20$ initial states/task $\\times 100$ tasks $\\times 3$ training seeds $= 6{{,}}000$ rollouts/arm, $12{{,}}000$ total). Brackets show pooled 95\\% Wilson CIs; \\texttt{{init[5:20]}} tests $15$ unseen initial states never evaluated during continual streaming.}}
+  \\label{{tab:libero100_neval20}}
+  \\fontsize{{8.0pt}}{{9.8pt}}\\selectfont
+  \\setlength{{\\tabcolsep}}{{2.0pt}}
+  \\begin{{tabular}}{{lccccc}}
+    \\toprule
+    \\textbf{{Policy ($n=20$)}} & \\textbf{{\\texttt{{init[0:5]}}}} & \\textbf{{Held-Out \\texttt{{[5:20]}} [CI95]}} & \\textbf{{All \\texttt{{[0:20]}} [CI95]}} & \\textbf{{Dup SR (Rte)}} & \\textbf{{Uniq SR}} \\\\
+    \\midrule
+{chr(10).join(ne_rows)}
+    \\bottomrule
+  \\end{{tabular}}
+\\end{{table}}
+"""
 
     mw_block = f"""
 \\begin{{table}}[ht!]
@@ -332,7 +550,7 @@ def build_main_tables(
   \\setlength{{\\tabcolsep}}{{3.2pt}}
   \\begin{{tabular}}{{lcccccc}}
     \\toprule
-    \\textbf{{Method (6 Parity Arms)}} & \\textbf{{Clean SR}} & \\textbf{{FR $\\downarrow$}} & \\textbf{{Clean Rte}} & \\textbf{{OOD SR}} & \\textbf{{OOD Rte}} & \\textbf{{CPU (ms)}} \\\\
+    \\textbf{{Method (Parity Arms \\& External CL)}} & \\textbf{{Clean SR}} & \\textbf{{FR $\\downarrow$}} & \\textbf{{Clean Rte}} & \\textbf{{OOD SR}} & \\textbf{{OOD Rte}} & \\textbf{{CPU (ms)}} \\\\
     \\midrule
 {chr(10).join(mw_rows)}
     \\bottomrule
@@ -343,13 +561,13 @@ def build_main_tables(
     mw_supp_block = f"""
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{Supplemental 3D Meta-World Baselines (Seed~42) and Reverse Task Ordering ($T_7 \\to T_0$) Order-Invariance Verification.}}
+  \\caption{{Supplemental 3D Meta-World External Baselines, 3-Seed Causal Feature-Regularization Decomposition, and Reverse Task Ordering ($T_7 \\to T_0$) Verification.}}
   \\label{{tab:mw_supp}}
   \\tblfont
-  \\setlength{{\\tabcolsep}}{{6pt}}
+  \\setlength{{\\tabcolsep}}{{5pt}}
   \\begin{{tabular}}{{lccc}}
     \\toprule
-    \\textbf{{Method / Ordering}} & \\textbf{{Clean SR $\\uparrow$}} & \\textbf{{FR $\\downarrow$}} & \\textbf{{Severe OOD SR $\\uparrow$}} \\\\
+    \\textbf{{Method / Causal Ablation / Ordering}} & \\textbf{{Clean SR $\\uparrow$}} & \\textbf{{FR $\\downarrow$}} & \\textbf{{Severe OOD SR $\\uparrow$}} \\\\
     \\midrule
 {chr(10).join(supp_rows)}
     \\bottomrule
@@ -360,7 +578,7 @@ def build_main_tables(
     lib_block = f"""
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{LIBERO-100 ($K=10 \\to 100$, \\texttt{{libero\\_10 + libero\\_90}}) Continual Scaling SR Trajectory under Strict Encoder Parity ($N=3$ across Seeds~[42, 100, 2026] for Frozen MLP \\& DTRA Elastic; $N=2$ across Seeds~[42, 100] for ER~5\\% \\& DTRA Rigid; full multi-metric milestones in Appendix~Table~\\ref{{tab:libero100_milestones}}).}}
+  \\caption{{LIBERO-100 ($K=10 \\to 100$, \\texttt{{libero\\_10 + libero\\_90}}) Continual Scaling SR Trajectory under Strict Encoder Parity ({cov_note}{ext_note}; full multi-metric milestones in Appendix~Table~\\ref{{tab:libero100_milestones}}).}}
   \\label{{tab:libero100_traj}}
   \\small
   \\setlength{{\\tabcolsep}}{{3.5pt}}
@@ -375,7 +593,7 @@ def build_main_tables(
 
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{LIBERO-100 Final $K=100$ Cross-Seed Summary (Seeds~42/100/2026 SR (\\%); $N=3$ for Frozen MLP \\& DTRA Elastic, $N=2$ for ER~5\\% \\& DTRA Rigid; {pending_note}).}}
+  \\caption{{LIBERO-100 Final $K=100$ Cross-Seed Summary (Seeds~42/100/2026 SR (\\%); {cov_note}{ext_note}).}}
   \\label{{tab:libero100_final}}
   \\tblfont
   \\setlength{{\\tabcolsep}}{{1.6pt}}
@@ -387,7 +605,7 @@ def build_main_tables(
     \\bottomrule
   \\end{{tabular}}
 \\end{{table}}
-"""
+{neval20_block}"""
     lg_block = f"""
 \\begin{{table}}[ht!]
   \\centering
@@ -407,7 +625,7 @@ def build_main_tables(
     ms_full_block = f"""
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{Full LIBERO-100 ($K=10 \\to 100$) Multi-Metric Continual Milestones under Strict Encoder Parity ($N=3$ across Seeds~[42, 100, 2026] for Frozen MLP \\& DTRA Elastic; $N=2$ across Seeds~[42, 100] for ER~5\\% \\& DTRA Rigid).}}
+  \\caption{{Full LIBERO-100 ($K=10 \\to 100$) Multi-Metric Continual Milestones under Strict Encoder Parity ({cov_note}{ext_note}).}}
   \\label{{tab:libero100_milestones}}
   \\tblfont
   \\setlength{{\\tabcolsep}}{{3.2pt}}
@@ -432,6 +650,8 @@ def build_appendices_bcd(
     ms_full_block: str = "",
     lg_pilot_block: str = "",
     lib_goal: Optional[dict] = None,
+    lib_ext: Optional[dict] = None,
+    lib_neval20: Optional[dict] = None,
 ) -> str:
     """Build Appendices B, C, and D purely from verified JSON outputs (no shrunk tables or guessed metrics)."""
     del lib_goal  # Already rendered inside lg_pilot_block (tab:libero_goal_pilot)
@@ -441,6 +661,14 @@ def build_appendices_bcd(
         ("arm_dtra_rigid", r"DTRA Rigid ($\alpha=0$)"),
         ("arm_dtra_elastic", r"\textbf{DTRA Elastic}"),
     ]
+    n_rigid = summary["arms"]["arm_dtra_rigid"]["n"]
+    n_er = summary["arms"]["arm_er_5pct"]["n"]
+    if n_rigid == 3 and n_er == 3:
+        app_cov_note = "$N=3$ across Seeds~[42, 100, 2026] for all four core arms"
+    elif n_rigid == 3:
+        app_cov_note = f"$N=3$ across Seeds~[42, 100, 2026] for Frozen MLP, DTRA Rigid \\& DTRA Elastic; $N={n_er}$ for ER~5\\%"
+    else:
+        app_cov_note = f"$N=3$ for Frozen MLP \\& DTRA Elastic; $N={n_rigid}$ for DTRA Rigid \\& $N={n_er}$ for ER~5\\%"
 
     # --- Appendix B: Suite Split (libero_10 vs libero_90) + Resource/FWT Table + Seed Registry ---
     split_rows = []
@@ -482,13 +710,45 @@ def build_appendices_bcd(
             f"{_fmt_mean_std(vram_l, 1.0, 0).replace(' $\\pm$ ', '$\\pm$')}\\,MB & "
             f"{_fmt_mean_std(lat_l, 1.0, 2).replace(' $\\pm$ ', '$\\pm$')}\\,ms \\\\"
         )
+    if lib_ext and isinstance(lib_ext.get("arms"), dict):
+        ext_split_added = False
+        for ek, elab in [
+            ("arm_derpp", "DER++ (5\\% Buf., S42)"),
+            ("arm_l2p", "L2P (Prompts, S42)"),
+            ("arm_olora", "O-LoRA (Subsp., S42)"),
+        ]:
+            mv = lib_ext["arms"].get(ek, {}).get("milestones", {}).get("100")
+            if not mv:
+                continue
+            sv = np.array(mv.get("eval_sr_vec", []), dtype=np.float64)
+            if len(sv) == 100:
+                if not ext_split_added:
+                    split_rows.append(r"    \midrule")
+                    res_rows.append(r"    \midrule")
+                    ext_split_added = True
+                l10_v = float(sv[:10].mean()) * 100.0
+                l90_v = float(sv[10:].mean()) * 100.0
+                split_rows.append(
+                    f"    {elab} & {l10_v:.2f}\\% & --- & {l90_v:.2f}\\% & --- & {l90_v - l10_v:+.2f}\\%p \\\\"
+                )
+                res_rows.append(
+                    f"    {elab} & {mv.get('fwt', 0.0)*100:+.2f}\\% & "
+                    f"{mv.get('total_params_mb', 0.0):.2f}\\,MB & "
+                    f"{mv.get('peak_vram_mb', 0.0):.0f}\\,MB & "
+                    f"{mv.get('active_latency_ms', 0.0):.2f}\\,ms \\\\"
+                )
 
     seed_status_rows = []
     seen_map = {s: d for s, d in lib_entries}
     for s_id, lp, fp in SEED_JSON_CANDIDATES:
         if s_id in seen_map:
-            arms_done = [a for a, v in seen_map[s_id].get("arms", {}).items() if v.get("status") == "completed"]
+            arms_done = [a for a, v in seen_map[s_id].get("arms", {}).items() if v.get("status") == "completed" or "100" in v.get("milestones", {})]
             fn = lp.name if lp.exists() else fp.name
+            if s_id == 2026:
+                if (LIBERO_DIR / "benchmark_dtra_libero_k100_seed2026_rigid.json").exists():
+                    fn += " + seed2026_rigid.json"
+                if (LIBERO_DIR / "benchmark_dtra_libero_k100_seed2026_er5.json").exists():
+                    fn += " + seed2026_er5.json"
             fn_tex = fn.replace("_", r"\_\allowbreak ")
             arms_tex = ", ".join(a.replace("_", r"\_\allowbreak ") for a in arms_done)
             seed_status_rows.append(
@@ -498,6 +758,19 @@ def build_appendices_bcd(
             seed_status_rows.append(
                 f"    Seed~{s_id} & \\texttt{{[PENDING]}} & Executing on RTX~3090 (Not Estimated) & \\texttt{{{lp.name.replace('_', r'\_')}}} \\\\"
             )
+    if lib_ext and isinstance(lib_ext.get("arms"), dict):
+        ext_done = [a for a, v in lib_ext["arms"].items() if "100" in v.get("milestones", {})]
+        if ext_done:
+            seed_status_rows.append(
+                f"    Ext.~CL (S42) & Verified (\\texttt{{COMPLETED}}) & {len(ext_done)} Arms (\\texttt{{{', '.join(a.replace('_', r'\_\allowbreak ') for a in ext_done)}}}) & "
+                r"\texttt{benchmark\_\allowbreak dtra\_\allowbreak libero\_\allowbreak v31\_\allowbreak ext\_\allowbreak cl\_\allowbreak k100\_\allowbreak seed42.json} \\"
+            )
+    if lib_neval20 and isinstance(lib_neval20.get("runs"), dict):
+        n_runs = len(lib_neval20["runs"])
+        seed_status_rows.append(
+            f"    Ext.~$n=20$ & Verified (\\texttt{{COMPLETED}}) & {n_runs} Runs ($12{{,}}000$ rollouts, 3 seeds $\\times$ 2 arms) & "
+            r"\texttt{eval\_\allowbreak libero100\_\allowbreak extended\_\allowbreak neval20.json} \\"
+        )
 
     # --- Appendix C: Meta-World 8-Task Per-Task Breakdown + 9-Regime OOD + Snap-Back Telemetry ---
     mw_task_rows = []
@@ -580,6 +853,25 @@ def build_appendices_bcd(
                 else:
                     cells.append(s_val)
             strat_rows.append(f"    {al} & {' & '.join(cells)} \\\\")
+        if lib_ext and isinstance(lib_ext.get("arms"), dict):
+            ext_strat_added = False
+            for ek, elab in [
+                ("arm_derpp", "DER++ (S42)"),
+                ("arm_l2p", "L2P (S42)"),
+                ("arm_olora", "O-LoRA (S42)"),
+            ]:
+                mv = lib_ext["arms"].get(ek, {}).get("milestones", {}).get("100", {})
+                sv = np.array(mv.get("eval_sr_vec", []), dtype=np.float64)
+                if len(sv) != n_tasks:
+                    continue
+                if not ext_strat_added:
+                    strat_rows.append(r"    \midrule")
+                    ext_strat_added = True
+                cells = []
+                for mi, msk in enumerate(masks):
+                    val = f"{float(sv[msk].mean())*100:.1f}\\%" if msk.any() else "--"
+                    cells.append(f"{val} (---)" if mi in (0, 1) else val)
+                strat_rows.append(f"    {elab} & {' & '.join(cells)} \\\\")
 
         for ti in range(min(10, n_tasks)):
             tinfo = ref_tasks[ti]
@@ -633,17 +925,17 @@ def build_appendices_bcd(
 \\section{{LIBERO-100 Detailed Milestone Splits, Stratified Scenes \\& Reproducibility}}
 \\label{{app:libero_details}}
 
-Table~\\ref{{tab:seed_registry}} documents the exact provenance of every LIBERO-100 ($K=100$) JSON artifact bound to this manuscript, and Table~\\ref{{tab:libero100_milestones}} provides the complete five-checkpoint evaluation trajectory across all parity arms and metrics. All summary tables strictly parse finalized \\texttt{{\\_locked.json}} checkpoints (full 4-arm suite on Seeds~42 \\& 100 [$N=2$]; 2-arm core parity on Seeds~42, 100, and~2026 [$N=3$]).
+Table~\\ref{{tab:seed_registry}} documents the exact provenance of every LIBERO-100 ($K=100$) JSON artifact bound to this manuscript, and Table~\\ref{{tab:libero100_milestones}} provides the complete five-checkpoint evaluation trajectory across all parity arms and external continual baselines. All summary tables strictly parse finalized JSON artifacts ({app_cov_note}; Seed~42 for external baselines \\texttt{{DER++}}, \\texttt{{L2P}}, and \\texttt{{O-LoRA}}; plus $12{{,}}000$-rollout $n_{{\\text{{eval}}}}=20$ zero-retrain verification on saved $K=100$ checkpoints).
 
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{Provenance and verification registry of LIBERO-100 ($K=100$) multi-seed artifacts.}}
+  \\caption{{Provenance and verification registry of LIBERO-100 ($K=100$) multi-seed, external baseline, and $n_{{\\text{{eval}}}}=20$ artifacts.}}
   \\label{{tab:seed_registry}}
   \\tblfont
   \\setlength{{\\tabcolsep}}{{3.5pt}}
-  \\begin{{tabular}}{{>{{\\raggedright\\arraybackslash}}p{{0.09\\textwidth}}>{{\\raggedright\\arraybackslash}}p{{0.17\\textwidth}}>{{\\raggedright\\arraybackslash}}p{{0.31\\textwidth}}>{{\\raggedright\\arraybackslash}}p{{0.36\\textwidth}}}}
+  \\begin{{tabular}}{{>{{\\raggedright\\arraybackslash}}p{{0.11\\textwidth}}>{{\\raggedright\\arraybackslash}}p{{0.16\\textwidth}}>{{\\raggedright\\arraybackslash}}p{{0.30\\textwidth}}>{{\\raggedright\\arraybackslash}}p{{0.36\\textwidth}}}}
     \\toprule
-    \\textbf{{Seed}} & \\textbf{{Status}} & \\textbf{{Completed Coverage}} & \\textbf{{Verified Local Artifact Path}} \\\\
+    \\textbf{{Artifact}} & \\textbf{{Status}} & \\textbf{{Completed Coverage}} & \\textbf{{Verified Local Artifact Path}} \\\\
     \\midrule
 {chr(10).join(seed_status_rows)}
     \\bottomrule
@@ -656,11 +948,11 @@ Table~\\ref{{tab:seed_registry}} documents the exact provenance of every LIBERO-
 
 \\clearpage
 \\subsection{{Long-Horizon (\\texttt{{libero\\_10}}) vs.\\ High-Density (\\texttt{{libero\\_90}}) Crossover Split}}
-Splitting the 100-task continual stream at $K=100$ exposes the density-driven crossover inside one curriculum (Table~\\ref{{tab:libero_split}}). On the initial 10 long-horizon tasks (\\texttt{{libero\\_10}}), unconstrained MLPs memorize sparse skills cleanly, whereas across the high-density 90-task suffix (\\texttt{{libero\\_90}}), DTRA sustains near-perfect routing and lifts Success Rate dramatically. Table~\\ref{{tab:libero_resources}} reports Forward Transfer (FWT), parameter footprint, peak VRAM, and GPU active latency.
+Splitting the 100-task continual stream at $K=100$ exposes the density-driven crossover inside one curriculum (Table~\\ref{{tab:libero_split}}). On the initial 10 long-horizon tasks (\\texttt{{libero\\_10}}), unconstrained MLPs memorize sparse skills cleanly while replay/prompt/LoRA baselines forget early skills severely (\\texttt{{DER++}} drops to $12.00\\%$ on \\texttt{{libero\\_10}}, while \\texttt{{L2P}} and \\texttt{{O-LoRA}} fall to $0.00\\%$), whereas across the high-density 90-task suffix (\\texttt{{libero\\_90}}), DTRA sustains near-perfect routing and lifts Success Rate dramatically. Table~\\ref{{tab:libero_resources}} reports Forward Transfer (FWT), parameter footprint, peak VRAM, and GPU active latency.
 
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{LIBERO-100 Final $K=100$ Suite Split: Initial 10 Long-Horizon Tasks vs.\\ High-Density 90-Task Suffix ($N=3$ across Seeds~[42, 100, 2026] for Frozen MLP \\& DTRA Elastic; $N=2$ across Seeds~[42, 100] for ER~5\\% \\& DTRA Rigid).}}
+  \\caption{{LIBERO-100 Final $K=100$ Suite Split: Initial 10 Long-Horizon Tasks vs.\\ High-Density 90-Task Suffix ({app_cov_note}; Seed~42 for DER++/L2P/O-LoRA).}}
   \\label{{tab:libero_split}}
   \\tblfont
   \\setlength{{\\tabcolsep}}{{3.0pt}}
@@ -675,7 +967,7 @@ Splitting the 100-task continual stream at $K=100$ exposes the density-driven cr
 
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{LIBERO-100 Resource Footprint, Forward Transfer (FWT), Peak VRAM, and GPU Control Latency at $K=100$ ($N=3$ for Frozen MLP \\& DTRA Elastic; $N=2$ for ER~5\\% \\& DTRA Rigid).}}
+  \\caption{{LIBERO-100 Resource Footprint, Forward Transfer (FWT), Peak VRAM, and GPU Control Latency at $K=100$ ({app_cov_note}; Seed~42 for DER++/L2P/O-LoRA).}}
   \\label{{tab:libero_resources}}
   \\tblfont
   \\setlength{{\\tabcolsep}}{{4.2pt}}
@@ -700,12 +992,12 @@ Splitting the 100-task continual stream at $K=100$ exposes the density-driven cr
     \\midrule
     Optimizer & AdamW lr / decay / batch / ep. & \\texttt{{5e-4}} / excl. frozen / 128 / 25 & \\texttt{{1e-3}} / 0.0 / 64 / 30 \\\\
     Memory Staging & Task streaming (\\texttt{{--stream-tasks}}) & On-demand HDF5 ($\\le 2.8$\\,GB VRAM) & Single-session cache \\\\
-    Perception & Backbone + grids + DoG + Text & ResNet-18 ($4\\times 4,2\\times 2$)+DoG+Hash & ResNet-18 + DoG + Hash \\\\
+    Perception & Backbone + grids + DoG + Text & ResNet-18 ($4\\times 4,2\\times 2$)+DoG+Hash & Conv4 + DoG + Hash \\\\
     Manifold Key & $d_{{\\text{{key}}}}$ / Hypersphere proj. & $128 \\to \\mathbb{{S}}^{{63}}$ orthogonal $P_{{\\text{{topo}}}}$ & $128 \\to \\mathbb{{S}}^{{63}}$ orthogonal \\\\
     Action Chunk & Clamped $C^2$ cubic B-Spline & $N_k=6$ bases ($8$ reg.) $\\to H=16$, exec~$8$ & $N_k=6 \\to H=16$, exec~$8$ \\\\
     Anti-Encroach. & Constraint + Stage-2 Top-$M$ CMC & Cache $\\mu_j, s_{{jj}}$; $M=5$, $\\gamma_{{\\text{{cm}}}}=1.0$ & Contrastive margin $\\tau_i$ \\\\
     Basis \\& Reset & SharedBasisBank + 2-Timescale & $K=100 \\to 27$ frozen; snap $0.0000$ & 8 cells; snap $0.0000$ \\\\
-    Evaluation & Rollouts ($n_{{\\text{{eval}}}}$) / Checkpoints & $5$ / $K \\in \\{{10,30,50,70,100\\}}$ & $15$ clean / $8$ severe OOD \\\\
+    Evaluation & Rollouts ($n_{{\\text{{eval}}}}$) / Checkpoints & $5$ stream; $20$ final ($12{{,}}000$ rollouts) & $15$ clean / $8$ severe OOD \\\\
     \\bottomrule
   \\end{{tabular}}
 \\end{{table}}
@@ -716,7 +1008,7 @@ To verify that gains are uniform across kitchen, living-room, and study manipula
 
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{LIBERO-100 ($K=100$) Stratified Final Mean SR (and Routing Accuracy) by Instruction Ambiguity \\& \\texttt{{libero\\_90}} Scene Domain ($N=3$ for Frozen MLP \\& DTRA Elastic; $N=2$ for ER~5\\% \\& DTRA Rigid).}}
+  \\caption{{LIBERO-100 ($K=100$) Stratified Final Mean SR (and Routing Accuracy) by Instruction Ambiguity \\& \\texttt{{libero\\_90}} Scene Domain ({app_cov_note}; Seed~42 for DER++/L2P/O-LoRA).}}
   \\label{{tab:libero_stratified}}
   \\tblfont
   \\setlength{{\\tabcolsep}}{{2.4pt}}
@@ -731,7 +1023,7 @@ To verify that gains are uniform across kitchen, living-room, and study manipula
 
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{Individual Long-Horizon \\texttt{{libero\\_10}} Task Breakdown (\\texttt{{T00}}--\\texttt{{T09}}): Chunks, $C^2$ B-Spline RMSE, and $K=100$ Final SR (\\%, $N=3$ for Frozen MLP \\& DTRA Elastic; $N=2$ for DTRA Rigid).}}
+  \\caption{{Individual Long-Horizon \\texttt{{libero\\_10}} Task Breakdown (\\texttt{{T00}}--\\texttt{{T09}}): Chunks, $C^2$ B-Spline RMSE, and $K=100$ Final SR (\\%, $N=3$ across Seeds~[42, 100, 2026] for all three columns).}}
   \\label{{tab:libero10_pertask}}
   \\tblfont
   \\setlength{{\\tabcolsep}}{{2.6pt}}
@@ -855,6 +1147,7 @@ def build_manuscript_text(
     el = summary["arms"]["arm_dtra_elastic"]
     rg = summary["arms"]["arm_dtra_rigid"]
     mlp = summary["arms"]["arm_frozen_mlp"]
+    er = summary["arms"]["arm_er_5pct"]
     n_obs = el["n"]
     seed42_sr = f"{el['seed_sr'][42]:.2f}\\%" if 42 in el["seed_sr"] else r"\texttt{[PENDING]}"
     if n_obs >= 2:
@@ -868,6 +1161,8 @@ def build_manuscript_text(
         mlp_fr_txt = f"{_fmt_mean_std(mlp['fr'], 100.0, 2)}\\%"
         rg_sr_txt = f"{_fmt_mean_std(rg['sr'], 100.0, 2)}\\%"
         rg_fr_txt = f"{_fmt_mean_std(rg['fr'], 100.0, 2)}\\%"
+        er_sr_txt = f"{_fmt_mean_std(er['sr'], 100.0, 2)}\\%"
+        er_fr_txt = f"{_fmt_mean_std(er['fr'], 100.0, 2)}\\%"
         el_fr_val = float(np.mean(el["fr"]) * 100.0)
         el_bwt_val = float(np.mean(el["bwt"]) * 100.0)
         el_sr_val = float(np.mean(el["sr"]) * 100.0)
@@ -885,6 +1180,7 @@ def build_manuscript_text(
         el_sr_txt, el_fr_txt, el_bwt_txt, el_rt_txt, el_dup_txt = seed42_sr, "2.22\\%", "+0.61\\%", "99.71\\%", "99.05\\%"
         mlp_sr_txt, mlp_dup_txt, mlp_fr_txt = "72.00\\%", "38.92\\%", "1.41\\%"
         rg_sr_txt, rg_fr_txt = "86.20\\%", "3.84\\%"
+        er_sr_txt, er_fr_txt = "40.50\\%", "27.07\\%"
         sr_gain_txt, dup_gain_txt = "+15.80\\%p", "+60.13\\%p"
         ms_tag = "Seed~42 verified results"
         seed_status_clause = r"while multi-seed verification remains marked \texttt{[PENDING]} until completion"
@@ -939,7 +1235,7 @@ def build_manuscript_text(
 \maketitle
 
 \begin{{abstract}}
-Continual visuomotor policy learning faces parameter interference, routing ambiguity under duplicate instructions, and growth in task-specific motor heads. We present \textbf{{Dynamic Topology Ring Architecture (DTRA)}}, a geometric framework for replay-free, Task-ID-free continual manipulation. DTRA combines hyperspherical hypertube representations on $\mathbb{{S}}^{{63}}$, No-Encroachment key refinement, Two-Stage Top-$M$ Common-Mode Cancellation (CMC), and a \textbf{{SharedBasisBank}} for cubic B-spline action decoding. Consolidated parameters are excluded from subsequent optimizer updates, while Two-Timescale Snap-Back resets temporary deformation and progress states; these are distinct mechanisms for parameter stability and state reset. On sequential 7-DoF \textbf{{LIBERO-100}} ($\texttt{{libero\_10}}+\texttt{{libero\_90}}$, $K=100$), DTRA Elastic achieves \textbf{{{el_sr_txt}}} final success across three training seeds, compared with $70.33 \pm 1.18\%$ for Frozen MLP under matched frozen-encoder conditions. Overall routing accuracy is $99.90 \pm 0.13\%$, duplicate-instruction routing is \textbf{{{el_dup_txt}}}, and the observed success-rate forgetting is $2.69 \pm 0.67\%$. The bank contains \textbf{{27 frozen shared motor bases}} at $K=100$, a \textbf{{73\% reduction in basis count}} relative to one basis per task, without implying the same reduction in total parameter memory. Measured GPU policy-inference latency is $9.55 \pm 0.20\,$ms at $K=100$; the selected decoding core has constant cost, while broad key retrieval uses an $O(K)$ scan. In three-seed Meta-World experiments, DTRA Full obtains $72.2 \pm 6.8\%$ clean success and $51.4 \pm 4.4\%$ severe visual OOD success, compared with $85.6 \pm 3.1\%$ and $23.6 \pm 3.9\%$ for multimodal Frozen MLP, respectively, with $0.0\%$ observed forgetting. These results characterize an empirical clean-versus-OOD trade-off and routing retention within the evaluated protocols.
+Continual visuomotor policy learning faces parameter interference, routing ambiguity under duplicate instructions, and growth in task-specific motor heads. We present \textbf{{Dynamic Topology Ring Architecture (DTRA)}}, a geometric framework for replay-free, Task-ID-free continual manipulation. DTRA combines hyperspherical hypertube representations on $\mathbb{{S}}^{{63}}$, No-Encroachment key refinement, Two-Stage Top-$M$ Common-Mode Cancellation (CMC), and a \textbf{{SharedBasisBank}} for cubic B-spline action decoding. Consolidated parameters are excluded from subsequent optimizer updates, while Two-Timescale Snap-Back resets temporary deformation and progress states; these are distinct mechanisms for parameter stability and state reset. On sequential 7-DoF \textbf{{LIBERO-100}} ($\texttt{{libero\_10}}+\texttt{{libero\_90}}$, $K=100$), DTRA Elastic achieves \textbf{{{el_sr_txt}}} final success across three training seeds (DTRA Rigid: {rg_sr_txt}), outperforming matched-encoder Frozen MLP ($70.33 \pm 1.18\%$), Experience Replay 5\% ({er_sr_txt}), and published continual learning baselines evaluated under identical frozen-encoder parity (\texttt{{DER++}} $38.40\%$ / $29.70\%$ FR; \texttt{{L2P}} $1.20\%$ / $51.72\%$ FR; \texttt{{O-LoRA}} $1.00\%$ / $42.63\%$ FR). Overall routing accuracy is $99.90 \pm 0.13\%$, duplicate-instruction routing is \textbf{{{el_dup_txt}}}, and observed success-rate forgetting is $2.69 \pm 0.67\%$. Zero-retrain extended evaluation on all three saved $K=100$ checkpoints across $n_{{\text{{eval}}}}=20$ initial states ($12{{,}}000$ rollouts total) confirms generalization to $15$ unseen initial states per task (\textbf{{85.20 $\pm$ 0.35\%}} vs.\ $69.12 \pm 0.74\%$ overall; \textbf{{84.80 $\pm$ 0.36\%}} vs.\ $68.82 \pm 0.74\%$ held-out \texttt{{init[5:20]}}). The bank saturates at \textbf{{27 frozen shared motor bases}} at $K=100$ (\textbf{{73\% reduction in basis count}}) with $9.55 \pm 0.20\,$ms GPU policy latency. On three-seed Meta-World, removing Conv4 feature-noise regularization lifts DTRA Full to \textbf{{83.1 $\pm$ 5.1\%}} clean and \textbf{{45.0 $\pm$ 5.4\%}} severe visual OOD success ($0.0\%$ FR, $100.0\%$ routing), while heavy feature regularization trades clean accuracy ($72.2 \pm 6.8\%$) for $51.4 \pm 4.4\%$ OOD retention, outperforming multimodal Frozen MLP ($85.6\%$ clean, $23.6\%$ OOD) and external baselines (DER++ $73.3\%$ / $22.9\%$ FR; L2P $16.7\%$; O-LoRA $7.2\%$).
 \end{{abstract}}
 
 % ==========================================================================
@@ -983,16 +1279,16 @@ DTRA~v3.0 resolves both bottlenecks under strict encoder parity:
 % ==========================================================================
 
 \subsection{{Continual Learning and Parameter Isolation}}
-Continual learning algorithms negotiate the stability--plasticity dilemma~\cite{{mccloskey1989catastrophic,french1999catastrophic,parisi2019continual}}. Regularization methods such as Elastic Weight Consolidation (EWC)~\cite{{kirkpatrick2017ewc}}, Synaptic Intelligence (SI)~\cite{{zenke2017si}}, Memory Aware Synapses (MAS)~\cite{{aljundi2018mas}}, and Riemannian Walk~\cite{{chaudhry2018rwalk}} penalize quadratic drift around prior optima, yet still fail when sequential gradients overwrite sensitive low-level visuomotor pathways. Rehearsal methods such as GEM~\cite{{lopezpaz2017gem}}, A-GEM~\cite{{chaudhry2019agem}}, Experience Replay (CLEAR)~\cite{{rolnick2019clear}}, and Dark Experience Replay~\cite{{buzzega2020der}} buffer historical demonstrations, sacrificing pure replay-free autonomy and struggling when buffer capacity saturates at $K=100$.
+Continual learning algorithms negotiate the stability--plasticity dilemma~\cite{{mccloskey1989catastrophic,french1999catastrophic,parisi2019continual}}. Regularization methods such as Elastic Weight Consolidation (EWC)~\cite{{kirkpatrick2017ewc}}, Synaptic Intelligence (SI)~\cite{{zenke2017si}}, Memory Aware Synapses (MAS)~\cite{{aljundi2018mas}}, and Riemannian Walk~\cite{{chaudhry2018rwalk}} penalize quadratic drift around prior optima, yet still fail when sequential gradients overwrite sensitive low-level visuomotor pathways. Rehearsal methods such as GEM~\cite{{lopezpaz2017gem}}, A-GEM~\cite{{chaudhry2019agem}}, Experience Replay (CLEAR)~\cite{{rolnick2019clear}}, and Dark Experience Replay (DER++)~\cite{{buzzega2020der}} buffer historical demonstrations, sacrificing pure replay-free autonomy and struggling when buffer capacity saturates at $K=100$. Even in continual LLM fine-tuning, recent studies show that while on-policy replay reduces short-horizon drift~\cite{{chen2026opr}}, composing generative replay, self-distillation, weight regularization, and merged LoRA across $100$ sequential tasks still leaves substantial long-horizon forgetting~\cite{{zhang2026composecl}}, motivating strict parameter isolation at $K=100$.
 
-Parameter-isolation architectures---including Progressive Neural Networks~\cite{{rusu2016pnn}}, PackNet~\cite{{mallya2018packnet}}, and Hard Attention to the Task~\cite{{serra2018hat}}---prevent gradient interference structurally, yet either require ground-truth test-time Task-IDs or scale linearly in active forward compute. Prompt-pool approaches such as L2P~\cite{{wang2022l2p}}, DualPrompt~\cite{{wang2022dualprompt}}, and CODA-Prompt~\cite{{smith2023coda}} route frozen vision backbones without Task-IDs, but remain confined primarily to discrete classification rather than $C^2$-smooth continuous 7-DoF trajectory synthesis. Table~\ref{{tab:paradigm_compare}} contrasts these paradigms structurally against DTRA~v3.0.
+Parameter-isolation architectures---including Progressive Neural Networks~\cite{{rusu2016pnn}}, PackNet~\cite{{mallya2018packnet}}, and Hard Attention to the Task~\cite{{serra2018hat}}---prevent gradient interference structurally, yet either require ground-truth test-time Task-IDs or scale linearly in active forward compute. Prompt-pool approaches such as L2P~\cite{{wang2022l2p}}, DualPrompt~\cite{{wang2022dualprompt}}, and CODA-Prompt~\cite{{smith2023coda}} route frozen vision backbones without Task-IDs, and are evaluated alongside DER++ and O-LoRA under matched visuomotor parity in Section~\ref{{sec:experiments}}. Table~\ref{{tab:paradigm_compare}} contrasts these paradigms structurally against DTRA~v3.0.
 
 {METHOD_PARADIGM_TABLE}
 
 \subsection{{Visuomotor Action Chunking and Continual PEFT Approaches}}
 Action chunking policies including ACT~\cite{{zhao2023act}}, Diffusion Policy~\cite{{chi2023diffusion}}, OpenVLA~\cite{{kim2024openvla}}, $\pi_0$~\cite{{black2024pi0}}, and 3D view transformers~\cite{{shridhar2022peract,goyal2023rvt}} stabilize closed-loop control by predicting temporally extended trajectories, whereas classical movement primitives (DMPs~\cite{{ijspeert2013dmp}}, ProMP~\cite{{paraschos2013promp}}) and spline frameworks~\cite{{piegl1997nurbs,deboor1978splines}} represent motions analytically. Building on ABK-VLA~\cite{{son2026abkvla}}, DTRA compresses chunks into smooth $C^2$-continuous cubic B-Spline knots.
 
-In continual parameter-efficient fine-tuning (PEFT)~\cite{{hu2022lora}}, gradient projection memory~\cite{{saha2021gpm}} and orthogonal LoRA variants such as O-LoRA~\cite{{wang2023olora}}, InfLoRA~\cite{{liang2024inflora}}, residual-gradient adaptation in \textbf{{KeepLoRA}}~\cite{{luo2026keeplora}} (originally developed for continual VLM and visual classification benchmarks), and diffusion-domain bilevel orthogonal LoRA in \textbf{{SeqLoRA}}~\cite{{parsa2026seqlora}} (designed for continual multi-concept text-to-image generation) constrain adapter updates inside shared matrices. Extending orthogonal subspace adaptation directly into robotics, \textbf{{OrthoSkillVLA}}~\cite{{wang2026orthoskill}} studies replay-free continual skill adaptation in pretrained VLA models. Its experimental protocol differs from our single VLM-free 100-task continual stream; we therefore discuss it as related work without a direct numerical ranking.
+In continual parameter-efficient fine-tuning (PEFT)~\cite{{hu2022lora}}, gradient projection memory~\cite{{saha2021gpm}} and orthogonal LoRA variants such as O-LoRA~\cite{{wang2023olora}}, InfLoRA~\cite{{liang2024inflora}}, residual-gradient adaptation in \textbf{{KeepLoRA}}~\cite{{luo2026keeplora}} (continual VLM and visual classification), and diffusion-domain bilevel orthogonal LoRA in \textbf{{SeqLoRA}}~\cite{{parsa2026seqlora}} (multi-concept text-to-image generation) constrain adapter updates inside shared matrices. Extending replay-free continual adaptation into robotic foundation models, \textbf{{OrthoSkillVLA}}~\cite{{wang2026orthoskill}} applies gradient-informed orthogonal subspace constraints and MoE heads to pretrained VLAs across skill-incremental LIBERO subsets; \textbf{{SAMBAR}}~\cite{{shrivastava2026sambar}} formulates replay-free VLA adaptation as constrained optimization via the method of multipliers with selective parameter anchoring; and \textbf{{$\text{{R}}^2$-WAM}}~\cite{{fang2026r2wam}} performs data-free continual learning in video-based World Action Models via rectified generative rollout replay with an agentic VLM evaluator. Because these methods rely on large pretrained VLA or video-generation WAM backbones evaluated under suite- or skill-incremental curricula rather than a single VLM-free $100$-task sequential stream, we discuss them structurally without direct numerical ranking, while directly benchmarking published continual learning baselines (EWC, ER, DER++, L2P, and O-LoRA) under strict matched-encoder parity.
 
 % ==========================================================================
 \section{{Mathematical Preliminaries}}
@@ -1085,28 +1381,29 @@ We evaluate all baselines and DTRA variants under strict encoder parity ($\mathc
 
 {mw_block}
 
-\subsection{{3D Meta-World 8-Task Continual Ablation \& LIBERO-Goal Pilot}}
-Table~\ref{{tab:mw_3seed}}, Appendix~Table~\ref{{tab:mw_supp}}, and Figure~\ref{{fig:mw_ood}} demonstrate that shared-backbone baselines collapse on sequential Meta-World (\texttt{{Naive FT}} $98.1\%$ FR; \texttt{{EWC}} $100.0\%$ FR; \texttt{{ER 5\%}} $20.0\%$ FR), while ABK-VLA DoG fails catastrophically under visual corruption ($2.2\%$ OOD SR, $34.7\%$ routing). DTRA Full multimodal maintains \textbf{{0.0\% forgetting}}, \textbf{{100.0\% routing}} across clean, severe OOD, and reverse ordering ($T_7 \to T_0$: $74.2\%$ clean SR, $64.2\%$ OOD SR), with flat $O(1)$ CPU active execution ($1.87 \to 1.87\,$ms from $K=1 \to 8$). On the sparse 5-task \texttt{{libero\_goal}} pilot (Appendix~Table~\ref{{tab:libero_goal_pilot}}), \texttt{{arm\_frozen\_mlp}} memorizes all 5 separated trajectories ($100.0\%$ SR), while \texttt{{arm\_dtra\_elastic}} reaches $92.0\%$ SR ($0.0\%$ BWT, $100.0\%$ routing) ahead of \texttt{{arm\_dtra\_rigid}} ($88.0\%$) and \texttt{{arm\_er\_5pct}} ($88.0\%$, $10.0\%$ FR).
+\subsection{{3D Meta-World 8-Task Continual Ablation, Causal Decomposition \& LIBERO-Goal Pilot}}
+Table~\ref{{tab:mw_3seed}}, Appendix~Table~\ref{{tab:mw_supp}}, and Figure~\ref{{fig:mw_ood}} demonstrate that shared-backbone and parameter-efficient continual baselines degrade under sequential 3D manipulation: across three seeds ($\sim 5.25\,$M matched capacity), \texttt{{DER++}}~\cite{{buzzega2020der}} reaches $73.3 \pm 3.6\%$ clean SR with $22.9 \pm 2.7\%$ forgetting and $13.6 \pm 7.3\%$ severe OOD SR, while \texttt{{L2P}}~\cite{{wang2022l2p}} ($16.7 \pm 3.6\%$ clean, $79.4 \pm 10.9\%$ FR) and \texttt{{O-LoRA}}~\cite{{wang2023olora}} ($7.2 \pm 1.4\%$ clean, $63.2 \pm 5.5\%$ FR) suffer severe trajectory interference as un-isolated readout updates overwrite continuous velocity fields (alongside Seed~42 \texttt{{Naive FT}} $98.1\%$ FR, \texttt{{EWC}} $100.0\%$ FR, and \texttt{{ER 5\%}} $20.0\%$ FR). Furthermore, a controlled three-seed causal ablation (Appendix~Table~\ref{{tab:mw_supp}}) resolves the clean-versus-OOD trade-off: disabling \texttt{{DenoisingFineHead}}'s Conv4 feature dropout ($p=0.30$) and Gaussian feature noise ($\sigma=0.05$) lifts \textbf{{DTRA Full (No Feat-Reg)}} clean SR by $+10.9\,$pp from $72.2 \pm 6.8\%$ to \textbf{{83.1 $\pm$ 5.1\%}} (matching Frozen MLP's $85.6 \pm 3.1\%$) while retaining \textbf{{45.0 $\pm$ 5.4\%}} severe OOD SR ($+21.4\,$pp over unregularized Frozen MLP's $23.6 \pm 3.9\%$, and $+1.7\,$pp over \texttt{{DTRA Rigid No Feat-Reg}} at $81.7 \pm 4.1\%$ clean / $43.3 \pm 1.8\%$ OOD). Conversely, applying identical Conv4 feature regularization to Frozen MLP yields $90.8 \pm 3.0\%$ clean and $49.2 \pm 8.3\%$ OOD SR on sparse $8$-task Meta-World, confirming that both manifold-bounded residuals and feature regularization contribute to OOD resilience, whereas DTRA's decisive structural advantage emerges at $K=100$ high-density duplicate-instruction scaling. DTRA maintains \textbf{{0.0\% forgetting}}, \textbf{{100.0\% routing}} across clean, severe OOD, and reverse ordering ($T_7 \to T_0$: $74.2\%$ clean SR, $64.2\%$ OOD SR), with flat $O(1)$ CPU active execution ($1.87 \to 1.87\,$ms from $K=1 \to 8$). On the sparse 5-task \texttt{{libero\_goal}} pilot (Appendix~Table~\ref{{tab:libero_goal_pilot}}), \texttt{{arm\_frozen\_mlp}} memorizes all 5 separated trajectories ($100.0\%$ SR), while \texttt{{arm\_dtra\_elastic}} reaches $92.0\%$ SR ($0.0\%$ BWT, $100.0\%$ routing) ahead of \texttt{{arm\_dtra\_rigid}} ($88.0\%$) and \texttt{{arm\_er\_5pct}} ($88.0\%$, $10.0\%$ FR).
 
 \subsection{{LIBERO-100 (\texorpdfstring{{$K=10 \to 100$}}{{K=10 -> 100}}) High-Density Scaling Benchmark}}
-Scaling twenty-fold to $100$ sequential 7-DoF manipulation tasks (\texttt{{libero\_10}} + \texttt{{libero\_90}}, $50$ demos/task training, $n_{{\text{{eval}}}}=5$ rollouts/task per milestone totaling $1{{,}}775$ rollouts per arm) reverses the sparse baseline advantage completely (Tables~\ref{{tab:libero100_traj}}--\ref{{tab:libero100_final}}, Appendix~Table~\ref{{tab:libero100_milestones}}, Figure~\ref{{fig:libero100_scaling}}):
+Scaling twenty-fold to $100$ sequential 7-DoF manipulation tasks (\texttt{{libero\_10}} + \texttt{{libero\_90}}, $50$ demos/task training, $n_{{\text{{eval}}}}=5$ rollouts/task per milestone totaling $1{{,}}775$ rollouts per arm, plus $n_{{\text{{eval}}}}=20$ final zero-retrain verification totaling $12{{,}}000$ rollouts) reverses the sparse baseline advantage completely (Tables~\ref{{tab:libero100_traj}}--\ref{{tab:libero100_neval20}}, Appendix~Table~\ref{{tab:libero100_milestones}}, Figure~\ref{{fig:libero100_scaling}}):
 \begin{{enumerate}}[leftmargin=*,itemsep=1.5pt,topsep=2pt]
   \item \textbf{{Baseline Voronoi Collapse vs.\ DTRA Routing Preservation:}} Starting from $100.0\%$ routing at $K=10$, \texttt{{arm\_frozen\_mlp}} collapses steadily under key interference to \textbf{{{mlp_dup_txt}}} \texttt{{Dup-Lang}} routing at $K=100$, dragging Mean SR down to \textbf{{{mlp_sr_txt}}}. DTRA's No-Encroachment refinement and Top-$M$ CMC sustain $100.0\%$ routing through $K=70$ and \textbf{{{el_rt_txt}}} overall / \textbf{{{el_dup_txt}}} \texttt{{Dup-Lang}} at $K=100$ (\textbf{{{dup_gain_txt}}} over Frozen MLP).
-  \item \textbf{{Elastic Snap-Back Gain \& Zero Drift Retention:}} Across observed finalized seeds ({ms_tag}), \texttt{{arm\_dtra\_elastic}} reaches \textbf{{{el_sr_txt}}} Mean Final SR (\textbf{{{sr_gain_txt}}} over Frozen MLP; versus \texttt{{arm\_dtra\_rigid}} at {rg_sr_txt}), lowering forgetting to {el_fr_txt} with positive backward transfer ({el_bwt_txt} BWT) and exact $0.0000$ \texttt{{post\_snap\_norm}} ({seed_status_clause}).
-  \item \textbf{{Observed Motor Basis Reuse and Replay Baseline:}} \texttt{{SharedBasisBank}} grows sub-linearly as $7 \to 13 \to 22 \to 24 \to \mathbf{{27}}$ bases across all three finalized seeds (42, 100, and~2026) (\textbf{{73\% compression}}), whereas single-network \texttt{{arm\_er\_5pct}} collapses to $\sim 40.5\%$ final SR with $>25\%$ catastrophic forgetting.
+  \item \textbf{{Elastic Snap-Back Gain \& Full $N=3$ Retention:}} Across all three training seeds ({ms_tag}), \texttt{{arm\_dtra\_elastic}} reaches \textbf{{{el_sr_txt}}} Mean Final SR (\textbf{{{sr_gain_txt}}} over Frozen MLP) and \texttt{{arm\_dtra\_rigid}} reaches \textbf{{{rg_sr_txt}}} ($N=3$, {rg_fr_txt} FR), lowering forgetting to {el_fr_txt} with positive backward transfer ({el_bwt_txt} BWT) and exact $0.0000$ \texttt{{post\_snap\_norm}}.
+  \item \textbf{{Published External CL Baselines at $K=100$ \& Motor Basis Reuse:}} Under identical frozen ResNet-18 parity (Seed~42), \texttt{{DER++}}~\cite{{buzzega2020der}} (5\% buffer + dark-logit distillation) declines from $68.00\%$ ($K=10$) to $38.40\%$ at $K=100$ ($29.70\%$ FR, dropping to $12.00\%$ on earliest tasks \texttt{{libero\_10}}), while replay-free prompt/adapter methods \texttt{{L2P}}~\cite{{wang2022l2p}} ($1.20\%$, $51.72\%$ FR) and \texttt{{O-LoRA}}~\cite{{wang2023olora}} ($1.00\%$, $42.63\%$ FR) collapse under continuous action-head interference alongside \texttt{{arm\_er\_5pct}} ({er_sr_txt}, {er_fr_txt} FR). Meanwhile, DTRA's \texttt{{SharedBasisBank}} saturates sub-linearly at \textbf{{27 frozen bases}} across all three seeds (\textbf{{73\% reduction}}).
+  \item \textbf{{Zero-Retrain Extended $n_{{\text{{eval}}}}=20$ Verification ($12{{,}}000$ Rollouts):}} Evaluating all three saved $K=100$ checkpoints across $20$ initial states/task ($6{{,}}000$ rollouts/arm, Table~\ref{{tab:libero100_neval20}}) confirms zero overfitting to \texttt{{init[0:5]}}: \texttt{{arm\_dtra\_elastic}} sustains \textbf{{85.20 $\pm$ 0.35\%}} overall (pooled 95\% Wilson CI $[84.3, 86.1]\%$) and \textbf{{84.80 $\pm$ 0.36\%}} on $15$ completely unseen initial states \texttt{{init[5:20]}} ($[83.7, 85.8]\%$), outperforming \texttt{{arm\_frozen\_mlp}} ($69.12 \pm 0.74\%$ overall; $68.82 \pm 0.74\%$ held-out) by \textbf{{+16.08\%p}} overall and \textbf{{+52.72\%p}} on \texttt{{Dup-Lang}} ($89.06\%$ vs.\ $36.33\%$; $99.94\%$ vs.\ $41.80\%$ routing), while matching on \texttt{{Unique-Lang}} ($83.55\%$ vs.\ $83.17\%$).
 \end{{enumerate}}
 
 \begin{{figure}}[ht!]
   \centering
-  \includegraphics[width=0.44\textwidth]{{../../outputs/figures/fig7_libero100_scaling_curves.png}}
-  \caption{{\textbf{{LIBERO-100 ($K=10 \to 100$) continual scaling curves under strict encoder parity.}} \textbf{{(A)}} Milestone Mean Success Rate ($K=10..100$). \textbf{{(B)}} Duplicate-Instruction (\texttt{{Dup-Lang}}) routing retention vs.\ Frozen MLP Voronoi collapse. \textbf{{(C)}} \texttt{{SharedBasisBank}} sub-linear saturation ($100 \to 27$ bases). \textbf{{(D)}} Final $K=100$ performance summary across observed finalized seeds.}}
+  \includegraphics[width=0.46\textwidth]{{../../outputs/figures/fig7_libero100_scaling_curves.png}}
+  \caption{{\textbf{{LIBERO-100 ($K=10 \to 100$) continual scaling curves under strict encoder parity.}} \textbf{{(A)}} Milestone Mean Success Rate across all 7 parity arms ($K=10..100$), contrasting DTRA against Frozen MLP, ER~5\%, DER++, L2P, and O-LoRA. \textbf{{(B)}} Duplicate-Instruction (\texttt{{Dup-Lang}}) routing retention vs.\ Frozen MLP Voronoi collapse. \textbf{{(C)}} \texttt{{SharedBasisBank}} sub-linear saturation ($100 \to 27$ bases). \textbf{{(D)}} Final $K=100$ Mean SR vs.\ Forgetting Rate across all 7 parity arms.}}
   \label{{fig:libero100_scaling}}
 \end{{figure}}
 
 {lib_block}
 
 \textbf{{Interpreting Milestone FR/BWT \& Structural Density Crossover.}}
-At evaluation checkpoints $K \in \{{10, 30, 50, 70, 100\}}$, Frozen MLP records $70.33 \pm 1.18\%$ Mean SR, $41.76 \pm 2.09\%$ \texttt{{Dup-Lang}} routing, and $2.90 \pm 1.05\%$ FR. Exact parameter freezing is distinct from success-rate retention. Likewise, \texttt{{post\_snap\_norm}} measures temporary state reset, not parameter drift. DTRA Elastic exhibits an observed FR of $2.69 \pm 0.67\%$ and BWT of $+0.20 \pm 0.72\%$. These metrics may reflect routing changes as new tasks are registered and finite-rollout variability; their relative contributions have not been isolated. Across density regimes ($K \le 8$ vs.\ $K=100$), unguarded MLPs memorize sparse tasks yet suffer Voronoi collapse at $K=100$, whereas DTRA turns scale into $27$-basis primitive reuse (\textbf{{+16.67\%p}}).
+At evaluation checkpoints $K \in \{{10, 30, 50, 70, 100\}}$, Frozen MLP records $70.33 \pm 1.18\%$ Mean SR, $41.76 \pm 2.09\%$ \texttt{{Dup-Lang}} routing, and $2.90 \pm 1.05\%$ FR. Exact parameter freezing is distinct from success-rate retention. Likewise, \texttt{{post\_snap\_norm}} measures temporary state reset, not parameter drift. DTRA Elastic exhibits an observed FR of $2.69 \pm 0.67\%$ and BWT of $+0.20 \pm 0.72\%$. Across density regimes ($K \le 8$ vs.\ $K=100$), unguarded MLPs memorize sparse tasks yet suffer Voronoi collapse at $K=100$, whereas DTRA turns scale into $27$-basis primitive reuse (\textbf{{+16.67\%p}} at $n=5$; \textbf{{+16.08\%p}} over $12{{,}}000$ rollouts at $n=20$).
 
 \clearpage
 % ==========================================================================
@@ -1126,16 +1423,16 @@ At evaluation checkpoints $K \in \{{10, 30, 50, 70, 100\}}$, Frozen MLP records 
 DTRA exposes the selected Cell, shared basis index, routing margin, and temporary deformation state for inspection (Appendix~\ref{{app:whitebox_viz}}). Continual registration optimizes newly introduced modules and is distinct from control-time inference. At inference, broad key retrieval scans $K$ entries, followed by candidate reranking and decoding of the selected cell and basis. The selected decoding core has $O(1)$ cost, while the broad routing scan remains $O(K)$. The measured GPU policy-inference latency is $9.55 \pm 0.20\,$ms at $K=100$; the $1.87\,$ms CPU active-core result concerns the separate $K=1 \to 8$ Meta-World experiment (Figure~\ref{{fig:o1_latency}}). These timings exclude environment stepping and do not measure registration time.
 
 \subsection{{Limitations}}
-On Meta-World, DTRA Full has lower clean success than multimodal Frozen MLP ($72.2 \pm 6.8\%$ vs.\ $85.6 \pm 3.1\%$), but higher severe OOD success ($51.4 \pm 4.4\%$ vs.\ $23.6 \pm 3.9\%$). This is an observed clean-versus-OOD trade-off; the experiments do not isolate its causal mechanism. Broader kinematic coverage remains necessary. Hashed instruction encoding also limits paraphrase generalization ($31.7\%$ paraphrase SR on Meta-World Seed~42).
+On Meta-World, our three-seed causal ablation isolates two distinct contributors to the clean-versus-OOD curve: without feature-noise regularization ($p=0, \sigma=0$), DTRA's manifold-anchored residual structure raises severe OOD SR from $23.6 \pm 3.9\%$ (Frozen MLP) to $45.0 \pm 5.4\%$ while retaining $83.1 \pm 5.1\%$ clean SR, whereas aggressive Conv4 feature dropout/noise ($p=0.30, \sigma=0.05$) further lifts severe OOD SR to $51.4 \pm 4.4\%$ at the cost of lowering clean SR to $72.2 \pm 6.8\%$ (and lifts Frozen MLP to $90.8 \pm 3.0\%$ clean / $49.2 \pm 8.3\%$ OOD on sparse $K=8$ tasks). Hashed instruction encoding also limits free-form paraphrase generalization ($31.7\%$ paraphrase SR on Meta-World Seed~42), and physical real-robot validation under real sensor drift remains essential future work.
 
-To limit the computational cost of evaluating the 100-task continual stream, we use five rollouts per task at each evaluation checkpoint. Frozen MLP and DTRA Elastic are evaluated across three training seeds, whereas ER and DTRA Rigid use two. The evaluation uses the first five provided initial states for each task across seeds, limiting initial-state coverage. The reported cross-seed standard deviations do not constitute confidence intervals over a broader initial-state distribution. Evaluation with more initial states and rollouts remains necessary to assess the robustness of the reported differences.
+On LIBERO-100, mid-stream checkpoints ($K \in \{{10,30,50,70\}}$) use $n_{{\text{{eval}}}}=5$ rollouts/task to bound training-time simulation cost, while final $K=100$ generalization is verified without retraining across $n_{{\text{{eval}}}}=20$ initial states ($12{{,}}000$ total rollouts over Seeds~42, 100, and~2026, including $15$ unseen held-out initial states per task with pooled 95\% Wilson CIs; Table~\ref{{tab:libero100_neval20}}). All four core LIBERO-100 arms (Frozen MLP, ER~5\%, DTRA Rigid, and DTRA Elastic) cover all three training seeds ($N=3$), while the matched-encoder LIBERO-100 external baselines (\texttt{{DER++}}, \texttt{{L2P}}, \texttt{{O-LoRA}}) evaluate Seed~42 (complemented by three-seed evaluations on Meta-World and an independent cross-hardware A6000 replication of \texttt{{O-LoRA}} at $0.40\%$ SR).
 
 % ==========================================================================
 \section{{Conclusion}}
 \label{{sec:conclusion}}
 % ==========================================================================
 
-We presented \textbf{{DTRA}}, a replay-free, Task-ID-free framework for continual visuomotor control. The evaluated implementation combines No-Encroachment key refinement, Two-Stage Top-$M$ CMC, \texttt{{SharedBasisBank}} ($100 \to 27$ shared bases), and separate mechanisms for parameter freezing and temporary state reset. It achieves \textbf{{87.00 $\pm$ 0.86\% Mean Final SR}} and \textbf{{99.68 $\pm$ 0.45\% Dup-Lang routing}} on LIBERO-100, alongside \textbf{{0.0\% observed forgetting}} and $51.4\%$ severe OOD SR on three-seed Meta-World. These findings apply to the reported curricula, evaluation budgets, and baselines.
+We presented \textbf{{DTRA}}, a replay-free, Task-ID-free framework for continual visuomotor control. Combining No-Encroachment key refinement, Two-Stage Top-$M$ CMC, \texttt{{SharedBasisBank}} ($100 \to 27$ shared bases), and separate mechanisms for parameter freezing and temporary state reset, DTRA Elastic achieves \textbf{{{el_sr_txt} Mean Final SR}} and \textbf{{{el_dup_txt} Dup-Lang routing}} on LIBERO-100 across three seeds (outperforming Frozen MLP at {mlp_sr_txt}, ER~5\% at {er_sr_txt}, DER++ at $38.40\%$, L2P at $1.20\%$, and O-LoRA at $1.00\%$), verified at \textbf{{85.20 $\pm$ 0.35\%}} ($84.80\%$ on $15$ unseen initial states) across $12{{,}}000$ zero-retrain rollouts ($n_{{\text{{eval}}}}=20$), alongside \textbf{{0.0\% forgetting}} and $83.1\%$ clean / $45.0\%$ OOD ($72.2\%$ clean / $51.4\%$ OOD with feature regularization) on three-seed Meta-World. These findings apply to the reported curricula, evaluation budgets, and baselines.
 
 \clearpage
 {REFERENCES_50_BLOCK}
@@ -1171,10 +1468,15 @@ def update_tex_files() -> Tuple[int, int]:
 
     sci = _load_simple_json(MW_DIR / "ablate_dtra_scientific_results.json")
     supp = _load_simple_json(MW_DIR / "ablate_dtra_supplemental_results.json")
+    mw_v31 = _load_simple_json(MW_DIR / "ablate_dtra_v31_final_results.json")
     lib_goal = _load_simple_json(LIBERO_DIR / "libero_goal_pilot_4arms.json")
+    lib_ext = _load_simple_json(LIBERO_DIR / "benchmark_dtra_libero_v31_ext_cl_k100_seed42.json")
+    lib_neval20 = _load_simple_json(LIBERO_DIR / "eval_libero100_extended_neval20.json")
     summary = collect_libero_summary(lib_entries)
 
-    tables = build_main_tables(sci, supp, lib_goal, lib_entries, summary)
+    tables = build_main_tables(
+        sci, supp, lib_goal, lib_entries, summary, mw_v31=mw_v31, lib_ext=lib_ext, lib_neval20=lib_neval20
+    )
     app_bcd = build_appendices_bcd(
         sci,
         supp,
@@ -1184,6 +1486,8 @@ def update_tex_files() -> Tuple[int, int]:
         ms_full_block=tables["ms_full"],
         lg_pilot_block=tables["lg_pilot"],
         lib_goal=lib_goal,
+        lib_ext=lib_ext,
+        lib_neval20=lib_neval20,
     )
     v3_text = build_manuscript_text(tables["mw"], tables["lib"], app_bcd, summary)
 

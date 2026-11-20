@@ -316,6 +316,21 @@ def load_libero_seed_jsons(json_paths: List[Path]) -> List[dict]:
                     k: v for k, v in data["arms"].items()
                     if v.get("status") == "completed" or "100" in v.get("milestones", {})
                 }
+            # Non-destructively merge supplemental Seed 2026 arms (rigid / er5) if finalized
+            if "seed2026" in target.name and isinstance(data.get("arms"), dict):
+                for arm_k, supp_fn in [
+                    ("arm_dtra_rigid", "benchmark_dtra_libero_k100_seed2026_rigid.json"),
+                    ("arm_er_5pct", "benchmark_dtra_libero_k100_seed2026_er5.json"),
+                ]:
+                    supp_p = target.parent / supp_fn
+                    if arm_k not in data["arms"] and supp_p.exists():
+                        try:
+                            sd = json.load(open(supp_p, "r", encoding="utf-8"))
+                            av = sd.get("arms", {}).get(arm_k, {})
+                            if av.get("status") == "completed" or "100" in av.get("milestones", {}):
+                                data["arms"][arm_k] = av
+                        except Exception:
+                            pass
             loaded.append(data)
     return loaded
 
@@ -348,18 +363,27 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
     if not datasets:
         raise FileNotFoundError("No LIBERO-100 JSON files found.")
 
+    # Load matched-encoder external CL baselines (DER++, L2P, O-LoRA) if present
+    ext_cl_path = LIBERO_DIR / "benchmark_dtra_libero_v31_ext_cl_k100_seed42.json"
+    ext_datasets = [json.load(open(ext_cl_path, "r", encoding="utf-8"))] if ext_cl_path.exists() else []
+
     milestones = [10, 30, 50, 70, 100]
     styles = {
-        "arm_frozen_mlp": ("Baseline: Frozen MLP (1-Stage Argmax)", "#2563EB", "s", "--"),
-        "arm_er_5pct": ("Baseline: Experience Replay (5%)", "#64748B", "^", ":"),
-        "arm_dtra_rigid": ("DTRA v3.0 Rigid (alpha=0 Ablation)", "#D97706", "D", "-."),
-        "arm_dtra_elastic": ("DTRA v3.0 Full (Elastic Snap-Back, Ours)", "#059669", "o", "-"),
+        "arm_frozen_mlp": ("Frozen MLP (1-Stage Argmax)", "#2563EB", "s", "--"),
+        "arm_er_5pct": ("Experience Replay (5%)", "#64748B", "^", ":"),
+        "arm_dtra_rigid": ("DTRA Rigid (alpha=0, N=3)", "#D97706", "D", "-."),
+        "arm_dtra_elastic": ("DTRA Elastic (Ours, N=3)", "#059669", "o", "-"),
+    }
+    ext_styles = {
+        "arm_derpp": ("DER++ (5% Buf. + Distill.)", "#9333EA", "v", "--"),
+        "arm_l2p": ("L2P (Prompt Pool)", "#DC2626", "X", ":"),
+        "arm_olora": ("O-LoRA (Ortho Subspace)", "#B45309", "P", ":"),
     }
 
-    fig, axes = plt.subplots(2, 2, figsize=(12.6, 8.8))
+    fig, axes = plt.subplots(2, 2, figsize=(12.8, 9.0))
     ax_sr, ax_dup, ax_basis, ax_bar = axes.flatten()
 
-    # Panel A: Mean SR across K=10..100
+    # Panel A: Mean SR across K=10..100 (Core 4 Arms + 3 External CL Baselines)
     for arm, (label, color, marker, ls) in styles.items():
         ks, means, stds = aggregate_milestone_series(datasets, arm, milestones, "mean_sr", 100.0)
         if not ks:
@@ -373,27 +397,49 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
             marker=marker,
             linestyle=ls,
             linewidth=2.2,
-            markersize=6.5,
-            capsize=3.5,
+            markersize=6.2,
+            capsize=3.2,
         )
         if arm in ("arm_dtra_elastic", "arm_frozen_mlp") and 100 in ks:
             idx = ks.index(100)
-            dy = 2.6 if arm == "arm_dtra_elastic" else -4.2
+            dy = 3.2 if arm == "arm_dtra_elastic" else -5.2
             ax_sr.annotate(
                 f"{means[idx]:.2f}%",
                 (100, means[idx]),
-                xytext=(92, means[idx] + dy),
-                fontsize=8.5,
+                xytext=(89, means[idx] + dy),
+                fontsize=8.2,
                 fontweight="bold",
                 color=color,
             )
+    if ext_datasets:
+        for arm, (label, color, marker, ls) in ext_styles.items():
+            ks, means, _ = aggregate_milestone_series(ext_datasets, arm, milestones, "mean_sr", 100.0)
+            if not ks:
+                continue
+            ax_sr.plot(
+                ks,
+                means,
+                label=label,
+                color=color,
+                marker=marker,
+                linestyle=ls,
+                linewidth=1.9,
+                markersize=6.0,
+                alpha=0.92,
+            )
+            if 100 in ks:
+                idx = ks.index(100)
+                if arm == "arm_derpp":
+                    ax_sr.annotate(f"{means[idx]:.1f}%", (100, means[idx]), xytext=(89, means[idx] - 6.5), fontsize=7.8, fontweight="bold", color=color)
+                elif arm == "arm_l2p":
+                    ax_sr.annotate(f"{means[idx]:.1f}% / 1.0%", (100, means[idx]), xytext=(76, 6.5), fontsize=7.6, fontweight="bold", color=color)
     ax_sr.set_title("(A) LIBERO-100 Milestone Mean Success Rate (K=10 -> 100)")
     ax_sr.set_xlabel("Learned Tasks K")
     ax_sr.set_ylabel("Mean Success Rate (%)")
     ax_sr.set_xticks(milestones)
-    ax_sr.set_ylim(34.0, 103.0)
+    ax_sr.set_ylim(-4.0, 104.0)
     ax_sr.grid(True, linestyle="--", alpha=0.35)
-    ax_sr.legend(loc="lower left", frameon=True, framealpha=0.92, fontsize=7.8)
+    ax_sr.legend(loc="center left", bbox_to_anchor=(0.01, 0.36), frameon=True, framealpha=0.92, fontsize=7.2, ncol=1)
 
     # Panel B: Dup-Lang RouteAcc (and Overall RouteAcc thin overlay)
     mlp_dup_k100 = None
@@ -476,45 +522,47 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
     ax_basis.grid(True, linestyle="--", alpha=0.35)
     ax_basis.legend(loc="upper left", frameon=True, framealpha=0.92, fontsize=8.0)
 
-    # Panel D: K=100 Final Comparison Bars (with explicit [PENDING] mark if arm_er_5pct K=100 incomplete)
-    bar_arms = ["arm_frozen_mlp", "arm_er_5pct", "arm_dtra_rigid", "arm_dtra_elastic"]
-    bar_labels = ["Frozen MLP\n(Baseline)", "ER 5%\n(Replay)", "DTRA Rigid\n(alpha=0)", "DTRA Elastic\n(Ours Full)"]
-    x = np.arange(len(bar_arms))
-    w = 0.25
-
-    sr_vals, rt_vals, dup_vals = [], [], []
-    pending_arms = []
-    for arm in bar_arms:
-        ks_k, sr_m, _ = aggregate_milestone_series(datasets, arm, [100], "mean_sr", 100.0)
-        _, rt_m, _ = aggregate_milestone_series(datasets, arm, [100], "mean_route_acc", 100.0)
-        _, dp_m, _ = aggregate_milestone_series(datasets, arm, [100], "dup_lang_route_acc", 100.0)
+    # Panel D: K=100 Final Comparison Bars across all 7 Parity Arms (Mean SR & Forgetting Rate)
+    bar_specs = [
+        ("arm_olora", "O-LoRA\n(S42)", ext_datasets, "#B45309"),
+        ("arm_l2p", "L2P\n(S42)", ext_datasets, "#DC2626"),
+        ("arm_derpp", "DER++\n(S42)", ext_datasets, "#9333EA"),
+        ("arm_er_5pct", "ER 5%\n(N=3)", datasets, "#64748B"),
+        ("arm_frozen_mlp", "Frozen\nMLP", datasets, "#2563EB"),
+        ("arm_dtra_rigid", "DTRA\nRigid", datasets, "#D97706"),
+        ("arm_dtra_elastic", "DTRA\nElastic", datasets, "#059669"),
+    ]
+    x = np.arange(len(bar_specs))
+    w = 0.36
+    sr_vals, sr_errs, fr_vals, fr_errs, labels_d = [], [], [], [], []
+    for arm, lbl, ds_list, _ in bar_specs:
+        labels_d.append(lbl)
+        ks_k, sr_m, sr_s = aggregate_milestone_series(ds_list, arm, [100], "mean_sr", 100.0)
+        _, fr_m, fr_s = aggregate_milestone_series(ds_list, arm, [100], "forgetting_rate", 100.0)
         if ks_k:
             sr_vals.append(sr_m[0])
-            rt_vals.append(rt_m[0])
-            dup_vals.append(dp_m[0])
+            sr_errs.append(sr_s[0])
+            fr_vals.append(fr_m[0])
+            fr_errs.append(fr_s[0])
         else:
-            sr_vals.append(0.0)
-            rt_vals.append(0.0)
-            dup_vals.append(0.0)
-            pending_arms.append(arm)
+            sr_vals.append(0.0); sr_errs.append(0.0)
+            fr_vals.append(0.0); fr_errs.append(0.0)
 
-    b1 = ax_bar.bar(x - w, sr_vals, width=w, color="#059669", label="Final Mean SR (%)")
-    b2 = ax_bar.bar(x, rt_vals, width=w, color="#2563EB", label="Overall RouteAcc (%)")
-    b3 = ax_bar.bar(x + w, dup_vals, width=w, color="#D97706", label="Dup-Lang Route (%)")
+    b1 = ax_bar.bar(x - w / 2, sr_vals, width=w, yerr=sr_errs, capsize=2.5, color="#059669", label="Final Mean SR (%) ↑")
+    b2 = ax_bar.bar(x + w / 2, fr_vals, width=w, yerr=fr_errs, capsize=2.5, color="#EF4444", alpha=0.82, label="Forgetting Rate FR (%) ↓")
 
-    for idx, arm in enumerate(bar_arms):
-        if arm in pending_arms:
-            ax_bar.text(idx, 18.0, "K=100\n[PENDING]", ha="center", va="center", fontsize=8.0, fontweight="bold", color="#64748B", bbox=dict(boxstyle="round,pad=0.25", fc="#F1F5F9", ec="#94A3B8"))
-        else:
-            for rect in (b1[idx], b2[idx], b3[idx]):
-                h = rect.get_height()
-                ax_bar.text(rect.get_x() + rect.get_width() / 2.0, h + 1.5, f"{h:.2f}", ha="center", va="bottom", fontsize=6.1, fontweight="bold")
+    for rect, err in zip(b1, sr_errs):
+        h = rect.get_height()
+        ax_bar.text(rect.get_x() + rect.get_width() / 2.0, h + err + 1.8, f"{h:.1f}", ha="center", va="bottom", fontsize=6.8, fontweight="bold", color="#065F46")
+    for rect, err in zip(b2, fr_errs):
+        h = rect.get_height()
+        ax_bar.text(rect.get_x() + rect.get_width() / 2.0, h + err + 1.8, f"{h:.1f}", ha="center", va="bottom", fontsize=6.6, color="#991B1B")
 
-    ax_bar.set_title("(D) K=100 Final Performance Summary")
+    ax_bar.set_title("(D) K=100 Final Mean SR vs. Forgetting (7 Parity Arms)")
     ax_bar.set_xticks(x)
-    ax_bar.set_xticklabels(bar_labels, fontsize=8.3)
-    ax_bar.set_ylabel("Score (%)")
-    ax_bar.set_ylim(0, 114)
+    ax_bar.set_xticklabels(labels_d, fontsize=7.6)
+    ax_bar.set_ylabel("Percentage (%)")
+    ax_bar.set_ylim(0, 108)
     ax_bar.grid(True, axis="y", linestyle="--", alpha=0.35)
     ax_bar.legend(loc="upper left", frameon=True, framealpha=0.92, fontsize=7.5)
 
