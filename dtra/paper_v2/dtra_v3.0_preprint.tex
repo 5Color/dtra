@@ -27,6 +27,7 @@
 \setlength{\emergencystretch}{2em}
 
 \newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0.4pt}
@@ -48,7 +49,7 @@
 \maketitle
 
 \begin{abstract}
-Continual visuomotor policy learning faces parameter interference, routing ambiguity under duplicate instructions, and growth in task-specific motor heads. We present \textbf{Dynamic Topology Ring Architecture (DTRA)}, a geometric framework for replay-free, Task-ID-free continual manipulation. DTRA combines hyperspherical hypertube representations on $\mathbb{S}^{63}$, No-Encroachment key refinement, Two-Stage Top-$M$ Common-Mode Cancellation (CMC), and a \textbf{SharedBasisBank} for cubic B-spline action decoding. Consolidated parameters are excluded from subsequent optimizer updates, while Two-Timescale Snap-Back resets temporary deformation and progress states; these are distinct mechanisms for parameter stability and state reset. On sequential 7-DoF \textbf{LIBERO-100} ($\texttt{libero\_10}+\texttt{libero\_90}$, $K=100$), DTRA Elastic achieves \textbf{87.00 $\pm$ 0.86\%} final success across three training seeds (DTRA Rigid: 86.67 $\pm$ 0.66\%), outperforming matched-encoder Frozen MLP ($70.33 \pm 1.18\%$), Experience Replay 5\% (39.47 $\pm$ 1.48\%), and published continual learning baselines evaluated under identical frozen-encoder parity (\texttt{DER++} $38.40\%$ / $29.70\%$ FR; \texttt{L2P} $1.20\%$ / $51.72\%$ FR; \texttt{O-LoRA} $1.00\%$ / $42.63\%$ FR). Overall routing accuracy is $99.90 \pm 0.13\%$, duplicate-instruction routing is \textbf{99.68 $\pm$ 0.45\%}, and observed success-rate forgetting is $2.69 \pm 0.67\%$. Zero-retrain extended evaluation on all three saved $K=100$ checkpoints across $n_{\text{eval}}=20$ initial states ($12{,}000$ rollouts total) confirms generalization to $15$ unseen initial states per task (\textbf{85.20 $\pm$ 0.35\%} vs.\ $69.12 \pm 0.74\%$ overall; \textbf{84.80 $\pm$ 0.36\%} vs.\ $68.82 \pm 0.74\%$ held-out \texttt{init[5:20]}). The bank saturates at \textbf{27 frozen shared motor bases} at $K=100$ (\textbf{73\% reduction in basis count}) with $9.55 \pm 0.20\,$ms GPU policy latency. On three-seed Meta-World, removing Conv4 feature-noise regularization lifts DTRA Full to \textbf{83.1 $\pm$ 5.1\%} clean and \textbf{45.0 $\pm$ 5.4\%} severe visual OOD success ($0.0\%$ FR, $100.0\%$ routing), while heavy feature regularization trades clean accuracy ($72.2 \pm 6.8\%$) for $51.4 \pm 4.4\%$ OOD retention, outperforming multimodal Frozen MLP ($85.6\%$ clean, $23.6\%$ OOD) and external baselines (DER++ $73.3\%$ / $22.9\%$ FR; L2P $16.7\%$; O-LoRA $7.2\%$).
+Continual visuomotor policy learning faces parameter interference, routing ambiguity when distinct scenes share identical language instructions, and growth in task-specific motor heads. We present \textbf{Dynamic Topology Ring Architecture (DTRA)}, a geometric parameter-isolation framework for Task-ID-free continual manipulation without raw-demonstration replay (retaining lightweight 96-vector key-validation exemplars per task during registration). DTRA combines hyperspherical routing on $\mathbb{S}^{63}$, No-Encroachment key refinement, Two-Stage Top-$M$ 3-modality Common-Mode Cancellation (CMC), and a \textbf{SharedBasisBank} for clamped $C^2$ cubic B-spline action decoding ($N_{\text{cp}}=8$ on 7-DoF LIBERO-100; $N_k=6$ on Meta-World). Consolidated parameters are frozen and excluded from subsequent \texttt{AdamW} parameter groups ($\nabla_\theta=0$), while episode-boundary reset clears active routing inertia. On sequential 7-DoF \textbf{LIBERO-100} ($\texttt{libero\_10}+\texttt{libero\_90}$, $K=100$, Mean $\pm$ Sample Std \texttt{ddof=1} across three seeds), DTRA Elastic achieves \textbf{87.00 $\pm$ 1.06\%} and DTRA Rigid achieves 86.67 $\pm$ 0.81\% (statistically comparable), outperforming matched-encoder Frozen MLP (70.33 $\pm$ 1.45\%), Experience Replay 5\% (39.47 $\pm$ 1.81\%), and naive continuous-control adaptations of published baselines (\texttt{DER++} $38.40\%$ / $29.70\%$ FR; \texttt{L2P} $1.20\%$; \texttt{O-LoRA} $1.00\%$; note that DTRA allocates $183.14\,$MB of isolated per-task nodes vs.\ $151.67\,$MB for Frozen MLP and $1.70\text{--}2.09\,$MB for monolithic baselines). Overall routing accuracy is 99.90 $\pm$ 0.16\%, duplicate-instruction routing is \textbf{99.68 $\pm$ 0.55\%}, and empirical success-rate forgetting is 2.69 $\pm$ 0.82\%. Zero-retrain extended evaluation on all three saved $K=100$ checkpoints across $n_{\text{eval}}=20$ initial states ($12{,}000$ rollouts total) confirms generalization to $15$ unseen initial states per task (\textbf{85.20 $\pm$ 0.43\%} vs.\ $69.12 \pm 0.90\%$ overall; \textbf{84.80 $\pm$ 0.44\%} vs.\ $68.82 \pm 0.91\%$ held-out \texttt{init[5:20]}). \texttt{SharedBasisBank} compresses motor basis slots by \textbf{73\%} ($100 \to 27$ bases, $3.81\,$MB), yielding a \textbf{5.33\%} total parameter reduction relative to unshared bases while per-task adapters remain $O(K)$, with $9.55 \pm 0.25\,$ms GPU policy latency. On three-seed Meta-World, causal ablation isolates Conv4 feature-noise regularization: disabling it lifts DTRA Full to \textbf{83.1 $\pm$ 5.1\%} clean and \textbf{45.0 $\pm$ 5.4\%} severe OOD SR ($0.0\%$ FR), while heavy regularization trades clean SR ($72.2 \pm 6.8\%$) for $51.4 \pm 4.4\%$ OOD SR.
 \end{abstract}
 
 % ==========================================================================
@@ -71,18 +72,17 @@ Our prior work \textbf{ABK-VLA}~\cite{son2026abkvla} (DOI: \texttt{10.5281/zenod
 
 However, scaling twenty-fold further to \textbf{LIBERO-100} ($K=100$ dual-camera tasks) exposes two high-density bottlenecks:
 \begin{enumerate}[leftmargin=*,itemsep=1.5pt,topsep=2pt]
-  \item \textbf{Voronoi Encroachment Under Duplicate/Near-Duplicate Language (\texttt{Dup-Lang}):} LIBERO-100 contains $30$ tasks across $13$ identical-instruction groups in shared scenes. Unconstrained key repulsion pushes new keys $\mathbf{k}_i$ into prior Voronoi cells $\mathbf{k}_j$ ($j < i$), collapsing baseline \texttt{Dup-Lang} routing from $100.0\%$ ($K=10$) to 41.76 $\pm$ 2.09\% ($K=100$).
-  \item \textbf{Linear $O(K)$ Head Growth vs.\ Expressivity:} Independent per-task heads grow linearly to $100$ blocks ($151.67\,$MB), whereas naive weight sharing causes severe backward interference.
+  \item \textbf{Voronoi Encroachment Under Duplicate Language (\texttt{Dup-Lang}):} LIBERO-100 contains $30$ tasks across $13$ identical-instruction groups spanning distinct scenes (e.g., \texttt{STUDY\_SCENE1/2/3}, \texttt{KITCHEN\_SCENE1/2}). Under language-heavy 1-stage routing, unconstrained key repulsion pushes new keys $\mathbf{k}_i$ into prior Voronoi cells $\mathbf{k}_j$ ($j < i$), collapsing baseline \texttt{Dup-Lang} routing from $100.0\%$ ($K=10$) to 41.76 $\pm$ 2.56\% ($K=100$).
+  \item \textbf{Motor Basis Duplication vs.\ Isolation:} Allocating an independent trajectory decoder per task duplicates kinematic primitives across $100$ tasks, whereas naive weight sharing in a single network causes severe backward interference.
 \end{enumerate}
 
 \textbf{Core Contributions (v3.0 Region Scope).}
-DTRA~v3.0 resolves both bottlenecks under strict encoder parity:
+DTRA~v3.0 addresses these challenges under matched frozen-encoder parity:
 \begin{itemize}[leftmargin=*,itemsep=1.5pt,topsep=2pt]
-  \item \textbf{No-Encroachment Margin Refinement:} Caches prior anchors $\mu_j$ and self-similarity floors $s_{jj} = \cos(\mu_j, \mathbf{k}_j)$, projecting out repulsive updates that steal Voronoi territory from prior tasks $0 \dots i-1$.
-  \item \textbf{Two-Stage Top-$M$ Common-Mode Cancellation (CMC):} Retrieves Top-$M$ ($M=5$) candidates via $O(K)$ cosine scan, then strips shared language/scene modes to amplify DualCam grids ($4\times 4 / 2\times 2$ + DoG) and proprioception, lifting $K=100$ \texttt{Dup-Lang} routing from 41.76 $\pm$ 2.09\% to \textbf{99.68 $\pm$ 0.45\%}.
-  \item \textbf{\texttt{SharedBasisBank} + Zero \texttt{AdamW} Silent Drift:} Compresses $100$ tasks into \textbf{27 shared knot bases (73\% reduction)} while excluding frozen bases from \texttt{AdamW} (\texttt{requires\_grad=False}, $L_\infty$ silent drift $= 0.0$).
-  \item \textbf{Two-Timescale Snap-Back:} Resets $\Delta\mathbf{z}_i \leftarrow \mathbf{0}$ after each chunk (\texttt{chunk\_snap\_back()}) while retaining \texttt{episodic\_trace} + \texttt{Conf Gate}, followed by full reset (\texttt{episode\_}\allowbreak\texttt{snap\_back()} $\to 0.0000$).
-  \item \textbf{LIBERO-100 Continual Control under Strict Encoder Parity:} Establishes \textbf{87.80\%} (Seed~42; \textbf{87.00 $\pm$ 0.86\%} over observed seeds) Final Mean SR for replay-free, Task-ID-free LIBERO-100 control with 27 frozen bases.
+  \item \textbf{No-Encroachment Margin Refinement:} Caches prior anchors $\mu_j$, self-similarity floors $s_{jj} = \cos(\mu_j, \mathbf{k}_j)$, and lightweight key-validation exemplars ($\le 96$ query vectors/task; no raw image/action replay) to prevent new keys from encroaching on prior Voronoi cells.
+  \item \textbf{Two-Stage Top-$M$ 3-Modality CMC:} Retrieves Top-$M$ ($M=5$) candidates via $O(K)$ cosine scan, then strips candidate-local common modes across dedicated visual ($4\times 4+\text{DoG}$), proprioceptive, and language banks, lifting $K=100$ \texttt{Dup-Lang} routing from 41.76 $\pm$ 2.56\% to \textbf{99.68 $\pm$ 0.55\%}.
+  \item \textbf{\texttt{SharedBasisBank} + Zero \texttt{AdamW} Silent Drift:} Compresses $100$ knot-decoder bases into \textbf{27 shared frozen bases (73\% basis-slot reduction; 5.33\% total parameter reduction)} while excluding frozen modules from \texttt{AdamW} (\texttt{requires\_grad=False}, $L_\infty$ silent drift $= 0.0$).
+  \item \textbf{Empirical LIBERO-100 \& Meta-World Verification:} Establishes \textbf{87.00 $\pm$ 1.06\%} ($N=3$, $n=5$) and \textbf{85.20 $\pm$ 0.43\%} across $12{,}000$ zero-retrain rollouts ($n=20$, held-out \texttt{init[5:20]}: \textbf{84.80 $\pm$ 0.44\%}) on LIBERO-100, alongside a 3-seed Meta-World causal ablation isolating Conv4 feature regularization.
 \end{itemize}
 
 \clearpage
@@ -94,29 +94,30 @@ DTRA~v3.0 resolves both bottlenecks under strict encoder parity:
 \subsection{Continual Learning and Parameter Isolation}
 Continual learning algorithms negotiate the stability--plasticity dilemma~\cite{mccloskey1989catastrophic,french1999catastrophic,parisi2019continual}. Regularization methods such as Elastic Weight Consolidation (EWC)~\cite{kirkpatrick2017ewc}, Synaptic Intelligence (SI)~\cite{zenke2017si}, Memory Aware Synapses (MAS)~\cite{aljundi2018mas}, and Riemannian Walk~\cite{chaudhry2018rwalk} penalize quadratic drift around prior optima, yet still fail when sequential gradients overwrite sensitive low-level visuomotor pathways. Rehearsal methods such as GEM~\cite{lopezpaz2017gem}, A-GEM~\cite{chaudhry2019agem}, Experience Replay (CLEAR)~\cite{rolnick2019clear}, and Dark Experience Replay (DER++)~\cite{buzzega2020der} buffer historical demonstrations, sacrificing pure replay-free autonomy and struggling when buffer capacity saturates at $K=100$. Even in continual LLM fine-tuning, recent studies show that while on-policy replay reduces short-horizon drift~\cite{chen2026opr}, composing generative replay, self-distillation, weight regularization, and merged LoRA across $100$ sequential tasks still leaves substantial long-horizon forgetting~\cite{zhang2026composecl}, motivating strict parameter isolation at $K=100$.
 
-Parameter-isolation architectures---including Progressive Neural Networks~\cite{rusu2016pnn}, PackNet~\cite{mallya2018packnet}, and Hard Attention to the Task~\cite{serra2018hat}---prevent gradient interference structurally, yet either require ground-truth test-time Task-IDs or scale linearly in active forward compute. Prompt-pool approaches such as L2P~\cite{wang2022l2p}, DualPrompt~\cite{wang2022dualprompt}, and CODA-Prompt~\cite{smith2023coda} route frozen vision backbones without Task-IDs, and are evaluated alongside DER++ and O-LoRA under matched visuomotor parity in Section~\ref{sec:experiments}. Table~\ref{tab:paradigm_compare} contrasts these paradigms structurally against DTRA~v3.0.
+Parameter-isolation architectures---including Progressive Neural Networks~\cite{rusu2016pnn}, PackNet~\cite{mallya2018packnet}, and Hard Attention to the Task~\cite{serra2018hat}---prevent gradient interference structurally, yet either require ground-truth test-time Task-IDs or scale linearly in active forward compute. In lifelong robot manipulation specifically, \textbf{BUDS}~\cite{zhu2022buds} and \textbf{LOTUS}~\cite{wan2024lotus} discover hierarchical reusable skills for continual imitation learning (including real-robot validation in LOTUS), while \textbf{TAIL}~\cite{liu2024tail} isolates task-specific PEFT adapters atop large pretrained models with low per-task memory overhead. Prompt-pool approaches such as L2P~\cite{wang2022l2p}, DualPrompt~\cite{wang2022dualprompt}, and CODA-Prompt~\cite{smith2023coda} route frozen vision backbones without Task-IDs, and are evaluated alongside DER++ and O-LoRA under matched frozen-encoder parity in Section~\ref{sec:experiments}. Table~\ref{tab:paradigm_compare} contrasts these paradigms structurally against DTRA~v3.0.
 
 
 \begin{table}[t]
   \centering
-  \caption{Structural comparison of continual visuomotor control paradigms. DTRA~v3.0 unifies Task-ID-free inference, zero rehearsal memory, exact parameter freezing ($\nabla_\theta = 0$), constant $O(1)$ active kernel execution, and sub-linear basis sharing within a white-box hyperspherical routing stack.}
+  \caption{Structural comparison of continual visuomotor control paradigms. DTRA~v3.0 combines Task-ID-free inference, zero raw-demonstration replay (retaining lightweight 96-vector key-validation exemplars per task during registration), exact parameter freezing ($\nabla_\theta = 0$), constant $O(1)$ active decoding core, and shared knot bases within a white-box routing stack.}
   \label{tab:paradigm_compare}
-  \fontsize{8.0pt}{9.8pt}\selectfont
-  \setlength{\tabcolsep}{2.2pt}
+  \fontsize{7.8pt}{9.6pt}\selectfont
+  \setlength{\tabcolsep}{2.0pt}
   \begin{tabular}{lccccccc}
     \toprule
-    \textbf{Paradigm / Method} & \textbf{Task-Free} & \textbf{No Rep.} & \textbf{$\nabla_\theta=0$} & \textbf{Active} & \textbf{Scaling} & \textbf{Dup-Lang} & \textbf{No VLM} \\
+    \textbf{Paradigm / Method} & \textbf{Task-Free} & \textbf{No Raw Rep.} & \textbf{$\nabla_\theta=0$} & \textbf{Active} & \textbf{Scaling} & \textbf{Dup-Lang} & \textbf{No VLM} \\
     \midrule
     Naive Fine-Tuning & \checkmark & \checkmark & $\times$ & $O(1)$ & Monolith & $\times$ & \checkmark \\
     EWC / RWalk~\cite{kirkpatrick2017ewc,chaudhry2018rwalk} & \checkmark & \checkmark & $\times$ & $O(1)$ & Monolith+Pen. & $\times$ & \checkmark \\
     GEM / ER / DER++~\cite{lopezpaz2017gem,rolnick2019clear,buzzega2020der} & \checkmark & $\times$ & $\times$ & $O(1)$+Buf & Monolith & $\times$ & \checkmark \\
-    PNN / PackNet~\cite{rusu2016pnn,mallya2018packnet} & $\times$ & \checkmark & Masked & $O(K)$ & Linear $O(K)$ & N/A & \checkmark \\
+    PNN / PackNet~\cite{rusu2016pnn,mallya2018packnet} & $\times$ & \checkmark & Masked & $O(K)$ & Linear / Mask & N/A & \checkmark \\
+    BUDS / LOTUS / TAIL~\cite{zhu2022buds,wan2024lotus,liu2024tail} & Partial & Partial & Adapter & Skill/PEFT & Sub-lin./PEFT & Partial & Mixed \\
     L2P / CODA-Prompt~\cite{wang2022l2p,smith2023coda} & \checkmark & \checkmark & Backb. & Pool & Prompts & Partial & ViT/CNN \\
     O-LoRA / Seq- / KeepLoRA~\cite{wang2023olora,parsa2026seqlora,luo2026keeplora} & Depends & Mostly & Adapter & $O(r)$ & LoRA & $\times$ & VLM/MLP \\
     OrthoSkillVLA / SAMBAR~\cite{wang2026orthoskill,shrivastava2026sambar} & Depends & \checkmark & Subsp. & VLA & Subsp./Anch. & $\times$ & VLA \\
     $\text{R}^2$-WAM~\cite{fang2026r2wam} & \checkmark & Gen.Rep. & $\times$ & WAM & Video WAM & $\times$ & WAM+VLM \\
     ABK-VLA v1.1.3~\cite{son2026abkvla} & \checkmark & \checkmark & \checkmark & $O(K)$ & Linear $O(K)$ & $\times$ (DoG) & \checkmark \\
-    \textbf{DTRA v3.0 (Ours)} & \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark ($0$)} & \textbf{$O(1)$} & \textbf{27 ($-73\%$)} & \textbf{\checkmark (CMC)} & \textbf{\checkmark} \\
+    \textbf{DTRA v3.0 (Ours)} & \textbf{\checkmark} & \textbf{\checkmark (Key Ex.)} & \textbf{\checkmark ($0$)} & \textbf{$O(1)$} & \textbf{27b / $O(K)$ ad.} & \textbf{\checkmark (CMC)} & \textbf{\checkmark} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -132,26 +133,26 @@ In continual parameter-efficient fine-tuning (PEFT)~\cite{hu2022lora}, gradient 
 \label{sec:prelim}
 % ==========================================================================
 
-\subsection{Strict-Parity Multimodal Hyperspherical Embedding (\texorpdfstring{$\mathbb{S}^{127} \to \mathbb{S}^{63}$}{S127 -> S63})}
+\subsection{Strict-Parity Multimodal Hyperspherical Embedding (\texorpdfstring{$\mathbb{S}^{63}$}{S63})}
 At each control step $t$, all compared parity arms share an identical frozen feature extractor $\mathcal{E}(\cdot)$ combining:
 \begin{enumerate}[leftmargin=*,itemsep=1.5pt]
-  \item \textbf{Dual-Camera Visual Encoding:} Agent-view and wrist-camera RGB frames pass through a frozen ImageNet-pretrained \texttt{ResNet-18}~\cite{he2016resnet} backbone preserving $4\times 4$ and $2\times 2$ spatial pooling grids alongside Difference-of-Gaussians (DoG) low-pass spatial parity cues ($\mathbf{v}_t \in \mathbb{R}^{d_v}$), plus proprioceptive joint/end-effector states $\mathbf{q}_t$.
-  \item \textbf{Deterministic Text Instruction Hashing:} Instructions are encoded deterministically by the \texttt{Lightweight}\allowbreak\texttt{TextEncoder} (unigram/bigram hashing without learned LLM weights) into unit vector $\ell_{\text{task}} \in \mathbb{S}^{d_\ell - 1}$.
+  \item \textbf{Dual-Camera Visual Encoding:} On LIBERO-100, agent-view and wrist-camera RGB frames pass through a frozen ImageNet-pretrained \texttt{ResNet-18}~\cite{he2016resnet} backbone preserving $4\times 4$ and $2\times 2$ spatial pooling grids alongside Difference-of-Gaussians (DoG) spatial cues ($\mathbf{v}_t$), plus 12-d proprioceptive states $\mathbf{q}_t$. On Meta-World, a lightweight frozen \texttt{Conv4} + DoG encoder is used.
+  \item \textbf{Deterministic Text Instruction Hashing:} Instructions are encoded deterministically by \texttt{Lightweight}\allowbreak\texttt{TextEncoder} (unigram/bigram hashing without learned LLM weights) into unit vector $\ell_{\text{task}}$.
 \end{enumerate}
-Normalized visual-proprioceptive and linguistic vectors form unified query key $\mathbf{x}_t = \mathrm{norm}([\mathbf{v}_t;\, \mathbf{q}_t;\, \ell_{\text{task}}]) \in \mathbb{S}^{127}$ and project into the working topological manifold $\mathbb{S}^{63}$ via orthogonal $P_{\text{topo}} \in \mathbb{R}^{64 \times 128}$:
+On Meta-World, concatenated embeddings project orthogonally from $\mathbb{S}^{127} \to \mathbb{S}^{63}$. On LIBERO-100, \texttt{Multimodal}\allowbreak\texttt{Magnetic}\allowbreak\texttt{KeyExtractor} maps visual, proprioceptive, and language features via three fixed Gaussian random projection matrices into $\mathbb{R}^{64}$ and normalizes their weighted combination onto the unit hypersphere:
 \begin{equation}
-  \mathbf{c}_t = \mathrm{norm}\bigl(P_{\text{topo}} \mathbf{x}_t\bigr) \in \mathbb{S}^{63}, \qquad \|\mathbf{c}_t\|_2 = 1.
+  \mathbf{c}_t = \mathrm{norm}\bigl(0.25\,\mathbf{k}_v(\mathbf{v}_t) + 0.10\,\mathbf{k}_p(\mathbf{q}_t) + 0.65\,\mathbf{k}_\ell(\ell_{\text{task}})\bigr) \in \mathbb{S}^{63}, \qquad \|\mathbf{c}_t\|_2 = 1.
 \end{equation}
 
-\subsection{Clamped \texorpdfstring{$C^2$}{C2} Cubic B-Spline Action Chunking (\texorpdfstring{$N_k = 6 \to H = 16$}{Nk=6 -> H=16})}
-Rather than predicting $H \times d_a$ raw joint/delta actions directly at high-frequency control ticks, DTRA encodes each chunk $\mathbf{A}_t \in \mathbb{R}^{16 \times d_a}$ in the $N_k=6$ control-knot subspace $\mathbf{P} \in \mathbb{R}^{6 \times d_a}$ via a fixed, frozen clamped cubic B-Spline synthesis matrix $\mathbf{B}_{\text{spline}} \in \mathbb{R}^{16 \times 6}$:
+\subsection{Clamped \texorpdfstring{$C^2$}{C2} Cubic B-Spline Action Chunking (\texorpdfstring{$N_{\text{cp}} \in \{6,8\} \to H = 16$}{Ncp in 6,8 -> H=16})}
+Rather than predicting $H \times d_a$ raw joint/delta actions directly at every control tick, DTRA encodes each chunk $\mathbf{A}_t \in \mathbb{R}^{16 \times d_a}$ in a clamped cubic B-Spline control-point subspace $\mathbf{P}_t \in \mathbb{R}^{N_{\text{cp}} \times d_a}$ via a fixed, frozen synthesis matrix $\mathbf{B}_{\text{spline}} \in \mathbb{R}^{16 \times N_{\text{cp}}}$ ($N_{\text{cp}}=8$ on 7-DoF LIBERO-100; $N_k=6$ on 2D/Meta-World):
 \begin{equation}
-  \mathbf{A}_t = \mathbf{B}_{\text{spline}} \mathbf{P}_t, \qquad \sum_{n=0}^{5} (\mathbf{B}_{\text{spline}})_{h,n} = 1 \;\; \forall h \in \{0,\dots,15\},
+  \mathbf{A}_t = \mathbf{B}_{\text{spline}} \mathbf{P}_t, \qquad \sum_{n=0}^{N_{\text{cp}}-1} (\mathbf{B}_{\text{spline}})_{h,n} = 1 \;\; \forall h \in \{0,\dots,15\},
 \end{equation}
-executing the first \texttt{exec\_steps=8} steps in closed-loop receding horizon before re-querying. This parameterization yields intrinsic low-pass OOD noise immunity while preserving $C^2$ position, velocity, and acceleration continuity across interior knot transitions (proven formally in Appendix~\ref{app:proofs}).
+executing the first \texttt{exec\_steps=8} steps in closed-loop receding horizon before re-querying. This parameterization yields within-chunk $C^2$ continuity and convex-hull perturbation bounds (Proposition~\ref{prop:bspline}, Appendix~\ref{app:proofs}).
 
 \subsection{Spherical Voronoi Partitioning \& High-Density Collision Failure}
-Let $\{\mathbf{k}_j\}_{j=1}^{K} \subset \mathbb{S}^{63}$ denote consolidated routing keys. Standard 1-stage cosine routing assigns $\mathbf{c}_t$ to Voronoi cell $\mathcal{V}_j = \{\mathbf{c} \in \mathbb{S}^{63} : \langle \mathbf{c}, \mathbf{k}_j \rangle \ge \langle \mathbf{c}, \mathbf{k}_i \rangle \;\forall i\}$. In dense $K=100$ settings with $30$ \texttt{Dup-Lang} tasks, naive contrastive repulsion during task-$k$ training can increase $\langle \mu_j, \mathbf{k}_k \rangle$ past task $j$'s own anchored similarity $s_{jj} = \langle \mu_j, \mathbf{k}_j \rangle$, causing unseen test queries $\mu_j$ to flip into cell $\mathcal{V}_k$ despite identical weight freezing on $\mathbf{k}_j$.
+Let $\{\mathbf{k}_j\}_{j=1}^{K} \subset \mathbb{S}^{63}$ denote consolidated routing keys. Standard 1-stage cosine routing assigns $\mathbf{c}_t$ to Voronoi cell $\mathcal{V}_j = \{\mathbf{c} \in \mathbb{S}^{63} : \langle \mathbf{c}, \mathbf{k}_j \rangle \ge \langle \mathbf{c}, \mathbf{k}_i \rangle \;\forall i\}$. In dense $K=100$ settings where $30$ \texttt{Dup-Lang} tasks share identical instructions across distinct scenes (weighted $0.65$ in $\mathbf{c}_t$), naive contrastive repulsion during task-$k$ training can push $\langle \mu_j, \mathbf{k}_k \rangle$ past task $j$'s own anchored similarity $s_{jj} = \langle \mu_j, \mathbf{k}_j \rangle$, causing test queries $\mu_j$ to flip into cell $\mathcal{V}_k$ despite identical weight freezing on $\mathbf{k}_j$.
 
 \clearpage
 % ==========================================================================
@@ -159,56 +160,55 @@ Let $\{\mathbf{k}_j\}_{j=1}^{K} \subset \mathbb{S}^{63}$ denote consolidated rou
 \label{sec:method}
 % ==========================================================================
 
-\subsection{First-Order Elliptical Hypertube Rings on \texorpdfstring{$\mathbb{S}^{63}$}{S63}}
-Each Cell $i \in \{1,\dots,K\}$ stores a unit anchor $\mathbf{k}_i \in \mathbb{S}^{63}$, harmonic phase generators spanning an elliptical orbit $\mathbf{r}_i(\theta) = \mathbf{a}_{i,0} + \mathbf{a}_{i,1}\cos\theta + \mathbf{a}_{i,2}\sin\theta$ via $B_{\text{ring}}(\theta)=[1,\cos\theta,\sin\theta]^\top$, learnable tube attraction radius $r_i = \mathrm{softplus}(\rho_i) + 10^{-3}$, bounded elastic compliance $\alpha_i = \sigma(\omega_i) \in (0,1)$, and magnetic gate $\tau_i = \mathrm{softplus}(\beta_i)$. Incoming $\mathbf{c}_t \in \mathbb{S}^{63}$ determines its nearest ring phase $\theta_t^* = \mathrm{atan2}(u_2, u_1)$ analytically in $O(1)$ closed form under spherical chord metric $d_{\text{chord}}(\mathbf{c}_t, \mathbf{r}_i(\theta_t^*))$.
+\subsection{Hypertube Node Architecture (Meta-World v2.1 vs.\ LIBERO-100 v3.0)}
+Each consolidated task $i \in \{1,\dots,K\}$ owns an isolated node on $\mathbb{S}^{63}$ with unit routing anchor $\mathbf{k}_i \in \mathbb{S}^{63}$ and bounded elastic compliance $\alpha_i = \sigma(\omega_i) \in (0,1)$:
+\begin{itemize}[leftmargin=*,itemsep=1.5pt]
+  \item \textbf{Meta-World (\texttt{HypertubeNode}):} Stores explicit first-order Fourier ring coefficients $\mathbf{r}_i(\theta) = \mathbf{a}_{i,0} + \mathbf{a}_{i,1}\cos\theta + \mathbf{a}_{i,2}\sin\theta$ with a closed-form first-order \texttt{atan2} phase approximation and magnetic gate $\tau_i = \mathrm{softplus}(\beta_i)$.
+  \item \textbf{LIBERO-100 (\texttt{LIBEROHypertubeNode}):} To scale to 7-DoF dual-camera manipulation, each node pairs a per-task \texttt{SpatialContextAdapter} ($175\,$k params) with a lightweight 2-layer MLP \texttt{theta\_head} predicting normalized phase coordinates $[1, u_1, u_2]$, followed by spherical L2-normalized elastic interpolation $\mathbf{z}_{\text{eff}} = \mathrm{norm}(\mathbf{z}_{\text{base}} + \alpha_i(\mathbf{c}_t - \mathbf{z}_{\text{base}}))$ (with $\alpha_i=0$ in \texttt{DTRA Rigid}).
+\end{itemize}
 
-\subsection{No-Encroachment Margin Refinement}
-When registering task $k$ after freezing prior tasks $\{1,\dots,k-1\}$, DTRA~v3.0 caches each prior task's raw multimodal query centroid $\mu_j$ and verified self-similarity floor $s_{jj} = \langle \mu_j, \mathbf{k}_j \rangle$. Any optimization step updating candidate key $\mathbf{k}_k$ adds a one-sided hinge penalty with safety margin $m_{\text{safe}} > 0$:
+\subsection{No-Encroachment Margin Refinement (With Lightweight Key Exemplars)}
+When registering task $k$ after freezing prior tasks $\{1,\dots,k-1\}$, DTRA~v3.0 caches each prior task's query centroid $\mu_j$, verified self-similarity floor $s_{jj} = \langle \mu_j, \mathbf{k}_j \rangle$, and a compact set of up to $96$ normalized multimodal query vectors (\texttt{\_val\_queries}, totaling $9{,}600$ unit vectors at $K=100$; no raw images or action demonstrations are stored). Candidate key $\mathbf{k}_k$ minimizes the one-sided hinge penalty with safety margin $m_{\text{safe}} > 0$:
 \begin{equation}
   \mathcal{L}_{\text{NoEnc}}(\mathbf{k}_k) = \sum_{j < k} \max\!\Bigl(0,\; \langle \mu_j, \mathbf{k}_k \rangle - (s_{jj} - m_{\text{safe}})\Bigr)^2,
 \end{equation}
-and projects active gradient steps orthogonally off violating $\mu_j$ directions whenever a neighbor threshold is triggered. This guarantees strictly non-overlapping Voronoi ownership around every prior task's canonical query distribution without tuning prior keys $\mathbf{k}_j$ (keeping $\nabla_{\mathbf{k}_j} = 0$).
+while checking that validation routing accuracy over cached \texttt{\_val\_queries} does not degrade on prior tasks $j < k$ (keeping $\nabla_{\mathbf{k}_j} = 0$).
 
-\subsection{Two-Stage Top-\texorpdfstring{$M$}{M} Common-Mode Cancellation (CMC)}
-When tasks share identical language commands (\texttt{Dup-Lang}) or shared tabletop scenes, raw cosine scores suffer severe common-mode compression where $>90\%$ of vector energy points along the shared instruction/table subspace. DTRA~v3.0 splits retrieval into two lightweight steps:
+\subsection{Two-Stage Top-\texorpdfstring{$M$}{M} 3-Modality Common-Mode Cancellation (CMC)}
+When tasks share identical language commands (\texttt{Dup-Lang}) across distinct scenes, raw 1-stage cosine scores suffer common-mode compression because language dominates ($0.65$ weight). DTRA~v3.0 splits LIBERO-100 retrieval into two lightweight steps:
 \begin{enumerate}[leftmargin=*,itemsep=1.5pt]
-  \item \textbf{Stage 1 ($O(K)$ Broad Scan):} Compute $\langle \mathbf{x}_t, \mathbf{x}_j^{\text{proto}} \rangle$ across all registered keys in SIMD and retain Top-$M$ ($M=5$) candidates $\mathcal{M}_t$.
-  \item \textbf{Stage 2 (Candidate-Local Differential Reranking):} Strip candidate mean $\bar{\mathbf{x}}_{\text{cm}} = \frac{1}{M}\sum_{j \in \mathcal{M}_t} \mathbf{x}_j^{\text{proto}}$ via:
+  \item \textbf{Stage 1 ($O(K)$ Broad Scan):} Score all $K$ keys on $\mathbb{S}^{63}$ (with temporal routing inertia $\eta_{\text{inertia}}=0.20$) and retain Top-$M$ ($M=5$) candidates $\mathcal{M}_t$.
+  \item \textbf{Stage 2 (3-Modality Differential Reranking):} Maintain separate signature banks for visual ($256$-d projection of $6{,}400$-d $4\times 4+\text{DoG}$ features), proprioceptive ($12$-d), and language ($128$-d) prototypes. For candidates $\mathcal{M}_t$, subtract the candidate-local mean $\bar{\mathbf{m}}_{\text{cm}} = \frac{1}{M}\sum_{j \in \mathcal{M}_t} \mathbf{m}_j$ per modality:
   \begin{equation}
-    \tilde{\mathbf{x}}_t = \mathrm{norm}\!\bigl(\mathbf{x}_t - \gamma_{\text{cm}} \bar{\mathbf{x}}_{\text{cm}}\bigr), \qquad
-    i^* = \arg\max_{j \in \mathcal{M}_t} \langle \tilde{\mathbf{x}}_t,\, \tilde{\mathbf{x}}_j \rangle.
+    \tilde{\mathbf{m}}_t = \mathrm{norm}\!\bigl(\mathbf{m}_t - \bar{\mathbf{m}}_{\text{cm}}\bigr), \qquad
+    i^* = \arg\max_{j \in \mathcal{M}_t} \sum_{m \in \{v,p,\ell\}} w_m \langle \tilde{\mathbf{m}}_t,\, \tilde{\mathbf{m}}_j \rangle,
   \end{equation}
+  where language weight $w_\ell \to 0$ whenever candidates exhibit near-identical language similarity ($\ge 0.998$), shifting discrimination to fine $4\times 4+\text{DoG}$ visual and proprioceptive residuals. Note that the \texttt{Frozen MLP} baseline uses 1-stage $2\times 2$ key routing without this $4\times 4+\text{DoG}$ CMC bank (discussed in Section~\ref{sec:discussion}).
 \end{enumerate}
-Because the shared language vector and common table background appear identically inside $\bar{\mathbf{x}}_{\text{cm}}$, differential subtraction amplifies subtle DualCam spatial grid and proprioceptive cues that distinguish identical-instruction tasks.
 
-\subsection{\texttt{SharedBasisBank} Compression \& Zero \texttt{AdamW} Silent Drift}
-Rather than allocating $K$ isolated dense control-point decoders ($O(K)$ memory growth), DTRA maintains an expandable \texttt{SharedBasisBank} $\mathcal{B} = \{\mathbf{B}_b\}_{b=1}^{B}$ in knot space ($N_k = 6$). During task-$k$ registration, if an existing primitive reconstructs task $k$'s B-Spline target within a geometric cosine threshold, cell $k$ binds to existing basis $\mathbf{B}_{b_k}$ with a compact residual adapter; only genuinely novel kinematics append a new basis $\mathbf{B}_{B+1}$. On LIBERO-100, the observed bank grows from $7$ ($K=10$) $\to 13$ ($K=30$) $\to 22$ ($K=50$) $\to 24$ ($K=70$) $\to \mathbf{27}$ ($K=100$)---a \textbf{73\% primitive reduction}. Crucially, every consolidated basis receives \texttt{requires\_grad = False} and is strictly excluded from downstream \texttt{AdamW} parameter groups, eliminating decoupled weight decay silent drift ($L_\infty = 0.0$, Theorem~\ref{thm:zero_drift}).
+\subsection{\texttt{SharedBasisBank} Compression \& Exact Parameter Accounting}
+DTRA maintains an expandable \texttt{SharedBasisBank} $\mathcal{B} = \{\mathbf{B}_b\}_{b=1}^{B}$ of frozen B-Spline knot-decoder slots ($37{,}016$ params / $0.141\,$MB per slot). During task-$k$ registration, if an existing primitive reconstructs task $k$'s B-Spline target within a cosine threshold, node $k$ binds to existing basis $\mathbf{B}_{b_k}$; otherwise a new basis is appended. On LIBERO-100, the bank saturates sub-linearly at $7 \to 13 \to 22 \to 24 \to \mathbf{27}$ bases across all three seeds---a \textbf{73\% reduction in basis slot count} ($3.81\,$MB vs.\ $14.12\,$MB unshared). Crucially, however, each task still instantiates an isolated \texttt{LIBEROHypertubeNode} adapter ($470\,$k params / $1.79\,$MB $\times 100 = 179.33\,$MB, $97.92\%$ of total policy memory). Thus \texttt{SharedBasisBank} yields a \textbf{5.33\% total policy-parameter reduction} ($193.45 \to 183.14\,$MB), leaving total memory $O(K)$ ($+20.75\%$ vs.\ Frozen MLP's $151.67\,$MB). Every consolidated basis and node receives \texttt{requires\_grad = False} and is excluded from downstream \texttt{AdamW} parameter groups ($L_\infty = 0.0$, Proposition~\ref{prop:zero_drift}).
 
-\subsection{Two-Timescale Elastic Snap-Back \& Episodic Progress Trace}
-During closed-loop control, cell $i^*$ accommodates environmental perturbations by computing bounded tangent-plane elastic deformation $\Delta\mathbf{z}_t^* = \alpha_{i^*}(\mathbf{c}_t - \mathbf{r}_{i^*}(\theta_t^*))$. DTRA~v3.0 separates relaxation across two timescales:
-\begin{itemize}[leftmargin=*,itemsep=1.5pt]
-  \item \textbf{Fast Chunk Timescale (\texttt{chunk\_snap\_back()}):} Clears $\Delta\mathbf{z}_{i^*} \leftarrow \mathbf{0}$ after every $H=16$ chunk while preserving a bounded \texttt{episodic\_trace} and Confidence Gate (\texttt{Conf Gate}) to prevent long-horizon sub-goal perseveration.
-  \item \textbf{Episode Boundary Timescale (\texttt{episode\_snap\_back()}):} Resets both residual deformation and progress traces to exact $0.0000$ (\texttt{post\_snap\_norm}) prior to every episode reset.
-\end{itemize}
+\subsection{Episode-Boundary State Reset \& Diagnostic Logging}
+At episode termination, \texttt{episode\_snap\_back()} resets active routing inertia (\texttt{prev\_selected}, \texttt{prev\_act\_vec}) and diagnostic deformation buffers to exact $0.0000$ (\texttt{post\_snap\_norm}) so no state leaks across episodes. On Meta-World, elastic deformation operates directly on the ring phase residual; on LIBERO-100, \texttt{LIBEROHypertubeNode} is a 1-step Markov decoder whose \texttt{episodic\_trace} and \texttt{delta\_z\_state} buffers are write-only diagnostic tensors (logged and zeroed at chunk/episode boundaries without feeding back into \texttt{forward()}), so \texttt{chunk\_snap\_back()} does not alter LIBERO-100 control outputs.
 
 
 \begin{algorithm}[t]
-\caption{\textbf{DTRA v3.0 Training Registration \& Dual-Timescale Closed-Loop Control}}
+\caption{\textbf{DTRA v3.0 Training Registration \& Closed-Loop Control (LIBERO-100 Implementation)}}
 \label{alg:dtra_v3}
 \small
 \begin{algorithmic}[1]
-\Require Frozen perception + \texttt{LightweightTextEncoder} $\to \mathbf{x}_t \in \mathbb{S}^{127}$; frozen \texttt{SharedBasisBank} $\mathcal{B} = \{\mathbf{B}_b\}_{b=1}^{B}$ ($N_k = 6$); empty cell registry $\mathcal{C} = \emptyset$.
+\Require Frozen DualCam \texttt{ResNet-18} + proprioception + \texttt{LightweightTextEncoder}; frozen \texttt{SharedBasisBank} $\mathcal{B} = \{\mathbf{B}_b\}_{b=1}^{B}$ (LIBERO-100: $N_{\text{cp}}=8$ clamped cubic B-Spline knots $\to H=16$; Meta-World: $N_k=6$); empty cell registry $\mathcal{C} = \emptyset$.
 \Statex \textbf{Phase I: Sequential Continual Registration ($k = 1, \dots, K$, Task-ID Stored Only for Audit)}
-\State Compute task prototype query $\mu_k \leftarrow \mathrm{norm}\!\left(\mathbb{E}_{t}[\mathbf{x}_{k,t}]\right)$ and topological map $\mathbf{k}_k^{(0)} = \mathrm{norm}(P_{\text{topo}}\mu_k) \in \mathbb{S}^{63}$.
-\State Optimize $\mathbf{k}_k$ against prior cells $\{j < k\}$ subject to \textbf{No-Encroachment}: $\langle \mu_j, \mathbf{k}_k \rangle \le s_{jj} - m_{\text{safe}}$, caching raw anchor $\mu_k$ and self-similarity floor $s_{kk} = \langle \mu_k, \mathbf{k}_k \rangle$.
-\State Fit $C^2$ clamped cubic B-Spline knots $\mathbf{P}_k \in \mathbb{R}^{6 \times d_a}$ on demos; match cosine similarity to $\mathcal{B}$. If below allocation threshold, append new frozen basis $\mathbf{B}_{B+1}$ ($\texttt{requires\_grad=False}$, excluded from \texttt{AdamW}); else share $\mathbf{B}_{b_k}$ with compact cell residual parameters $(\mathbf{r}_k, \alpha_k, \beta_k)$.
-\State Freeze cell parameters permanently ($\nabla_\theta = 0$, $L_\infty$ silent drift $= 0.0$).
-\Statex \textbf{Phase II: Replay-Free, Task-ID-Free Closed-Loop Evaluation (At Control Tick $t$)}
-\State Extract multimodal $\mathbf{x}_t$ and project $\mathbf{c}_t = \mathrm{norm}(P_{\text{topo}}\mathbf{x}_t) \in \mathbb{S}^{63}$.
-\State \textbf{Stage 1 (Region Scan):} Score all $K$ keys in $O(K)$ SIMD inner product and retrieve Top-$M$ ($M=5$) candidates $\mathcal{M}_t$.
-\State \textbf{Stage 2 (Common-Mode Cancellation):} Compute candidate centroid $\bar{\mathbf{x}}_{\text{cm}} = \frac{1}{M}\sum_{j \in \mathcal{M}_t}\mathbf{x}_j^{\text{proto}}$, form differential residual $\tilde{\mathbf{x}}_t = \mathrm{norm}(\mathbf{x}_t - \gamma_{\text{cm}}\bar{\mathbf{x}}_{\text{cm}})$, and select active cell $i^* = \arg\max_{j \in \mathcal{M}_t} \langle \tilde{\mathbf{x}}_t, \tilde{\mathbf{x}}_j \rangle$ gated by $\tau_{i^*}$ and \texttt{episodic\_trace}.
-\State Synthesize elastic hypertube displacement $\Delta \mathbf{z}_t^*$ via closed-form \texttt{atan2} phase projection bounded by $\alpha_{i^*} \in (0, 1)$, decode $H=16$ action chunk $\mathbf{A}_t = \mathbf{B}_{\text{spline}}\mathbf{P}_{\text{eff}}$, and execute \texttt{exec\_steps=8} steps.
-\State Execute \texttt{chunk\_snap\_back()} ($\Delta\mathbf{z}_{i^*} \leftarrow \mathbf{0}$) per chunk and \texttt{episode\_snap\_back()} ($\text{\texttt{post\_snap\_norm}} = 0.0000$) upon episode termination.
+\State Project visual, proprioceptive, and language features into normalized query $\mathbf{c}_t \in \mathbb{S}^{63}$ via fixed random projections ($0.25\mathbf{k}_v + 0.10\mathbf{k}_p + 0.65\mathbf{k}_\ell$ on LIBERO-100); compute task prototype $\mu_k$ and 3-modality signature prototypes $(\mathbf{v}_k^{\text{sig}}, \mathbf{p}_k^{\text{sig}}, \boldsymbol{\ell}_k^{\text{sig}})$ using $4\times 4+\text{DoG}$ visual features.
+\State Refine routing key $\mathbf{k}_k$ against prior tasks $\{j < k\}$ subject to \textbf{No-Encroachment}: penalize $\langle \mu_j, \mathbf{k}_k \rangle > s_{jj} - m_{\text{safe}}$ and verify accuracy on cached lightweight key-validation exemplars ($\le 96$ normalized query vectors/task, \texttt{\_val\_queries}; no raw image/action replay).
+\State Fit $C^2$ clamped cubic B-Spline knots ($\mathbf{P}_k \in \mathbb{R}^{8\times 7}$ on LIBERO-100; $\mathbb{R}^{6\times 4}$ on Meta-World); match cosine similarity to $\mathcal{B}$. If below threshold, append new frozen basis $\mathbf{B}_{B+1}$ ($\texttt{requires\_grad=False}$, excluded from \texttt{AdamW}); else share $\mathbf{B}_{b_k}$ and train per-task node adapter \texttt{LIBEROHypertubeNode} (spatial context + phase/residual heads).
+\State Freeze all consolidated node and basis parameters permanently ($\nabla_\theta = 0$, $L_\infty$ silent drift $= 0.0$).
+\Statex \textbf{Phase II: No-Raw-Replay, Task-ID-Free Closed-Loop Evaluation (At Control Tick $t$)}
+\State \textbf{Stage 1 ($O(K)$ Broad Scan):} Score all $K$ keys on $\mathbb{S}^{63}$ (with optional temporal inertia) and retrieve Top-$M$ ($M=5$) candidates $\mathcal{M}_t$.
+\State \textbf{Stage 2 (3-Modality Common-Mode Cancellation):} Compute candidate-local means across visual ($4\times 4+\text{DoG}$ 256-d), proprioceptive (12-d), and language (128-d) signature banks; strip common modes and select active cell $i^* = \arg\max_{j \in \mathcal{M}_t} s_{\text{CMC}}(t, j)$.
+\State Decode selected node $i^*$ and shared basis $\mathbf{B}_{b_{i^*}}$ via phase head (\texttt{theta\_head} on LIBERO-100; elliptical \texttt{atan2} on Meta-World) and bounded spherical interpolation $\alpha_{i^*}$ into $H=16$ chunk $\mathbf{A}_t = \mathbf{B}_{\text{spline}}\mathbf{P}_{\text{eff}}$; execute \texttt{exec\_steps=8} steps.
+\State At episode termination, call \texttt{episode\_snap\_back()} to reset routing inertia (\texttt{prev\_selected}, \texttt{prev\_act\_vec}) and diagnostic buffers to exact $0.0000$.
 \end{algorithmic}
 \end{algorithm}
 
@@ -239,7 +239,7 @@ We evaluate all baselines and DTRA variants under strict encoder parity ($\mathc
 
 \begin{table}[ht!]
   \centering
-  \caption{3D Meta-World 8-Task Continual Benchmark (3-Seed Mean $\pm$ Std over Seeds~42, 100, 2026; $n_{\text{eval}}=15$ clean / $8$ severe OOD per task) and CPU Active Latency ($K=1 \to 8$).}
+  \caption{3D Meta-World 8-Task Continual Benchmark (3-Seed Mean $\pm$ Std over Seeds~42, 100, 2026; $n_{\text{eval}}=15$ clean / $15$ severe OOD per task, $55$ epochs/task) and CPU Active Latency ($K=1 \to 8$).}
   \label{tab:mw_3seed}
   \tblfont
   \setlength{\tabcolsep}{3.2pt}
@@ -269,10 +269,10 @@ Table~\ref{tab:mw_3seed}, Appendix~Table~\ref{tab:mw_supp}, and Figure~\ref{fig:
 \subsection{LIBERO-100 (\texorpdfstring{$K=10 \to 100$}{K=10 -> 100}) High-Density Scaling Benchmark}
 Scaling twenty-fold to $100$ sequential 7-DoF manipulation tasks (\texttt{libero\_10} + \texttt{libero\_90}, $50$ demos/task training, $n_{\text{eval}}=5$ rollouts/task per milestone totaling $1{,}775$ rollouts per arm, plus $n_{\text{eval}}=20$ final zero-retrain verification totaling $12{,}000$ rollouts) reverses the sparse baseline advantage completely (Tables~\ref{tab:libero100_traj}--\ref{tab:libero100_neval20}, Appendix~Table~\ref{tab:libero100_milestones}, Figure~\ref{fig:libero100_scaling}):
 \begin{enumerate}[leftmargin=*,itemsep=1.5pt,topsep=2pt]
-  \item \textbf{Baseline Voronoi Collapse vs.\ DTRA Routing Preservation:} Starting from $100.0\%$ routing at $K=10$, \texttt{arm\_frozen\_mlp} collapses steadily under key interference to \textbf{41.76 $\pm$ 2.09\%} \texttt{Dup-Lang} routing at $K=100$, dragging Mean SR down to \textbf{70.33 $\pm$ 1.18\%}. DTRA's No-Encroachment refinement and Top-$M$ CMC sustain $100.0\%$ routing through $K=70$ and \textbf{99.90 $\pm$ 0.13\%} overall / \textbf{99.68 $\pm$ 0.45\%} \texttt{Dup-Lang} at $K=100$ (\textbf{+57.93\%p} over Frozen MLP).
-  \item \textbf{Elastic Snap-Back Gain \& Full $N=3$ Retention:} Across all three training seeds (3-seed \texttt{\_locked.json} Mean $\pm$ Std across Seeds~[42, 100, 2026]), \texttt{arm\_dtra\_elastic} reaches \textbf{87.00 $\pm$ 0.86\%} Mean Final SR (\textbf{+16.67\%p} over Frozen MLP) and \texttt{arm\_dtra\_rigid} reaches \textbf{86.67 $\pm$ 0.66\%} ($N=3$, 2.56 $\pm$ 0.91\% FR), lowering forgetting to 2.69 $\pm$ 0.67\% with positive backward transfer (+0.20 $\pm$ 0.72\% BWT) and exact $0.0000$ \texttt{post\_snap\_norm}.
-  \item \textbf{Published External CL Baselines at $K=100$ \& Motor Basis Reuse:} Under identical frozen ResNet-18 parity (Seed~42), \texttt{DER++}~\cite{buzzega2020der} (5\% buffer + dark-logit distillation) declines from $68.00\%$ ($K=10$) to $38.40\%$ at $K=100$ ($29.70\%$ FR, dropping to $12.00\%$ on earliest tasks \texttt{libero\_10}), while replay-free prompt/adapter methods \texttt{L2P}~\cite{wang2022l2p} ($1.20\%$, $51.72\%$ FR) and \texttt{O-LoRA}~\cite{wang2023olora} ($1.00\%$, $42.63\%$ FR) collapse under continuous action-head interference alongside \texttt{arm\_er\_5pct} (39.47 $\pm$ 1.48\%, 26.33 $\pm$ 3.46\% FR). Meanwhile, DTRA's \texttt{SharedBasisBank} saturates sub-linearly at \textbf{27 frozen bases} across all three seeds (\textbf{73\% reduction}).
-  \item \textbf{Zero-Retrain Extended $n_{\text{eval}}=20$ Verification ($12{,}000$ Rollouts):} Evaluating all three saved $K=100$ checkpoints across $20$ initial states/task ($6{,}000$ rollouts/arm, Table~\ref{tab:libero100_neval20}) confirms zero overfitting to \texttt{init[0:5]}: \texttt{arm\_dtra\_elastic} sustains \textbf{85.20 $\pm$ 0.35\%} overall (pooled 95\% Wilson CI $[84.3, 86.1]\%$) and \textbf{84.80 $\pm$ 0.36\%} on $15$ completely unseen initial states \texttt{init[5:20]} ($[83.7, 85.8]\%$), outperforming \texttt{arm\_frozen\_mlp} ($69.12 \pm 0.74\%$ overall; $68.82 \pm 0.74\%$ held-out) by \textbf{+16.08\%p} overall and \textbf{+52.72\%p} on \texttt{Dup-Lang} ($89.06\%$ vs.\ $36.33\%$; $99.94\%$ vs.\ $41.80\%$ routing), while matching on \texttt{Unique-Lang} ($83.55\%$ vs.\ $83.17\%$).
+  \item \textbf{Baseline Voronoi Collapse vs.\ DTRA Routing Preservation:} Starting from $100.0\%$ routing at $K=10$, \texttt{arm\_frozen\_mlp} collapses steadily under key interference to \textbf{41.76 $\pm$ 2.56\%} \texttt{Dup-Lang} routing at $K=100$, dragging Mean SR down to \textbf{70.33 $\pm$ 1.45\%}. DTRA's No-Encroachment refinement and 3-modality Top-$M$ CMC sustain $100.0\%$ routing through $K=70$ and \textbf{99.90 $\pm$ 0.16\%} overall / \textbf{99.68 $\pm$ 0.55\%} \texttt{Dup-Lang} at $K=100$ (\textbf{+57.93\%p} over Frozen MLP).
+  \item \textbf{Full $N=3$ Retention (Elastic $\approx$ Rigid):} Across all three training seeds (3-seed \texttt{\_locked.json} Mean $\pm$ Std across Seeds~[42, 100, 2026], sample std \texttt{ddof=1}), \texttt{arm\_dtra\_elastic} reaches \textbf{87.00 $\pm$ 1.06\%} Mean Final SR (\textbf{+16.67\%p} over Frozen MLP) and \texttt{arm\_dtra\_rigid} reaches \textbf{86.67 $\pm$ 0.81\%} ($N=3$, 2.56 $\pm$ 1.11\% FR). Elastic and Rigid are statistically comparable ($+0.33\,$pp, with Rigid higher on Seed~2026: $87.6\%$ vs.\ $85.8\%$), confirming that the main LIBERO-100 gain comes from routing stability and parameter isolation rather than elastic compliance alone.
+  \item \textbf{External CL Baselines at $K=100$ (Capacity \& Adaptation Caveats) \& Basis Sharing:} Under identical frozen ResNet-18 perception (Seed~42), \texttt{DER++}~\cite{buzzega2020der} ($1.70\,$MB monolithic head, 5\% buffer + distillation) declines from $68.00\%$ ($K=10$) to $38.40\%$ at $K=100$ ($29.70\%$ FR; $12.00\%$ on earliest tasks \texttt{libero\_10}), alongside \texttt{arm\_er\_5pct} (39.47 $\pm$ 1.81\%, 26.33 $\pm$ 4.24\% FR). Naive continuous-control adaptations of \texttt{L2P}~\cite{wang2022l2p} ($1.20\%$, $51.72\%$ FR) and \texttt{O-LoRA}~\cite{wang2023olora} ($1.00\%$, $42.63\%$ FR) collapse severely; as detailed in Section~\ref{sec:discussion}, these single-network baselines operate at $88\times\text{--}108\times$ smaller parameter capacity than DTRA ($183.14\,$MB) and face non-transformer adaptation constraints. Meanwhile, \texttt{SharedBasisBank} saturates at \textbf{27 frozen knot bases} ($3.81\,$MB, $73\%$ basis-slot reduction / $5.33\%$ total parameter reduction).
+  \item \textbf{Zero-Retrain Extended $n_{\text{eval}}=20$ Verification ($12{,}000$ Rollouts):} Evaluating all three saved $K=100$ checkpoints across $20$ initial states/task ($6{,}000$ rollouts/arm, Table~\ref{tab:libero100_neval20}) confirms zero overfitting to \texttt{init[0:5]}: \texttt{arm\_dtra\_elastic} sustains \textbf{85.20 $\pm$ 0.43\%} overall (pooled binomial 95\% Wilson CI $[84.3, 86.1]\%$) and \textbf{84.80 $\pm$ 0.44\%} on $15$ unseen initial states \texttt{init[5:20]} ($[83.7, 85.8]\%$), outperforming \texttt{arm\_frozen\_mlp} ($69.12 \pm 0.90\%$ overall; $68.82 \pm 0.91\%$ held-out) by \textbf{+16.08\%p} overall and \textbf{+52.72\%p} on \texttt{Dup-Lang} ($89.06\%$ vs.\ $36.33\%$; $99.94\%$ vs.\ $41.80\%$ routing), while matching on \texttt{Unique-Lang} ($83.55\%$ vs.\ $83.17\%$, $+0.38\,$pp).
 \end{enumerate}
 
 \begin{figure}[ht!]
@@ -293,10 +293,10 @@ Scaling twenty-fold to $100$ sequential 7-DoF manipulation tasks (\texttt{libero
     \toprule
     \textbf{Arm (Strict Parity)} & \textbf{$K=10$ SR} & \textbf{$K=30$ SR} & \textbf{$K=50$ SR} & \textbf{$K=70$ SR} & \textbf{$K=100$ Final} \\
     \midrule
-    Frozen MLP & 82.00$\pm$4.32\% & 85.11$\pm$2.79\% & 79.07$\pm$0.50\% & 76.48$\pm$0.97\% & 70.33$\pm$1.18\% \\
-    ER 5\% (Replay) & 58.67$\pm$4.99\% & 56.67$\pm$6.69\% & 52.00$\pm$4.42\% & 47.43$\pm$4.07\% & 39.47$\pm$1.48\% \\
-    DTRA Rigid ($\alpha=0$) & 83.33$\pm$1.89\% & 90.44$\pm$0.83\% & 90.67$\pm$0.94\% & 87.52$\pm$0.71\% & 86.67$\pm$0.66\% \\
-    \textbf{DTRA Elastic (Ours)} & 80.00$\pm$1.63\% & \textbf{91.11$\pm$1.37\%} & \textbf{90.67$\pm$1.00\%} & \textbf{87.71$\pm$0.70\%} & \textbf{87.00$\pm$0.86\%} \\
+    Frozen MLP & 82.00$\pm$5.29\% & 85.11$\pm$3.42\% & 79.07$\pm$0.61\% & 76.48$\pm$1.19\% & 70.33$\pm$1.45\% \\
+    ER 5\% (Replay) & 58.67$\pm$6.11\% & 56.67$\pm$8.19\% & 52.00$\pm$5.41\% & 47.43$\pm$4.98\% & 39.47$\pm$1.81\% \\
+    DTRA Rigid ($\alpha=0$) & 83.33$\pm$2.31\% & 90.44$\pm$1.02\% & 90.67$\pm$1.15\% & 87.52$\pm$0.87\% & 86.67$\pm$0.81\% \\
+    \textbf{DTRA Elastic (Ours)} & 80.00$\pm$2.00\% & \textbf{91.11$\pm$1.68\%} & \textbf{90.67$\pm$1.22\%} & \textbf{87.71$\pm$0.86\%} & \textbf{87.00$\pm$1.06\%} \\
     \midrule
     DER++ (5\% Buffer) & 68.00\% & 60.00\% & 60.40\% & 51.71\% & 38.40\% \\
     L2P (Prompt Pool) & 8.00\% & 2.00\% & 1.60\% & 1.14\% & 1.20\% \\
@@ -315,10 +315,10 @@ Scaling twenty-fold to $100$ sequential 7-DoF manipulation tasks (\texttt{libero
     \toprule
     \textbf{Method} & \textbf{42/100/2026} & \textbf{Mean$\pm$Std} & \textbf{FR$\downarrow$} & \textbf{BWT$\uparrow$} & \textbf{Route$\uparrow$} & \textbf{Dup-Lang} & \textbf{Bases} & \textbf{Lat.(ms)} \\
     \midrule
-    Frozen MLP & 72.0/69.6/69.4 & 70.33$\pm$1.18 & 2.90$\pm$1.05 & +0.20$\pm$2.29 & 81.94$\pm$0.24 & 41.76$\pm$2.09 & 100 & 6.46$\pm$0.57 \\
-    ER 5\% (Replay) & 40.2/40.8/37.4 & 39.47$\pm$1.48 & 26.33$\pm$3.46 & -20.00$\pm$2.59 & --- & --- & 1 & 4.93$\pm$0.59 \\
-    DTRA Rigid ($\alpha=0$) & 86.2/86.2/87.6 & 86.67$\pm$0.66 & 2.56$\pm$0.91 & +0.67$\pm$1.10 & 99.91$\pm$0.13 & 99.68$\pm$0.45 & 27 & 8.70$\pm$0.93 \\
-    \textbf{DTRA Elastic (Ours)} & 87.8/87.4/85.8 & \textbf{87.00$\pm$0.86} & 2.69$\pm$0.67 & +0.20$\pm$0.72 & \textbf{99.90$\pm$0.13} & \textbf{99.68$\pm$0.45} & \textbf{27} & 9.55$\pm$0.20 \\
+    Frozen MLP & 72.0/69.6/69.4 & 70.33$\pm$1.45 & 2.90$\pm$1.28 & +0.20$\pm$2.81 & 81.94$\pm$0.29 & 41.76$\pm$2.56 & 100 & 6.46$\pm$0.70 \\
+    ER 5\% (Replay) & 40.2/40.8/37.4 & 39.47$\pm$1.81 & 26.33$\pm$4.24 & -20.00$\pm$3.17 & --- & --- & 1 & 4.93$\pm$0.72 \\
+    DTRA Rigid ($\alpha=0$) & 86.2/86.2/87.6 & 86.67$\pm$0.81 & 2.56$\pm$1.11 & +0.67$\pm$1.35 & 99.91$\pm$0.16 & 99.68$\pm$0.55 & 27 & 8.70$\pm$1.14 \\
+    \textbf{DTRA Elastic (Ours)} & 87.8/87.4/85.8 & \textbf{87.00$\pm$1.06} & 2.69$\pm$0.82 & +0.20$\pm$0.88 & \textbf{99.90$\pm$0.16} & \textbf{99.68$\pm$0.55} & \textbf{27} & 9.55$\pm$0.24 \\
     \midrule
     DER++ (5\% Buf.) & 38.4/--/-- & 38.40 & 29.70 & -16.16 & --- & --- & 1 & 5.49 \\
     L2P (Prompts) & 1.2/--/-- & 1.20 & 51.72 & -51.72 & --- & --- & 32 & 7.79 \\
@@ -329,7 +329,7 @@ Scaling twenty-fold to $100$ sequential 7-DoF manipulation tasks (\texttt{libero
 
 \begin{table}[ht!]
   \centering
-  \caption{Zero-Retrain Extended Initial-State Verification on Saved $K=100$ LIBERO-100 Checkpoints ($n_{\text{eval}}=20$ initial states/task $\times 100$ tasks $\times 3$ training seeds $= 6{,}000$ rollouts/arm, $12{,}000$ total). Brackets show pooled 95\% Wilson CIs; \texttt{init[5:20]} tests $15$ unseen initial states never evaluated during continual streaming.}
+  \caption{Zero-Retrain Extended Initial-State Verification on Saved $K=100$ LIBERO-100 Checkpoints ($n_{\text{eval}}=20$ initial states/task $\times 100$ tasks $\times 3$ training seeds $= 6{,}000$ rollouts/arm, $12{,}000$ total; Mean $\pm$ Sample Std \texttt{ddof=1}). Brackets show pooled binomial 95\% Wilson CIs (descriptive; ignores task/seed clustering); \texttt{init[5:20]} tests $15$ unseen initial states never evaluated during continual streaming.}
   \label{tab:libero100_neval20}
   \fontsize{8.0pt}{9.8pt}\selectfont
   \setlength{\tabcolsep}{2.0pt}
@@ -337,8 +337,8 @@ Scaling twenty-fold to $100$ sequential 7-DoF manipulation tasks (\texttt{libero
     \toprule
     \textbf{Policy ($n=20$)} & \textbf{\texttt{init[0:5]}} & \textbf{Held-Out \texttt{[5:20]} [CI95]} & \textbf{All \texttt{[0:20]} [CI95]} & \textbf{Dup SR (Rte)} & \textbf{Uniq SR} \\
     \midrule
-    Frozen MLP & 70.00$\pm$0.75\% & 68.82$\pm$0.74\% [67.5, 70.2] & 69.12$\pm$0.74\% [67.9, 70.3] & 36.33\% (41.80\%) & 83.17\% \\
-    \textbf{DTRA Elastic} & 86.40$\pm$0.86\% & \textbf{84.80$\pm$0.36\% [83.7, 85.8]} & \textbf{85.20$\pm$0.35\% [84.3, 86.1]} & \textbf{89.06\% (99.94\%)} & 83.55\% \\
+    Frozen MLP & 70.00$\pm$0.92\% & 68.82$\pm$0.91\% [67.5, 70.2] & 69.12$\pm$0.90\% [67.9, 70.3] & 36.33\% (41.80\%) & 83.17\% \\
+    \textbf{DTRA Elastic} & 86.40$\pm$1.06\% & \textbf{84.80$\pm$0.44\% [83.7, 85.8]} & \textbf{85.20$\pm$0.43\% [84.3, 86.1]} & \textbf{89.06\% (99.94\%)} & 83.55\% \\
     \midrule
     \textbf{$\Delta$ (DTRA $-$ MLP)} & \textbf{+16.40\%p} & \textbf{+15.98\%p} & \textbf{+16.08\%p} & \textbf{+52.72\%p (+58.1)} & +0.38\%p \\
     \bottomrule
@@ -347,7 +347,7 @@ Scaling twenty-fold to $100$ sequential 7-DoF manipulation tasks (\texttt{libero
 
 
 \textbf{Interpreting Milestone FR/BWT \& Structural Density Crossover.}
-At evaluation checkpoints $K \in \{10, 30, 50, 70, 100\}$, Frozen MLP records $70.33 \pm 1.18\%$ Mean SR, $41.76 \pm 2.09\%$ \texttt{Dup-Lang} routing, and $2.90 \pm 1.05\%$ FR. Exact parameter freezing is distinct from success-rate retention. Likewise, \texttt{post\_snap\_norm} measures temporary state reset, not parameter drift. DTRA Elastic exhibits an observed FR of $2.69 \pm 0.67\%$ and BWT of $+0.20 \pm 0.72\%$. Across density regimes ($K \le 8$ vs.\ $K=100$), unguarded MLPs memorize sparse tasks yet suffer Voronoi collapse at $K=100$, whereas DTRA turns scale into $27$-basis primitive reuse (\textbf{+16.67\%p} at $n=5$; \textbf{+16.08\%p} over $12{,}000$ rollouts at $n=20$).
+At evaluation checkpoints $K \in \{10, 30, 50, 70, 100\}$, Frozen MLP records 70.33 $\pm$ 1.45\% Mean SR, 41.76 $\pm$ 2.56\% \texttt{Dup-Lang} routing, and 2.90 $\pm$ 1.28\% FR. Exact parameter freezing ($\nabla_\theta=0$) is distinct from empirical success-rate retention. Likewise, \texttt{post\_snap\_norm} measures episode-boundary state reset, not parameter drift. DTRA Elastic exhibits an empirical FR of 2.69 $\pm$ 0.82\% and BWT of +0.20 $\pm$ 0.88\%. Notice that on \texttt{Unique-Lang} ($70$ tasks), DTRA Elastic ($83.55\%$) and Frozen MLP ($83.17\%$) are virtually identical; nearly the entire $+16.08\,$pp gain arises from resolving \texttt{Dup-Lang} routing collapse ($89.06\%$ vs.\ $36.33\%$).
 
 \clearpage
 % ==========================================================================
@@ -356,27 +356,33 @@ At evaluation checkpoints $K \in \{10, 30, 50, 70, 100\}$, Frozen MLP records $7
 % ==========================================================================
 
 \subsection{Implementation Scope Boundary: Cell \texorpdfstring{$\to$}{->} Region (v3.0) vs.\ Organ (Future Work / v4.0)}
-\textbf{Strict Scope Isolation:} Only the \textbf{Cell} (individual $\mathbb{S}^{63}$ hypertube unit with $C^2$ cubic B-spline knots, No-Encroachment bounds, and $\nabla_\theta=0$ freeze) and single-ring \textbf{Region} ($K=100$ cortical-column module sharing $27$ primitive bases in \texttt{SharedBasisBank}) are implemented and empirically validated in DTRA~v3.0. All multi-ring \textbf{Organ} scaling architectures, isometric dimension expansion, and object-centric sim/hardware coordinate transport belong strictly to subsequent \textbf{DTRA~v4.0 / Future Work}:
+\textbf{Strict Scope Isolation:} Only the \textbf{Cell} (isolated node with $C^2$ cubic B-spline knots, No-Encroachment bounds, and $\nabla_\theta=0$ freeze) and single-ring \textbf{Region} ($K=100$ module sharing $27$ primitive bases in \texttt{SharedBasisBank}) are implemented and empirically validated in DTRA~v3.0. All multi-ring \textbf{Organ} scaling architectures, isometric dimension expansion, and object-centric sim/hardware coordinate transport belong strictly to subsequent \textbf{DTRA~v4.0 / Future Work}:
 \begin{itemize}[leftmargin=*,itemsep=1.5pt,topsep=2pt]
   \item \textbf{Organ Multi-Ring Coordination (Conceptual / v4.0 Track, $10^4\text{--}10^8$ Tasks):} Coordinating specialized Region rings under hierarchical routing theoretically indexes $100^4 = 10^8$ skills with $O(\log K)$ comparisons ($400$ inner products) and modular portability without saturating one $\mathbb{S}^{63}$ manifold.
-  \item \textbf{Isometric Zero-Padding (Theorem~\ref{thm:isometry}, Appendix~\ref{app:proofs}):} Embedding $\mathbf{v} \in \mathbb{S}^{d-1}$ as $[\mathbf{v}; \mathbf{0}] \in \mathbb{S}^{2d-1}$ preserves all pairwise inner products and Voronoi boundaries exactly with zero distortion upon capacity expansion.
+  \item \textbf{Isometric Zero-Padding (Proposition~\ref{prop:isometry}, Appendix~\ref{app:proofs}):} Embedding $\mathbf{v} \in \mathbb{S}^{d-1}$ as $[\mathbf{v}; \mathbf{0}] \in \mathbb{S}^{2d-1}$ preserves pairwise inner products and Voronoi boundaries exactly upon future capacity expansion (conceptual property, not implemented in v3.0).
   \item \textbf{Object-Centric Coordinate Transport \& Physical Robot Adaptation (Future Work / v4.0):} Because single-ring Region trajectories use egocentric tabletop frames, extreme object spawn shifts across environments motivate coupling frozen DTRA bases with object-centric visual anchors (e.g., RGB-D deprojection) and physical robot hardware in future work.
 \end{itemize}
 
 \subsection{Structural White-Box Interpretability \& Execution Cost}
-DTRA exposes the selected Cell, shared basis index, routing margin, and temporary deformation state for inspection (Appendix~\ref{app:whitebox_viz}). Continual registration optimizes newly introduced modules and is distinct from control-time inference. At inference, broad key retrieval scans $K$ entries, followed by candidate reranking and decoding of the selected cell and basis. The selected decoding core has $O(1)$ cost, while the broad routing scan remains $O(K)$. The measured GPU policy-inference latency is $9.55 \pm 0.20\,$ms at $K=100$; the $1.87\,$ms CPU active-core result concerns the separate $K=1 \to 8$ Meta-World experiment (Figure~\ref{fig:o1_latency}). These timings exclude environment stepping and do not measure registration time.
+DTRA exposes the selected node, shared basis index, routing margin, and episode reset state for inspection (Appendix~\ref{app:whitebox_viz}). Continual registration optimizes newly introduced modules and is distinct from control-time inference. At inference, broad key retrieval scans $K$ entries, followed by 3-modality candidate reranking and decoding of the selected node and basis. The selected decoding core has $O(1)$ cost, while the broad routing scan remains $O(K)$. The measured GPU policy-inference latency is $9.55 \pm 0.25\,$ms at $K=100$; the $1.87\,$ms CPU active-core result concerns the separate $K=1 \to 8$ Meta-World experiment (Figure~\ref{fig:o1_latency}). These timings exclude environment stepping and do not measure registration time.
 
-\subsection{Limitations}
-On Meta-World, our three-seed causal ablation isolates two distinct contributors to the clean-versus-OOD curve: without feature-noise regularization ($p=0, \sigma=0$), DTRA's manifold-anchored residual structure raises severe OOD SR from $23.6 \pm 3.9\%$ (Frozen MLP) to $45.0 \pm 5.4\%$ while retaining $83.1 \pm 5.1\%$ clean SR, whereas aggressive Conv4 feature dropout/noise ($p=0.30, \sigma=0.05$) further lifts severe OOD SR to $51.4 \pm 4.4\%$ at the cost of lowering clean SR to $72.2 \pm 6.8\%$ (and lifts Frozen MLP to $90.8 \pm 3.0\%$ clean / $49.2 \pm 8.3\%$ OOD on sparse $K=8$ tasks). Hashed instruction encoding also limits free-form paraphrase generalization ($31.7\%$ paraphrase SR on Meta-World Seed~42), and physical real-robot validation under real sensor drift remains essential future work.
-
-On LIBERO-100, mid-stream checkpoints ($K \in \{10,30,50,70\}$) use $n_{\text{eval}}=5$ rollouts/task to bound training-time simulation cost, while final $K=100$ generalization is verified without retraining across $n_{\text{eval}}=20$ initial states ($12{,}000$ total rollouts over Seeds~42, 100, and~2026, including $15$ unseen held-out initial states per task with pooled 95\% Wilson CIs; Table~\ref{tab:libero100_neval20}). All four core LIBERO-100 arms (Frozen MLP, ER~5\%, DTRA Rigid, and DTRA Elastic) cover all three training seeds ($N=3$), while the matched-encoder LIBERO-100 external baselines (\texttt{DER++}, \texttt{L2P}, \texttt{O-LoRA}) evaluate Seed~42 (complemented by three-seed evaluations on Meta-World and an independent cross-hardware A6000 replication of \texttt{O-LoRA} at $0.40\%$ SR).
+\subsection{Limitations \& Honest Methodological Caveats}
+We highlight six important limitations and methodological caveats verified directly against our implementation:
+\begin{enumerate}[leftmargin=*,itemsep=1.5pt,topsep=2pt]
+  \item \textbf{Parameter Capacity Ratio ($88\times\text{--}108\times$) \& Linear $O(K)$ Node Growth:} Although \texttt{SharedBasisBank} reduces knot-basis slots by $73\%$ ($100 \to 27$, $3.81\,$MB), per-task \texttt{LIBEROHypertubeNode} adapters occupy $179.33\,$MB ($97.92\%$ of total policy memory), yielding only a $5.33\%$ total parameter reduction ($183.14\,$MB vs.\ Frozen MLP $151.67\,$MB and monolithic ER/DER++/L2P/O-LoRA heads at $1.70\text{--}2.09\,$MB; Appendix~Table~\ref{tab:libero_resources}). True sub-linear total memory requires sharing spatial adapters across tasks (e.g., PackNet or TAIL-style lightweight adapters) in future work.
+  \item \textbf{Routing Feature Asymmetry \& Missing \texttt{Frozen MLP + CMC} Ablation:} On LIBERO-100, DTRA's Stage-2 CMC uses a dedicated $6{,}400$-d $4\times 4+\text{DoG}$ visual signature bank plus $\le 96$ cached key-validation exemplars/task (\texttt{\_val\_queries}, $9{,}600$ unit vectors at $K=100$; no raw images/actions), whereas \texttt{Frozen MLP} used 1-stage $2\times 2$ key routing. Because \texttt{Unique-Lang} performance is nearly identical ($83.55\%$ vs.\ $83.17\%$), isolating \texttt{Frozen MLP + No-Encroachment + CMC} remains a key future ablation to decouple router gains from node architecture.
+  \item \textbf{External CL Adaptation Caveats (\texttt{L2P} / \texttt{O-LoRA} / \texttt{DER++}):} Our matched-encoder LIBERO-100 external baselines evaluate Seed~42 (complemented by 3-seed Meta-World and an independent A6000 O-LoRA run at $0.40\%$) and represent straightforward non-transformer adaptations rather than upper bounds of those methods: \texttt{L2P} updates its shared MLP head without freezing across tasks (degrading toward naive fine-tuning), \texttt{O-LoRA} freezes its \texttt{SpatialContextAdapter} after Task~0 and saturates the $256$-d orthogonal subspace ($99 \times 8 = 792 > 256$), and \texttt{DER++} uses untuned $\alpha=\beta=0.5$ with $1.70\,$MB capacity (and exhibited cross-run variance of $68.3\text{--}84.2\%$ across separate Meta-World runs). Direct comparison against LIBERO-native \texttt{PackNet}, \texttt{LOTUS}, and \texttt{TAIL} at matched parameter budgets remains future work.
+  \item \textbf{Meta-World Clean-vs-OOD Trade-Off, Paraphrase \& Official Test Split:} Our 3-seed Meta-World causal ablation confirms that disabling Conv4 feature-noise regularization ($p=0,\sigma=0$) lifts DTRA Full from $72.2 \pm 6.8\%$ to $83.1 \pm 5.1\%$ clean SR while preserving $45.0 \pm 5.4\%$ severe OOD SR (whereas adding identical regularization to Frozen MLP yields $90.8\%$ clean / $49.2\%$ OOD on sparse $K=8$ tasks). Hashed text encoding severely limits free-form paraphrase generalization (3-seed Meta-World paraphrase SR: $26.1 \pm 4.2\%$ for DTRA Full vs.\ $61.1 \pm 4.5\%$ for Frozen MLP), and on the official \texttt{ml1.test\_tasks} split Frozen MLP outperforms DTRA Full ($87.5\%$ vs.\ $75.0\%$).
+  \item \textbf{Statistical \& Evaluation Boundaries:} Mid-stream LIBERO-100 checkpoints use $n_{\text{eval}}=5$; final $K=100$ generalization is verified at $n_{\text{eval}}=20$ ($12{,}000$ rollouts, Table~\ref{tab:libero100_neval20}), though pooled Wilson CIs are descriptive binomial intervals that ignore task/seed clustering. \texttt{DTRA Rigid} ($86.67\%$) and \texttt{DTRA Elastic} ($87.00\%$) are statistically indistinguishable at $K=100$.
+  \item \textbf{Simulation Scope \& Deterministic Regression:} All experiments run in MuJoCo simulation with distinct-scene \texttt{Dup-Lang} pairs; intra-scene duplicate-instruction disambiguation, multimodal action distributions (where diffusion/CVAE policies excel), and real-world physical robot validation remain essential future work.
+\end{enumerate}
 
 % ==========================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 % ==========================================================================
 
-We presented \textbf{DTRA}, a replay-free, Task-ID-free framework for continual visuomotor control. Combining No-Encroachment key refinement, Two-Stage Top-$M$ CMC, \texttt{SharedBasisBank} ($100 \to 27$ shared bases), and separate mechanisms for parameter freezing and temporary state reset, DTRA Elastic achieves \textbf{87.00 $\pm$ 0.86\% Mean Final SR} and \textbf{99.68 $\pm$ 0.45\% Dup-Lang routing} on LIBERO-100 across three seeds (outperforming Frozen MLP at 70.33 $\pm$ 1.18\%, ER~5\% at 39.47 $\pm$ 1.48\%, DER++ at $38.40\%$, L2P at $1.20\%$, and O-LoRA at $1.00\%$), verified at \textbf{85.20 $\pm$ 0.35\%} ($84.80\%$ on $15$ unseen initial states) across $12{,}000$ zero-retrain rollouts ($n_{\text{eval}}=20$), alongside \textbf{0.0\% forgetting} and $83.1\%$ clean / $45.0\%$ OOD ($72.2\%$ clean / $51.4\%$ OOD with feature regularization) on three-seed Meta-World. These findings apply to the reported curricula, evaluation budgets, and baselines.
+We presented \textbf{DTRA}, a Task-ID-free parameter-isolation framework for continual visuomotor control without raw-demonstration replay. Combining No-Encroachment key refinement (with lightweight 96-vector key-validation exemplars/task), Two-Stage Top-$M$ 3-modality CMC, \texttt{SharedBasisBank} ($100 \to 27$ shared knot bases, $73\%$ basis-slot / $5.33\%$ total parameter reduction), and strict \texttt{AdamW} freeze exclusion ($\nabla_\theta=0$), DTRA Elastic achieves \textbf{87.00 $\pm$ 1.06\% Mean Final SR} (DTRA Rigid: 86.67 $\pm$ 0.81\%) and \textbf{99.68 $\pm$ 0.55\% Dup-Lang routing} on LIBERO-100 across three seeds---verified at \textbf{85.20 $\pm$ 0.43\%} ($84.80 \pm 0.44\%$ on $15$ unseen initial states) across $12{,}000$ zero-retrain rollouts ($n_{\text{eval}}=20$)---alongside $0.0\%$ forgetting and $83.1\%$ clean / $45.0\%$ OOD SR (without feature-noise regularization) on three-seed Meta-World. Transparently reporting both these gains and our architectural/capacity boundaries (linear per-task node memory, routing-feature asymmetry, and hashed-language limits) provides a concrete foundation for future scalable lifelong manipulation.
 
 \clearpage
 
@@ -545,6 +551,15 @@ P.~Kanerva, ``Hyperdimensional computing: An introduction to computing in distri
 \bibitem{papyan2020neural}
 V.~Papyan, X.~Y.~Han, and D.~L.~Donoho, ``Prevalence of neural collapse during the terminal phase of deep learning training,'' \emph{Proc.\ Natl.\ Acad.\ Sci.\ (PNAS)}, vol.~117, no.~40, pp.~24652--24663, 2020.
 
+\bibitem{zhu2022buds}
+Y.~Zhu, P.~Stone, and Y.~Zhu, ``Bottom-up skill discovery from unsegmented demonstrations for long-horizon robot manipulation,'' \emph{IEEE Robot.\ Autom.\ Lett.\ (RA-L)}, vol.~7, no.~2, pp.~4126--4133, 2022.
+
+\bibitem{wan2024lotus}
+W.~Wan, Y.~Zhu, R.~Shah, and Y.~Zhu, ``LOTUS: Continual imitation learning for robot manipulation through unsupervised skill discovery,'' in \emph{Proc.\ IEEE Int.\ Conf.\ Robot.\ Autom.\ (ICRA)}, 2024.
+
+\bibitem{liu2024tail}
+Z.~Liu, J.~Zhang, K.~Asadi, Y.~Liu, D.~Zhao, S.~Sabach, and R.~Fakoor, ``TAIL: Task-specific adapters for imitation learning with large pretrained models,'' in \emph{Proc.\ Int.\ Conf.\ Learn.\ Represent.\ (ICLR)}, 2024.
+
 \bibitem{son2026abkvla}
 S.~Son, ``ABK-VLA: Task-ID-free continual visuomotor policy learning via autonomous B-spline knot compression and visual prototype routing,'' \emph{Zenodo Preprint}, DOI: \texttt{10.5281/zenodo.24208545}, Nov.\ 2026. Repository: \url{https://github.com/5Color/abk-vla}.
 
@@ -554,62 +569,44 @@ S.~Son, ``ABK-VLA: Task-ID-free continual visuomotor policy learning via autonom
 \clearpage
 \appendix
 
-\section{Formal Mathematical Proofs \& Geometric Invariants}
+\section{Implementation Invariants \& Geometric Properties}
 \label{app:proofs}
 
-This appendix provides complete proofs for the three core invariants asserted in Section~\ref{sec:method} and Section~\ref{sec:discussion}: exact zero parameter and residual drift under \texttt{AdamW} exclusion and Two-Timescale Snap-Back (Theorem~\ref{thm:zero_drift}), within-chunk $C^2$ cubic B-Spline continuity and output perturbation bounds (Theorem~\ref{thm:bspline}), and isometric dimension expansion via zero-padding (Theorem~\ref{thm:isometry}).
+This appendix records three verification properties underlying the mechanisms in Sections~\ref{sec:method} and~\ref{sec:discussion}: exact zero optimizer drift under \texttt{AdamW} parameter-group exclusion (Proposition~\ref{prop:zero_drift}), standard clamped cubic B-Spline within-chunk continuity and output perturbation bounds (Proposition~\ref{prop:bspline}), and the conceptual isometric zero-padding property noted for future capacity expansion (Proposition~\ref{prop:isometry}). We frame these explicitly as implementation invariants and standard mathematical properties rather than novel theorems.
 
-\subsection{Exact Zero Parameter \& Residual Drift Under Continual Updates}
-\begin{theorem}[Zero Weight and Residual Drift]
-\label{thm:zero_drift}
-Let $\Theta_{\text{frozen}}^{(k)} = \{\mathbf{k}_j, \mathbf{B}_{b_j}, \mathbf{W}_{\text{head},j}\}_{j=1}^{k}$ denote the union of consolidated keys, shared motor bases in \texttt{SharedBasisBank}, and prior cell heads after mastering task $T_k$. Under DTRA registration and Two-Timescale Snap-Back:
+\subsection{Zero Optimizer Drift Under Consolidated Parameter Exclusion}
+\begin{proposition}[Exact Zero Optimizer Drift \& Episode State Reset]
+\label{prop:zero_drift}
+Let $\Theta_{\text{frozen}}^{(k)} = \{\mathbf{k}_j, \mathbf{B}_{b_j}, \mathbf{W}_{\text{node},j}\}_{j=1}^{k}$ denote consolidated keys, shared motor bases in \texttt{SharedBasisBank}, and prior node weights after mastering task $T_k$. Under DTRA registration:
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
   \item \textbf{Zero Optimizer Drift ($L_\infty = 0.0$):} For any subsequent task curriculum $T_{k+1}, \dots, T_K$ trained with decoupled weight decay \texttt{AdamW} ($\lambda > 0$), $\|\Theta_{\text{frozen}}^{(k)}(T_K) - \Theta_{\text{frozen}}^{(k)}(T_k)\|_\infty = 0.0$ holds identically.
-  \item \textbf{Zero Inter-Episode State Contamination:} Across arbitrary rollout length $L$ and elastic compliance $\alpha_i \in (0,1)$, the post-episode ephemeral deformation norm satisfies $\lim_{\text{end}} \|\Delta\mathbf{z}_i\|_2 = 0.0000$ and $\mathbf{e}_t^{\text{trace}} = \mathbf{0}$ prior to every $t=0$ reset.
+  \item \textbf{Deterministic Episode-Boundary Reset:} Calling \texttt{episode\_snap\_back()} prior to $t=0$ clears active routing inertia (\texttt{prev\_selected}, \texttt{prev\_act\_vec}) and diagnostic deformation buffers to exact $0.0000$, preventing inter-episode state carryover.
 \end{enumerate}
-\end{theorem}
+\end{proposition}
 
 \begin{proof}
-(1) Standard \texttt{AdamW} parameter updates obey $\theta_{s+1} = (1 - \eta\lambda)\theta_s - \eta \hat{m}_s / (\sqrt{\hat{v}_s} + \epsilon)$. Even when a frozen parameter's gradient is zero ($\mathbf{g}_s = \nabla_\theta\mathcal{L} = \mathbf{0}$), leaving $\theta_s$ inside an optimizer parameter group induces exponential silent weight decay $(1 - \eta\lambda)^S \theta_0 \neq \theta_0$ over $S$ optimization steps. DTRA enforces two strict structural preconditions upon consolidating task $T_k$: first, setting \texttt{requires\_grad = False} on $\Theta_{\text{frozen}}^{(k)}$; second, constructing a fresh per-task \texttt{AdamW} parameter group containing exclusively newly instantiated active parameters $\Theta_{\text{active}}^{(k+1)}$ ($\Theta_{\text{frozen}}^{(k)} \cap \text{param\_groups}(\texttt{AdamW}) = \emptyset$). Consequently, every step satisfies $\theta_{s+1} = \theta_s$ identically in IEEE-754 floating-point arithmetic, guaranteeing exact $L_\infty = 0.0$.
-
-(2) During control tick $t$, fast-timescale elastic tube displacement is synthesized purely as an ephemeral state tensor $\Delta \mathbf{z}_t^* = \alpha_{i^*} \cdot \Pi_{\mathcal{T}_{\mathbf{c}}(\mathbb{S}^{63})}(\mathbf{c}_t - \mathbf{c}_{\text{ring}, i^*}(\theta_t^*))$ stored outside persistent parameter memory. At the end of each $H=16$ chunk, \texttt{chunk\_snap\_back()} explicitly executes $\Delta\mathbf{z}_i \leftarrow \mathbf{0}$ while preserving the bounded progress counter \texttt{episodic\_trace} to prevent intra-episode perseveration loops. At episode completion, \texttt{episode\_snap\_back()} clears both $\Delta\mathbf{z}_i \leftarrow \mathbf{0}$ and $\mathbf{e}^{\text{trace}} \leftarrow \mathbf{0}$, enforcing an exact $0.0000$ post-episode state norm before the next environment reset.
+(1) Standard \texttt{AdamW} updates obey $\theta_{s+1} = (1 - \eta\lambda)\theta_s - \eta \hat{m}_s / (\sqrt{\hat{v}_s} + \epsilon)$. Even when $\nabla_\theta\mathcal{L} = \mathbf{0}$, retaining $\theta_s$ inside an optimizer parameter group applies silent exponential decay $(1 - \eta\lambda)^S \theta_0 \neq \theta_0$. DTRA sets \texttt{requires\_grad = False} on $\Theta_{\text{frozen}}^{(k)}$ and instantiates each task's \texttt{AdamW} optimizer exclusively over newly created active parameters ($\Theta_{\text{frozen}}^{(k)} \cap \text{param\_groups}(\texttt{AdamW}) = \emptyset$), so $\theta_{s+1} = \theta_s$ identically in IEEE-754 arithmetic. (2) Explicit zero-reinitialization of routing inertia and diagnostic buffers at episode reset guarantees identical initial internal state at every $t=0$. Note that parameter stability (1) is distinct from empirical closed-loop success-rate forgetting, which can still be non-zero due to routing boundary changes or rollout stochasticity.
 \end{proof}
 
-\subsection{Clamped \texorpdfstring{$C^2$}{C2} Cubic B-Spline Continuity \& Output Perturbation Bound}
-\begin{theorem}[Within-Chunk $C^2$ Continuity and Perturbation Bound]
-\label{thm:bspline}
-Let $U = \{0, 0, 0, 0, u_4, \dots, u_{N_k-1}, 1, 1, 1, 1\}$ be a clamped uniform knot vector of degree $p=3$ with $N_k = 6$ control points $\mathbf{P} \in \mathbb{R}^{6 \times d_a}$ evaluated over uniform chunk timesteps $\tau_h = h / (H-1)$ for $h = 0, \dots, H-1$ ($H=16$). Then:
+\subsection{Clamped \texorpdfstring{$C^2$}{C2} Cubic B-Spline Continuity \& Perturbation Bound}
+\begin{proposition}[Within-Chunk $C^2$ Continuity and Convex-Hull Perturbation Bound]
+\label{prop:bspline}
+Let $U = \{0, 0, 0, 0, u_4, \dots, u_{N_{\text{cp}}-1}, 1, 1, 1, 1\}$ be a clamped uniform degree-$3$ knot vector with $N_{\text{cp}}$ control points $\mathbf{P} \in \mathbb{R}^{N_{\text{cp}} \times d_a}$ ($N_{\text{cp}}=8$ on LIBERO-100; $N_{\text{cp}}=6$ on Meta-World), evaluated at $\tau_h = h / (H-1)$ for $h = 0, \dots, H-1$ ($H=16$). By standard spline properties~\cite{deboor1978splines,piegl1997nurbs}:
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
-  \item Every synthesized chunk trajectory $\mathbf{a}(\tau) = \sum_{n=0}^{5} B_{n,3}(\tau)\,\mathbf{p}_n$ satisfies exact endpoint clamping ($\mathbf{a}(0) = \mathbf{p}_0$, $\mathbf{a}(1) = \mathbf{p}_5$) and continuous position ($C^0$), velocity ($C^1$), and acceleration ($C^2$) at all interior knots.
-  \item Because $\sum_{n=0}^{5} B_{n,3}(\tau) = 1$ with $B_{n,3}(\tau) \ge 0$ (convex-hull property), any bounded perturbation $\|\delta\mathbf{P}\|_\infty \le \epsilon$ induced by visual OOD noise or elastic deformation obeys $\sup_{\tau \in [0,1]} \|\delta\mathbf{a}(\tau)\|_\infty \le \epsilon$, bounding spline-output perturbations within a single chunk.
+  \item Every synthesized chunk $\mathbf{a}(\tau) = \sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau)\,\mathbf{p}_n$ satisfies endpoint clamping ($\mathbf{a}(0) = \mathbf{p}_0$, $\mathbf{a}(1) = \mathbf{p}_{N_{\text{cp}}-1}$) and $C^2$ continuity at all interior knots.
+  \item By non-negativity ($B_{n,3}(\tau) \ge 0$) and partition of unity ($\sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau) \equiv 1$), any knot perturbation $\|\delta\mathbf{P}\|_\infty \le \epsilon$ obeys $\sup_{\tau \in [0,1]} \|\delta\mathbf{a}(\tau)\|_\infty \le \epsilon$ within a single chunk.
 \end{enumerate}
-\end{theorem}
+\end{proposition}
 
 \begin{proof}
-By the Cox--de~Boor recursion on multiplicity-$4$ clamped boundary knots $u_0=u_1=u_2=u_3=0$ and $u_6=u_7=u_8=u_9=1$, the basis functions satisfy $B_{0,3}(0) = 1$, $B_{5,3}(1) = 1$, and non-negativity $B_{n,3}(\tau) \ge 0$ with partition of unity $\sum_{n=0}^5 B_{n,3}(\tau) \equiv 1$ for all $\tau \in [0, 1]$. Each interior knot $u_j \in (0,1)$ has multiplicity $m_j = 1$, which guarantees $C^{p - m_j} = C^{3-1} = C^2$ continuity of $\mathbf{a}(\tau)$ across every interior polynomial transition. Finally, by H\"older's inequality and the partition-of-unity property:
-\[
-\left\| \sum_{n=0}^{5} B_{n,3}(\tau)\, \delta\mathbf{p}_n \right\|_\infty \le \left(\sum_{n=0}^5 |B_{n,3}(\tau)|\right) \max_{0 \le n \le 5} \|\delta\mathbf{p}_n\|_\infty = \|\delta\mathbf{P}\|_\infty \le \epsilon.
-\]
-This result applies within a single chunk. Replanning-boundary continuity and physical jerk or torque bounds require additional assumptions and are outside its scope.
+By Cox--de~Boor recursion with multiplicity-$4$ boundary knots and simple interior knots ($m_j=1$), $\mathbf{a}(\tau)$ is $C^{p-m_j}=C^2$ across interior transitions and satisfies $B_{n,3}(\tau) \ge 0$, $\sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau) = 1$. H\"older's inequality immediately yields $\left\| \sum_{n} B_{n,3}(\tau)\, \delta\mathbf{p}_n \right\|_\infty \le (\sum_n |B_{n,3}(\tau)|)\max_n \|\delta\mathbf{p}_n\|_\infty = \|\delta\mathbf{P}\|_\infty \le \epsilon$. Replanning-boundary smoothness across consecutive chunks and physical actuator torque limits are outside this single-chunk bound.
 \end{proof}
 
-\subsection{Isometric Zero-Padding Invariance for Dynamic Manifold Expansion}
-\begin{theorem}[Isometric Zero-Padding Boundary Preservation]
-\label{thm:isometry}
-Suppose an existing Region stores anchored unit keys and query representations $\{\mu_j, \mathbf{k}_j\}_{j=1}^K \subset \mathbb{S}^{d-1}$. Define the isometric zero-padding operator $\Phi_d^{D}: \mathbb{S}^{d-1} \to \mathbb{S}^{D-1}$ ($D > d$) by $\Phi_d^D(\mathbf{v}) = [\mathbf{v}; \mathbf{0}_{D-d}]$. Then for all $\mathbf{u}, \mathbf{v}, \mathbf{k}_j, \mu_j \in \mathbb{S}^{d-1}$:
-\begin{enumerate}[leftmargin=*,itemsep=2pt]
-  \item Norm and inner-product preservation: $\|\Phi_d^D(\mathbf{v})\|_2 = 1$ and $\langle \Phi_d^D(\mathbf{u}), \Phi_d^D(\mathbf{v}) \rangle = \langle \mathbf{u}, \mathbf{v} \rangle$.
-  \item Exact Voronoi partition \& No-Encroachment invariance: every previously valid No-Encroachment inequality $\langle \mu_j, \mathbf{k}_i \rangle \le s_{jj} - m_{\text{safe}}$ remains satisfied identically upon embedding into $\mathbb{S}^{D-1}$, while newly added tasks can allocate orthogonal residual components in the fresh subspace $\mathbf{0}_{D-d}^\perp$.
-\end{enumerate}
-\end{theorem}
-
-\begin{proof}
-For any $\mathbf{u}, \mathbf{v} \in \mathbb{S}^{d-1}$, direct expansion yields
-\[
-\langle \Phi_d^D(\mathbf{u}), \Phi_d^D(\mathbf{v}) \rangle = \sum_{r=1}^{d} u_r v_r + \sum_{r=d+1}^{D} 0 \cdot 0 = \langle \mathbf{u}, \mathbf{v} \rangle,
-\]
-so $\|\Phi_d^D(\mathbf{v})\|_2 = \sqrt{\langle \mathbf{v}, \mathbf{v} \rangle} = 1$, preserving geodesic distances $d_{\text{geo}} = \arccos\langle \mathbf{u}, \mathbf{v} \rangle$ and spherical chord distances $d_{\text{chord}} = \sqrt{2(1-\langle \mathbf{u},\mathbf{v}\rangle)}$ exactly. Similarly, self-similarity floors $s_{jj}' = \langle \Phi(\mu_j), \Phi(\mathbf{k}_j) \rangle = s_{jj}$ and pairwise routing boundaries $\{ \mathbf{c} \in \mathbb{S}^{D-1} : \langle \mathbf{c}, \Phi(\mathbf{k}_j) \rangle \ge \langle \mathbf{c}, \Phi(\mathbf{k}_i) \rangle \}$ induce the identical spherical Voronoi tessellation on the embedded $(d-1)$-submanifold, while any future key $\mathbf{k}_{\text{new}} = [\alpha \mathbf{v}_{\parallel}; \sqrt{1-\alpha^2}\mathbf{v}_\perp]$ can expand capacity strictly along orthogonal coordinates $\mathbf{v}_\perp$ with tunable interference $\alpha \to 0$.
-\end{proof}
+\subsection{Conceptual Isometric Zero-Padding Property (Future Work)}
+\begin{proposition}[Isometric Zero-Padding Inner-Product Preservation]
+\label{prop:isometry}
+For unit vectors $\{\mu_j, \mathbf{k}_j\}_{j=1}^K \subset \mathbb{S}^{d-1}$, the zero-padding map $\Phi_d^{D}(\mathbf{v}) = [\mathbf{v}; \mathbf{0}_{D-d}] \in \mathbb{S}^{D-1}$ ($D > d$) preserves all norms and pairwise inner products identically ($\langle \Phi_d^D(\mathbf{u}), \Phi_d^D(\mathbf{v}) \rangle = \langle \mathbf{u}, \mathbf{v} \rangle$), thereby preserving existing spherical Voronoi partitions and No-Encroachment margins $\langle \mu_j, \mathbf{k}_i \rangle \le s_{jj} - m_{\text{safe}}$ without distortion. This property is noted solely as a conceptual design primitive for future capacity expansion and is not implemented in DTRA~v3.0.
+\end{proposition}
 
 
 \subsection*{Asymptotic Dispatch Complexity \& $O(1)$ Active Core Scaling}
@@ -659,42 +656,42 @@ Table~\ref{tab:seed_registry} documents the exact provenance of every LIBERO-100
     \toprule
     \textbf{$K$} & \textbf{Arm (Strict Parity)} & \textbf{Mean SR $\uparrow$} & \textbf{FR $\downarrow$} & \textbf{BWT $\uparrow$} & \textbf{Route $\uparrow$} & \textbf{Dup-Lang $\uparrow$} & \textbf{Bases} \\
     \midrule
-    $K=10$ & Frozen MLP & 82.00$\pm$4.32\% & 2.96$\pm$2.77\% & -2.96$\pm$2.77\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 10 \\
-     & ER 5\% (Replay) & 58.67$\pm$4.99\% & 25.19$\pm$6.87\% & -25.19$\pm$6.87\% & --- & --- & 1 \\
-     & DTRA Rigid ($\alpha=0$) & 83.33$\pm$1.89\% & 2.96$\pm$1.05\% & +0.74$\pm$2.77\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 7 \\
-     & \textbf{DTRA Elastic (Ours)} & 80.00$\pm$1.63\% & 2.96$\pm$1.05\% & -1.48$\pm$2.77\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 7 \\
+    $K=10$ & Frozen MLP & 82.00$\pm$5.29\% & 2.96$\pm$3.39\% & -2.96$\pm$3.39\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 10 \\
+     & ER 5\% (Replay) & 58.67$\pm$6.11\% & 25.19$\pm$8.41\% & -25.19$\pm$8.41\% & --- & --- & 1 \\
+     & DTRA Rigid ($\alpha=0$) & 83.33$\pm$2.31\% & 2.96$\pm$1.28\% & +0.74$\pm$3.39\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 7 \\
+     & \textbf{DTRA Elastic (Ours)} & 80.00$\pm$2.00\% & 2.96$\pm$1.28\% & -1.48$\pm$3.39\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 7 \\
     & DER++ (5\% Buf., S42) & 68.00\% & 28.89\% & -28.89\% & --- & --- & 1 \\
     & L2P (Prompts, S42) & 8.00\% & 80.00\% & -80.00\% & --- & --- & 32 \\
-    & O-LoRA (Subsp., S42) & 2.00\% & 31.11\% & -31.11\% & --- & --- & 100 \\
+    & O-LoRA (Subsp., S42) & 2.00\% & 31.11\% & -31.11\% & --- & --- & 10 \\
     \midrule
-    $K=30$ & Frozen MLP & 85.11$\pm$2.79\% & 2.99$\pm$2.28\% & -1.84$\pm$1.72\% & 96.34$\pm$0.46\% & 85.71$\pm$0.00\% & 30 \\
-     & ER 5\% (Replay) & 56.67$\pm$6.69\% & 26.21$\pm$2.25\% & -24.14$\pm$3.38\% & --- & --- & 1 \\
-     & DTRA Rigid ($\alpha=0$) & 90.44$\pm$0.83\% & 1.84$\pm$0.65\% & +1.38$\pm$1.13\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 13 \\
-     & \textbf{DTRA Elastic (Ours)} & \textbf{91.11$\pm$1.37\%} & 1.15$\pm$0.86\% & +1.84$\pm$2.28\% & \textbf{100.00$\pm$0.00\%} & \textbf{100.00$\pm$0.00\%} & 13 \\
+    $K=30$ & Frozen MLP & 85.11$\pm$3.42\% & 2.99$\pm$2.79\% & -1.84$\pm$2.11\% & 96.34$\pm$0.57\% & 85.71$\pm$0.00\% & 30 \\
+     & ER 5\% (Replay) & 56.67$\pm$8.19\% & 26.21$\pm$2.76\% & -24.14$\pm$4.14\% & --- & --- & 1 \\
+     & DTRA Rigid ($\alpha=0$) & 90.44$\pm$1.02\% & 1.84$\pm$0.80\% & +1.38$\pm$1.38\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 13 \\
+     & \textbf{DTRA Elastic (Ours)} & \textbf{91.11$\pm$1.68\%} & 1.15$\pm$1.05\% & +1.84$\pm$2.79\% & \textbf{100.00$\pm$0.00\%} & \textbf{100.00$\pm$0.00\%} & 13 \\
     & DER++ (5\% Buf., S42) & 60.00\% & 22.07\% & -13.10\% & --- & --- & 1 \\
     & L2P (Prompts, S42) & 2.00\% & 73.10\% & -73.10\% & --- & --- & 32 \\
-    & O-LoRA (Subsp., S42) & 1.33\% & 44.83\% & -44.83\% & --- & --- & 100 \\
+    & O-LoRA (Subsp., S42) & 1.33\% & 44.83\% & -44.83\% & --- & --- & 30 \\
     \midrule
-    $K=50$ & Frozen MLP & 79.07$\pm$0.50\% & 2.31$\pm$2.22\% & -0.95$\pm$1.64\% & 89.04$\pm$0.75\% & 61.54$\pm$1.82\% & 50 \\
-     & ER 5\% (Replay) & 52.00$\pm$4.42\% & 25.85$\pm$0.51\% & -22.04$\pm$1.53\% & --- & --- & 1 \\
-     & DTRA Rigid ($\alpha=0$) & 90.67$\pm$0.94\% & 2.31$\pm$0.51\% & +0.54$\pm$1.02\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 22 \\
-     & \textbf{DTRA Elastic (Ours)} & \textbf{90.67$\pm$1.00\%} & 2.45$\pm$1.00\% & +0.54$\pm$1.26\% & \textbf{100.00$\pm$0.00\%} & \textbf{100.00$\pm$0.00\%} & 22 \\
+    $K=50$ & Frozen MLP & 79.07$\pm$0.61\% & 2.31$\pm$2.72\% & -0.95$\pm$2.01\% & 89.04$\pm$0.92\% & 61.54$\pm$2.23\% & 50 \\
+     & ER 5\% (Replay) & 52.00$\pm$5.41\% & 25.85$\pm$0.62\% & -22.04$\pm$1.87\% & --- & --- & 1 \\
+     & DTRA Rigid ($\alpha=0$) & 90.67$\pm$1.15\% & 2.31$\pm$0.62\% & +0.54$\pm$1.25\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 22 \\
+     & \textbf{DTRA Elastic (Ours)} & \textbf{90.67$\pm$1.22\%} & 2.45$\pm$1.22\% & +0.54$\pm$1.55\% & \textbf{100.00$\pm$0.00\%} & \textbf{100.00$\pm$0.00\%} & 22 \\
     & DER++ (5\% Buf., S42) & 60.40\% & 21.22\% & -7.76\% & --- & --- & 1 \\
     & L2P (Prompts, S42) & 1.60\% & 68.57\% & -68.57\% & --- & --- & 32 \\
-    & O-LoRA (Subsp., S42) & 2.00\% & 46.53\% & -46.53\% & --- & --- & 100 \\
+    & O-LoRA (Subsp., S42) & 2.00\% & 46.53\% & -46.53\% & --- & --- & 50 \\
     \midrule
-    $K=70$ & Frozen MLP & 76.48$\pm$0.97\% & 3.19$\pm$1.44\% & -0.19$\pm$2.39\% & 87.96$\pm$0.91\% & 58.57$\pm$4.10\% & 70 \\
-     & ER 5\% (Replay) & 47.43$\pm$4.07\% & 27.83$\pm$1.79\% & -22.90$\pm$2.69\% & --- & --- & 1 \\
-     & DTRA Rigid ($\alpha=0$) & 87.52$\pm$0.71\% & 3.00$\pm$0.76\% & +0.10$\pm$0.49\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 24 \\
-     & \textbf{DTRA Elastic (Ours)} & \textbf{87.71$\pm$0.70\%} & 2.42$\pm$0.27\% & +0.68$\pm$0.36\% & \textbf{100.00$\pm$0.00\%} & \textbf{100.00$\pm$0.00\%} & 24 \\
+    $K=70$ & Frozen MLP & 76.48$\pm$1.19\% & 3.19$\pm$1.76\% & -0.19$\pm$2.93\% & 87.96$\pm$1.11\% & 58.57$\pm$5.02\% & 70 \\
+     & ER 5\% (Replay) & 47.43$\pm$4.98\% & 27.83$\pm$2.19\% & -22.90$\pm$3.29\% & --- & --- & 1 \\
+     & DTRA Rigid ($\alpha=0$) & 87.52$\pm$0.87\% & 3.00$\pm$0.93\% & +0.10$\pm$0.60\% & 100.00$\pm$0.00\% & 100.00$\pm$0.00\% & 24 \\
+     & \textbf{DTRA Elastic (Ours)} & \textbf{87.71$\pm$0.86\%} & 2.42$\pm$0.33\% & +0.68$\pm$0.44\% & \textbf{100.00$\pm$0.00\%} & \textbf{100.00$\pm$0.00\%} & 24 \\
     & DER++ (5\% Buf., S42) & 51.71\% & 29.28\% & -14.49\% & --- & --- & 1 \\
     & L2P (Prompts, S42) & 1.14\% & 61.16\% & -61.16\% & --- & --- & 32 \\
-    & O-LoRA (Subsp., S42) & 1.14\% & 46.96\% & -46.96\% & --- & --- & 100 \\
+    & O-LoRA (Subsp., S42) & 1.14\% & 46.96\% & -46.96\% & --- & --- & 70 \\
     \midrule
-    $K=100$ & Frozen MLP & 70.33$\pm$1.18\% & 2.90$\pm$1.05\% & +0.20$\pm$2.29\% & 81.94$\pm$0.24\% & 41.76$\pm$2.09\% & 100 \\
-     & ER 5\% (Replay) & 39.47$\pm$1.48\% & 26.33$\pm$3.46\% & -20.00$\pm$2.59\% & --- & --- & 1 \\
-     & DTRA Rigid ($\alpha=0$) & 86.67$\pm$0.66\% & 2.56$\pm$0.91\% & +0.67$\pm$1.10\% & 99.91$\pm$0.13\% & 99.68$\pm$0.45\% & 27 \\
-     & \textbf{DTRA Elastic (Ours)} & \textbf{87.00$\pm$0.86\%} & 2.69$\pm$0.67\% & +0.20$\pm$0.72\% & \textbf{99.90$\pm$0.13\%} & \textbf{99.68$\pm$0.45\%} & 27 \\
+    $K=100$ & Frozen MLP & 70.33$\pm$1.45\% & 2.90$\pm$1.28\% & +0.20$\pm$2.81\% & 81.94$\pm$0.29\% & 41.76$\pm$2.56\% & 100 \\
+     & ER 5\% (Replay) & 39.47$\pm$1.81\% & 26.33$\pm$4.24\% & -20.00$\pm$3.17\% & --- & --- & 1 \\
+     & DTRA Rigid ($\alpha=0$) & 86.67$\pm$0.81\% & 2.56$\pm$1.11\% & +0.67$\pm$1.35\% & 99.91$\pm$0.16\% & 99.68$\pm$0.55\% & 27 \\
+     & \textbf{DTRA Elastic (Ours)} & \textbf{87.00$\pm$1.06\%} & 2.69$\pm$0.82\% & +0.20$\pm$0.88\% & \textbf{99.90$\pm$0.16\%} & \textbf{99.68$\pm$0.55\%} & 27 \\
     & DER++ (5\% Buf., S42) & 38.40\% & 29.70\% & -16.16\% & --- & --- & 1 \\
     & L2P (Prompts, S42) & 1.20\% & 51.72\% & -51.72\% & --- & --- & 32 \\
     & O-LoRA (Subsp., S42) & 1.00\% & 42.63\% & -42.63\% & --- & --- & 100 \\
@@ -737,10 +734,10 @@ Splitting the 100-task continual stream at $K=100$ exposes the density-driven cr
     \toprule
     \textbf{Method} & \textbf{\texttt{libero\_10} SR} & \textbf{\texttt{libero\_10} Route} & \textbf{\texttt{libero\_90} SR} & \textbf{\texttt{libero\_90} Route} & \textbf{$\Delta$ (\texttt{L90}$-$\texttt{L10})} \\
     \midrule
-    Frozen MLP & 86.00$\pm$4.32\% & 100.00$\pm$0.00\% & 68.59$\pm$1.03\% & 79.93$\pm$0.26\% & -17.41\%p \\
-    ER 5\% & 32.00$\pm$2.83\% & --- & 40.30$\pm$1.86\% & --- & +8.30\%p \\
-    DTRA Rigid ($\alpha=0$) & 84.67$\pm$0.94\% & 100.00$\pm$0.00\% & 86.89$\pm$0.63\% & 99.89$\pm$0.15\% & +2.22\%p \\
-    \textbf{DTRA Elastic} & 81.33$\pm$2.49\% & 100.00$\pm$0.00\% & 87.63$\pm$0.69\% & 99.89$\pm$0.15\% & +6.30\%p \\
+    Frozen MLP & 86.00$\pm$5.29\% & 100.00$\pm$0.00\% & 68.59$\pm$1.26\% & 79.93$\pm$0.32\% & -17.41\%p \\
+    ER 5\% & 32.00$\pm$3.46\% & --- & 40.30$\pm$2.28\% & --- & +8.30\%p \\
+    DTRA Rigid ($\alpha=0$) & 84.67$\pm$1.15\% & 100.00$\pm$0.00\% & 86.89$\pm$0.77\% & 99.89$\pm$0.18\% & +2.22\%p \\
+    \textbf{DTRA Elastic} & 81.33$\pm$3.06\% & 100.00$\pm$0.00\% & 87.63$\pm$0.84\% & 99.89$\pm$0.18\% & +6.30\%p \\
     \midrule
     DER++ (5\% Buf., S42) & 12.00\% & --- & 41.33\% & --- & +29.33\%p \\
     L2P (Prompts, S42) & 0.00\% & --- & 1.33\% & --- & +1.33\%p \\
@@ -751,29 +748,29 @@ Splitting the 100-task continual stream at $K=100$ exposes the density-driven cr
 
 \begin{table}[ht!]
   \centering
-  \caption{LIBERO-100 Resource Footprint, Forward Transfer (FWT), Peak VRAM, and GPU Control Latency at $K=100$ ($N=3$ across Seeds~[42, 100, 2026] for all four core arms; Seed~42 for DER++/L2P/O-LoRA).}
+  \caption{LIBERO-100 Resource Footprint, Relative Parameter Capacity Ratio (vs.\ monolithic $1.70$\,MB ER/DER++ head), Peak VRAM, and GPU Control Latency at $K=100$ ($N=3$ across Seeds~[42, 100, 2026] for all four core arms; Seed~42 for DER++/L2P/O-LoRA). Note: DTRA and Frozen MLP allocate per-task isolated nodes ($89\times$--$108\times$ more policy parameters than monolithic baselines); FWT is omitted because single-task scratch baselines were not logged in the continual harness.}
   \label{tab:libero_resources}
   \tblfont
   \setlength{\tabcolsep}{4.2pt}
   \begin{tabular}{lcccc}
     \toprule
-    \textbf{Method} & \textbf{FWT $\uparrow$} & \textbf{Total Params (MB)} & \textbf{Peak CUDA VRAM} & \textbf{Active Latency} \\
+    \textbf{Method} & \textbf{Rel.\ Capacity} & \textbf{Policy Params (MB)} & \textbf{Peak CUDA VRAM} & \textbf{Active Latency} \\
     \midrule
-    Frozen MLP & -9.97$\pm$17.34\% & 151.67$\pm$0.00\,MB & 2602$\pm$0\,MB & 6.46$\pm$0.57\,ms \\
-    ER 5\% & -20.94$\pm$3.28\% & 1.70$\pm$0.00\,MB & 3915$\pm$1211\,MB & 4.93$\pm$0.59\,ms \\
-    DTRA Rigid ($\alpha=0$) & +12.79$\pm$9.41\% & 183.14$\pm$0.00\,MB & 2735$\pm$93\,MB & 8.70$\pm$0.93\,ms \\
-    \textbf{DTRA Elastic} & +0.13$\pm$9.24\% & 183.14$\pm$0.00\,MB & 2713$\pm$77\,MB & 9.55$\pm$0.20\,ms \\
+    Frozen MLP & 89.3$\times$ & 151.67$\pm$0.00\,MB & 2602$\pm$0\,MB & 6.46$\pm$0.70\,ms \\
+    ER 5\% & 1.0$\times$ & 1.70$\pm$0.00\,MB & 3915$\pm$1483\,MB & 4.93$\pm$0.72\,ms \\
+    DTRA Rigid ($\alpha=0$) & 107.9$\times$ & 183.14$\pm$0.00\,MB & 2735$\pm$113\,MB & 8.70$\pm$1.14\,ms \\
+    \textbf{DTRA Elastic} & 107.9$\times$ & 183.14$\pm$0.00\,MB & 2713$\pm$94\,MB & 9.55$\pm$0.24\,ms \\
     \midrule
-    DER++ (5\% Buf., S42) & -25.86\% & 1.70\,MB & 4924\,MB & 5.49\,ms \\
-    L2P (Prompts, S42) & -27.88\% & 2.09\,MB & 5996\,MB & 7.79\,ms \\
-    O-LoRA (Subsp., S42) & -37.17\% & 1.70\,MB & 2214\,MB & 7.05\,ms \\
+    DER++ (5\% Buf., S42) & 1.0$\times$ & 1.70\,MB & 4924\,MB & 5.49\,ms \\
+    L2P (Prompts, S42) & 1.2$\times$ & 2.09\,MB & 5996\,MB & 7.79\,ms \\
+    O-LoRA (Subsp., S42) & 1.0$\times$ & 1.70\,MB & 2214\,MB & 7.05\,ms \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \begin{table}[ht!]
   \centering
-  \caption{Strict-Parity Experimental Protocol \& Architectural Hyperparameter Schedule (LIBERO-100 \& Meta-World).}
+  \caption{Strict-Parity Experimental Protocol \& Architectural Hyperparameter Schedule (LIBERO-100 \& Meta-World, verified against code).}
   \label{tab:hyperparams}
   \tblfont
   \setlength{\tabcolsep}{3.8pt}
@@ -781,14 +778,14 @@ Splitting the 100-task continual stream at $K=100$ exposes the density-driven cr
     \toprule
     \textbf{Subsystem} & \textbf{Parameter / Mechanism} & \textbf{LIBERO-100 Value} & \textbf{Meta-World v3 Value} \\
     \midrule
-    Optimizer & AdamW lr / decay / batch / ep. & \texttt{5e-4} / excl. frozen / 128 / 25 & \texttt{1e-3} / 0.0 / 64 / 30 \\
+    Optimizer & AdamW lr / decay / batch / ep. & \texttt{5e-4} / excl. frozen / 128 / 25 & \texttt{1e-3} / 0.0 / 64 / 55 \\
     Memory Staging & Task streaming (\texttt{--stream-tasks}) & On-demand HDF5 ($\le 2.8$\,GB VRAM) & Single-session cache \\
     Perception & Backbone + grids + DoG + Text & ResNet-18 ($4\times 4,2\times 2$)+DoG+Hash & Conv4 + DoG + Hash \\
-    Manifold Key & $d_{\text{key}}$ / Hypersphere proj. & $128 \to \mathbb{S}^{63}$ orthogonal $P_{\text{topo}}$ & $128 \to \mathbb{S}^{63}$ orthogonal \\
-    Action Chunk & Clamped $C^2$ cubic B-Spline & $N_k=6$ bases ($8$ reg.) $\to H=16$, exec~$8$ & $N_k=6 \to H=16$, exec~$8$ \\
-    Anti-Encroach. & Constraint + Stage-2 Top-$M$ CMC & Cache $\mu_j, s_{jj}$; $M=5$, $\gamma_{\text{cm}}=1.0$ & Contrastive margin $\tau_i$ \\
-    Basis \& Reset & SharedBasisBank + 2-Timescale & $K=100 \to 27$ frozen; snap $0.0000$ & 8 cells; snap $0.0000$ \\
-    Evaluation & Rollouts ($n_{\text{eval}}$) / Checkpoints & $5$ stream; $20$ final ($12{,}000$ rollouts) & $15$ clean / $8$ severe OOD \\
+    Manifold Key & Projection into $\mathbb{S}^{63}$ & 3-mod.\ Gaussian ($0.25/0.10/0.65$) & Orthogonal $128 \to \mathbb{S}^{63}$ \\
+    Action Chunk & Clamped $C^2$ cubic B-Spline & $N_{\text{cp}}=8$ ($6$ basis width) $\to H=16$, exec~$8$ & $N_k=6 \to H=16$, exec~$8$ \\
+    Anti-Encroach. & Constraint + Stage-2 Top-$M$ CMC & $\mu_j, s_{jj}$ + $96$ key ex./task; 3-mod.\ CMC & Contrastive margin $\tau_i$ \\
+    Basis \& Reset & SharedBasisBank + Reset & $27$ bases ($3.81$\,MB, $-5.3\%$ tot.); inertia reset & 8 cells; snap $0.0000$ \\
+    Evaluation & Rollouts ($n_{\text{eval}}$) / Checkpoints & $5$ stream; $20$ final ($12{,}000$ rollouts) & $15$ clean / $15$ severe OOD \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -807,10 +804,10 @@ To verify that gains are uniform across kitchen, living-room, and study manipula
     \toprule
     \textbf{Method} & \textbf{Dup-Lang (30)} & \textbf{Unique-Lang (70)} & \textbf{Kitchen (L90)} & \textbf{Living Rm (L90)} & \textbf{Study (L90)} \\
     \midrule
-    Frozen MLP & 35.8$\pm$0.3\% (41.8$\pm$2.1\%) & 85.1$\pm$1.6\% (99.2$\pm$0.6\%) & 79.0$\pm$0.5\% & 69.6$\pm$3.2\% & 38.8$\pm$1.9\% \\
-    ER 5\% & 36.4$\pm$1.9\% (---) & 40.8$\pm$2.2\% (---) & 48.1$\pm$4.2\% & 44.4$\pm$2.8\% & 12.5$\pm$2.2\% \\
-    DTRA Rigid ($\alpha=0$) & 89.3$\pm$2.0\% (99.7$\pm$0.4\%) & 85.5$\pm$0.3\% (100.0$\pm$0.0\%) & 93.5$\pm$0.6\% & 74.6$\pm$0.9\% & 88.6$\pm$2.0\% \\
-    \textbf{DTRA Elastic} & 90.7$\pm$1.4\% (99.7$\pm$0.4\%) & 85.4$\pm$0.7\% (100.0$\pm$0.0\%) & 93.5$\pm$0.7\% & 75.6$\pm$1.0\% & 91.0$\pm$3.6\% \\
+    Frozen MLP & 35.8$\pm$0.4\% (41.8$\pm$2.6\%) & 85.1$\pm$2.0\% (99.2$\pm$0.7\%) & 79.0$\pm$0.7\% & 69.6$\pm$3.9\% & 38.8$\pm$2.4\% \\
+    ER 5\% & 36.4$\pm$2.3\% (---) & 40.8$\pm$2.7\% (---) & 48.1$\pm$5.2\% & 44.4$\pm$3.4\% & 12.5$\pm$2.7\% \\
+    DTRA Rigid ($\alpha=0$) & 89.3$\pm$2.4\% (99.7$\pm$0.5\%) & 85.5$\pm$0.3\% (100.0$\pm$0.0\%) & 93.5$\pm$0.8\% & 74.6$\pm$1.1\% & 88.6$\pm$2.4\% \\
+    \textbf{DTRA Elastic} & 90.7$\pm$1.8\% (99.7$\pm$0.5\%) & 85.4$\pm$0.9\% (100.0$\pm$0.0\%) & 93.5$\pm$0.9\% & 75.6$\pm$1.3\% & 91.0$\pm$4.5\% \\
     \midrule
     DER++ (S42) & 40.0\% (---) & 37.7\% (---) & 50.9\% & 44.4\% & 10.6\% \\
     L2P (S42) & 0.0\% (---) & 1.7\% (---) & 1.7\% & 0.0\% & 2.4\% \\
@@ -829,16 +826,16 @@ To verify that gains are uniform across kitchen, living-room, and study manipula
     \toprule
     \textbf{ID} & \textbf{LIBERO-10 Task Identifier} & \textbf{Ch.} & \textbf{RMSE} & \textbf{Frozen MLP} & \textbf{DTRA Rigid} & \textbf{DTRA Elastic} \\
     \midrule
-    \texttt{T00} & \texttt{LR\_S2\_put\_both\_the\_alphabet\_soup\_...} & 14600 & 0.0479 & 80.0$\pm$16.3\% & 73.3$\pm$9.4\% & \textbf{66.7$\pm$9.4\%} \\
-    \texttt{T01} & \texttt{LR\_S2\_put\_both\_the\_cream\_cheese\_b...} & 12921 & 0.0504 & 73.3$\pm$9.4\% & 80.0$\pm$0.0\% & \textbf{80.0$\pm$0.0\%} \\
+    \texttt{T00} & \texttt{LR\_S2\_put\_both\_the\_alphabet\_soup\_...} & 14600 & 0.0479 & 80.0$\pm$20.0\% & 73.3$\pm$11.5\% & \textbf{66.7$\pm$11.5\%} \\
+    \texttt{T01} & \texttt{LR\_S2\_put\_both\_the\_cream\_cheese\_b...} & 12921 & 0.0504 & 73.3$\pm$11.5\% & 80.0$\pm$0.0\% & \textbf{80.0$\pm$0.0\%} \\
     \texttt{T02} & \texttt{KT\_S3\_turn\_on\_the\_stove\_and\_put\_t...} & 13198 & 0.0490 & 100.0$\pm$0.0\% & 100.0$\pm$0.0\% & \textbf{100.0$\pm$0.0\%} \\
-    \texttt{T03} & \texttt{KT\_S4\_put\_the\_black\_bowl\_in\_the\_b...} & 12334 & 0.0360 & 100.0$\pm$0.0\% & 93.3$\pm$9.4\% & \textbf{93.3$\pm$9.4\%} \\
-    \texttt{T04} & \texttt{LR\_S5\_put\_the\_white\_mug\_on\_the\_le...} & 12809 & 0.0501 & 86.7$\pm$9.4\% & 86.7$\pm$9.4\% & \textbf{86.7$\pm$9.4\%} \\
+    \texttt{T03} & \texttt{KT\_S4\_put\_the\_black\_bowl\_in\_the\_b...} & 12334 & 0.0360 & 100.0$\pm$0.0\% & 93.3$\pm$11.5\% & \textbf{93.3$\pm$11.5\%} \\
+    \texttt{T04} & \texttt{LR\_S5\_put\_the\_white\_mug\_on\_the\_le...} & 12809 & 0.0501 & 86.7$\pm$11.5\% & 86.7$\pm$11.5\% & \textbf{86.7$\pm$11.5\%} \\
     \texttt{T05} & \texttt{ST\_S1\_pick\_up\_the\_book\_and\_place\_...} & 9370 & 0.0311 & 80.0$\pm$0.0\% & 100.0$\pm$0.0\% & \textbf{100.0$\pm$0.0\%} \\
-    \texttt{T06} & \texttt{LR\_S6\_put\_the\_white\_mug\_on\_the\_pl...} & 12656 & 0.0485 & 60.0$\pm$16.3\% & 53.3$\pm$9.4\% & \textbf{40.0$\pm$0.0\%} \\
-    \texttt{T07} & \texttt{LR\_S1\_put\_both\_the\_alphabet\_soup\_...} & 13376 & 0.0494 & 80.0$\pm$16.3\% & 100.0$\pm$0.0\% & \textbf{86.7$\pm$9.4\%} \\
-    \texttt{T08} & \texttt{KT\_S8\_put\_both\_moka\_pots\_on\_the\_s...} & 20694 & 0.0391 & 100.0$\pm$0.0\% & 60.0$\pm$16.3\% & \textbf{73.3$\pm$24.9\%} \\
-    \texttt{T09} & \texttt{KT\_S6\_put\_the\_yellow\_and\_white\_mu...} & 15132 & 0.0345 & 100.0$\pm$0.0\% & 100.0$\pm$0.0\% & \textbf{86.7$\pm$9.4\%} \\
+    \texttt{T06} & \texttt{LR\_S6\_put\_the\_white\_mug\_on\_the\_pl...} & 12656 & 0.0485 & 60.0$\pm$20.0\% & 53.3$\pm$11.5\% & \textbf{40.0$\pm$0.0\%} \\
+    \texttt{T07} & \texttt{LR\_S1\_put\_both\_the\_alphabet\_soup\_...} & 13376 & 0.0494 & 80.0$\pm$20.0\% & 100.0$\pm$0.0\% & \textbf{86.7$\pm$11.5\%} \\
+    \texttt{T08} & \texttt{KT\_S8\_put\_both\_moka\_pots\_on\_the\_s...} & 20694 & 0.0391 & 100.0$\pm$0.0\% & 60.0$\pm$20.0\% & \textbf{73.3$\pm$30.6\%} \\
+    \texttt{T09} & \texttt{KT\_S6\_put\_the\_yellow\_and\_white\_mu...} & 15132 & 0.0345 & 100.0$\pm$0.0\% & 100.0$\pm$0.0\% & \textbf{86.7$\pm$11.5\%} \\
     \bottomrule
   \end{tabular}
 \end{table}

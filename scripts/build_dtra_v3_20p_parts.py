@@ -10,24 +10,25 @@ from __future__ import annotations
 METHOD_PARADIGM_TABLE = r"""
 \begin{table}[t]
   \centering
-  \caption{Structural comparison of continual visuomotor control paradigms. DTRA~v3.0 unifies Task-ID-free inference, zero rehearsal memory, exact parameter freezing ($\nabla_\theta = 0$), constant $O(1)$ active kernel execution, and sub-linear basis sharing within a white-box hyperspherical routing stack.}
+  \caption{Structural comparison of continual visuomotor control paradigms. DTRA~v3.0 combines Task-ID-free inference, zero raw-demonstration replay (retaining lightweight 96-vector key-validation exemplars per task during registration), exact parameter freezing ($\nabla_\theta = 0$), constant $O(1)$ active decoding core, and shared knot bases within a white-box routing stack.}
   \label{tab:paradigm_compare}
-  \fontsize{8.0pt}{9.8pt}\selectfont
-  \setlength{\tabcolsep}{2.2pt}
+  \fontsize{7.8pt}{9.6pt}\selectfont
+  \setlength{\tabcolsep}{2.0pt}
   \begin{tabular}{lccccccc}
     \toprule
-    \textbf{Paradigm / Method} & \textbf{Task-Free} & \textbf{No Rep.} & \textbf{$\nabla_\theta=0$} & \textbf{Active} & \textbf{Scaling} & \textbf{Dup-Lang} & \textbf{No VLM} \\
+    \textbf{Paradigm / Method} & \textbf{Task-Free} & \textbf{No Raw Rep.} & \textbf{$\nabla_\theta=0$} & \textbf{Active} & \textbf{Scaling} & \textbf{Dup-Lang} & \textbf{No VLM} \\
     \midrule
     Naive Fine-Tuning & \checkmark & \checkmark & $\times$ & $O(1)$ & Monolith & $\times$ & \checkmark \\
     EWC / RWalk~\cite{kirkpatrick2017ewc,chaudhry2018rwalk} & \checkmark & \checkmark & $\times$ & $O(1)$ & Monolith+Pen. & $\times$ & \checkmark \\
     GEM / ER / DER++~\cite{lopezpaz2017gem,rolnick2019clear,buzzega2020der} & \checkmark & $\times$ & $\times$ & $O(1)$+Buf & Monolith & $\times$ & \checkmark \\
-    PNN / PackNet~\cite{rusu2016pnn,mallya2018packnet} & $\times$ & \checkmark & Masked & $O(K)$ & Linear $O(K)$ & N/A & \checkmark \\
+    PNN / PackNet~\cite{rusu2016pnn,mallya2018packnet} & $\times$ & \checkmark & Masked & $O(K)$ & Linear / Mask & N/A & \checkmark \\
+    BUDS / LOTUS / TAIL~\cite{zhu2022buds,wan2024lotus,liu2024tail} & Partial & Partial & Adapter & Skill/PEFT & Sub-lin./PEFT & Partial & Mixed \\
     L2P / CODA-Prompt~\cite{wang2022l2p,smith2023coda} & \checkmark & \checkmark & Backb. & Pool & Prompts & Partial & ViT/CNN \\
     O-LoRA / Seq- / KeepLoRA~\cite{wang2023olora,parsa2026seqlora,luo2026keeplora} & Depends & Mostly & Adapter & $O(r)$ & LoRA & $\times$ & VLM/MLP \\
     OrthoSkillVLA / SAMBAR~\cite{wang2026orthoskill,shrivastava2026sambar} & Depends & \checkmark & Subsp. & VLA & Subsp./Anch. & $\times$ & VLA \\
     $\text{R}^2$-WAM~\cite{fang2026r2wam} & \checkmark & Gen.Rep. & $\times$ & WAM & Video WAM & $\times$ & WAM+VLM \\
     ABK-VLA v1.1.3~\cite{son2026abkvla} & \checkmark & \checkmark & \checkmark & $O(K)$ & Linear $O(K)$ & $\times$ (DoG) & \checkmark \\
-    \textbf{DTRA v3.0 (Ours)} & \textbf{\checkmark} & \textbf{\checkmark} & \textbf{\checkmark ($0$)} & \textbf{$O(1)$} & \textbf{27 ($-73\%$)} & \textbf{\checkmark (CMC)} & \textbf{\checkmark} \\
+    \textbf{DTRA v3.0 (Ours)} & \textbf{\checkmark} & \textbf{\checkmark (Key Ex.)} & \textbf{\checkmark ($0$)} & \textbf{$O(1)$} & \textbf{27b / $O(K)$ ad.} & \textbf{\checkmark (CMC)} & \textbf{\checkmark} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -35,83 +36,64 @@ METHOD_PARADIGM_TABLE = r"""
 
 ALGORITHM_1_BLOCK = r"""
 \begin{algorithm}[t]
-\caption{\textbf{DTRA v3.0 Training Registration \& Dual-Timescale Closed-Loop Control}}
+\caption{\textbf{DTRA v3.0 Training Registration \& Closed-Loop Control (LIBERO-100 Implementation)}}
 \label{alg:dtra_v3}
 \small
 \begin{algorithmic}[1]
-\Require Frozen perception + \texttt{LightweightTextEncoder} $\to \mathbf{x}_t \in \mathbb{S}^{127}$; frozen \texttt{SharedBasisBank} $\mathcal{B} = \{\mathbf{B}_b\}_{b=1}^{B}$ ($N_k = 6$); empty cell registry $\mathcal{C} = \emptyset$.
+\Require Frozen DualCam \texttt{ResNet-18} + proprioception + \texttt{LightweightTextEncoder}; frozen \texttt{SharedBasisBank} $\mathcal{B} = \{\mathbf{B}_b\}_{b=1}^{B}$ (LIBERO-100: $N_{\text{cp}}=8$ clamped cubic B-Spline knots $\to H=16$; Meta-World: $N_k=6$); empty cell registry $\mathcal{C} = \emptyset$.
 \Statex \textbf{Phase I: Sequential Continual Registration ($k = 1, \dots, K$, Task-ID Stored Only for Audit)}
-\State Compute task prototype query $\mu_k \leftarrow \mathrm{norm}\!\left(\mathbb{E}_{t}[\mathbf{x}_{k,t}]\right)$ and topological map $\mathbf{k}_k^{(0)} = \mathrm{norm}(P_{\text{topo}}\mu_k) \in \mathbb{S}^{63}$.
-\State Optimize $\mathbf{k}_k$ against prior cells $\{j < k\}$ subject to \textbf{No-Encroachment}: $\langle \mu_j, \mathbf{k}_k \rangle \le s_{jj} - m_{\text{safe}}$, caching raw anchor $\mu_k$ and self-similarity floor $s_{kk} = \langle \mu_k, \mathbf{k}_k \rangle$.
-\State Fit $C^2$ clamped cubic B-Spline knots $\mathbf{P}_k \in \mathbb{R}^{6 \times d_a}$ on demos; match cosine similarity to $\mathcal{B}$. If below allocation threshold, append new frozen basis $\mathbf{B}_{B+1}$ ($\texttt{requires\_grad=False}$, excluded from \texttt{AdamW}); else share $\mathbf{B}_{b_k}$ with compact cell residual parameters $(\mathbf{r}_k, \alpha_k, \beta_k)$.
-\State Freeze cell parameters permanently ($\nabla_\theta = 0$, $L_\infty$ silent drift $= 0.0$).
-\Statex \textbf{Phase II: Replay-Free, Task-ID-Free Closed-Loop Evaluation (At Control Tick $t$)}
-\State Extract multimodal $\mathbf{x}_t$ and project $\mathbf{c}_t = \mathrm{norm}(P_{\text{topo}}\mathbf{x}_t) \in \mathbb{S}^{63}$.
-\State \textbf{Stage 1 (Region Scan):} Score all $K$ keys in $O(K)$ SIMD inner product and retrieve Top-$M$ ($M=5$) candidates $\mathcal{M}_t$.
-\State \textbf{Stage 2 (Common-Mode Cancellation):} Compute candidate centroid $\bar{\mathbf{x}}_{\text{cm}} = \frac{1}{M}\sum_{j \in \mathcal{M}_t}\mathbf{x}_j^{\text{proto}}$, form differential residual $\tilde{\mathbf{x}}_t = \mathrm{norm}(\mathbf{x}_t - \gamma_{\text{cm}}\bar{\mathbf{x}}_{\text{cm}})$, and select active cell $i^* = \arg\max_{j \in \mathcal{M}_t} \langle \tilde{\mathbf{x}}_t, \tilde{\mathbf{x}}_j \rangle$ gated by $\tau_{i^*}$ and \texttt{episodic\_trace}.
-\State Synthesize elastic hypertube displacement $\Delta \mathbf{z}_t^*$ via closed-form \texttt{atan2} phase projection bounded by $\alpha_{i^*} \in (0, 1)$, decode $H=16$ action chunk $\mathbf{A}_t = \mathbf{B}_{\text{spline}}\mathbf{P}_{\text{eff}}$, and execute \texttt{exec\_steps=8} steps.
-\State Execute \texttt{chunk\_snap\_back()} ($\Delta\mathbf{z}_{i^*} \leftarrow \mathbf{0}$) per chunk and \texttt{episode\_snap\_back()} ($\text{\texttt{post\_snap\_norm}} = 0.0000$) upon episode termination.
+\State Project visual, proprioceptive, and language features into normalized query $\mathbf{c}_t \in \mathbb{S}^{63}$ via fixed random projections ($0.25\mathbf{k}_v + 0.10\mathbf{k}_p + 0.65\mathbf{k}_\ell$ on LIBERO-100); compute task prototype $\mu_k$ and 3-modality signature prototypes $(\mathbf{v}_k^{\text{sig}}, \mathbf{p}_k^{\text{sig}}, \boldsymbol{\ell}_k^{\text{sig}})$ using $4\times 4+\text{DoG}$ visual features.
+\State Refine routing key $\mathbf{k}_k$ against prior tasks $\{j < k\}$ subject to \textbf{No-Encroachment}: penalize $\langle \mu_j, \mathbf{k}_k \rangle > s_{jj} - m_{\text{safe}}$ and verify accuracy on cached lightweight key-validation exemplars ($\le 96$ normalized query vectors/task, \texttt{\_val\_queries}; no raw image/action replay).
+\State Fit $C^2$ clamped cubic B-Spline knots ($\mathbf{P}_k \in \mathbb{R}^{8\times 7}$ on LIBERO-100; $\mathbb{R}^{6\times 4}$ on Meta-World); match cosine similarity to $\mathcal{B}$. If below threshold, append new frozen basis $\mathbf{B}_{B+1}$ ($\texttt{requires\_grad=False}$, excluded from \texttt{AdamW}); else share $\mathbf{B}_{b_k}$ and train per-task node adapter \texttt{LIBEROHypertubeNode} (spatial context + phase/residual heads).
+\State Freeze all consolidated node and basis parameters permanently ($\nabla_\theta = 0$, $L_\infty$ silent drift $= 0.0$).
+\Statex \textbf{Phase II: No-Raw-Replay, Task-ID-Free Closed-Loop Evaluation (At Control Tick $t$)}
+\State \textbf{Stage 1 ($O(K)$ Broad Scan):} Score all $K$ keys on $\mathbb{S}^{63}$ (with optional temporal inertia) and retrieve Top-$M$ ($M=5$) candidates $\mathcal{M}_t$.
+\State \textbf{Stage 2 (3-Modality Common-Mode Cancellation):} Compute candidate-local means across visual ($4\times 4+\text{DoG}$ 256-d), proprioceptive (12-d), and language (128-d) signature banks; strip common modes and select active cell $i^* = \arg\max_{j \in \mathcal{M}_t} s_{\text{CMC}}(t, j)$.
+\State Decode selected node $i^*$ and shared basis $\mathbf{B}_{b_{i^*}}$ via phase head (\texttt{theta\_head} on LIBERO-100; elliptical \texttt{atan2} on Meta-World) and bounded spherical interpolation $\alpha_{i^*}$ into $H=16$ chunk $\mathbf{A}_t = \mathbf{B}_{\text{spline}}\mathbf{P}_{\text{eff}}$; execute \texttt{exec\_steps=8} steps.
+\State At episode termination, call \texttt{episode\_snap\_back()} to reset routing inertia (\texttt{prev\_selected}, \texttt{prev\_act\_vec}) and diagnostic buffers to exact $0.0000$.
 \end{algorithmic}
 \end{algorithm}
 """
 
 APPENDIX_A_PROOFS = r"""
-\section{Formal Mathematical Proofs \& Geometric Invariants}
+\section{Implementation Invariants \& Geometric Properties}
 \label{app:proofs}
 
-This appendix provides complete proofs for the three core invariants asserted in Section~\ref{sec:method} and Section~\ref{sec:discussion}: exact zero parameter and residual drift under \texttt{AdamW} exclusion and Two-Timescale Snap-Back (Theorem~\ref{thm:zero_drift}), within-chunk $C^2$ cubic B-Spline continuity and output perturbation bounds (Theorem~\ref{thm:bspline}), and isometric dimension expansion via zero-padding (Theorem~\ref{thm:isometry}).
+This appendix records three verification properties underlying the mechanisms in Sections~\ref{sec:method} and~\ref{sec:discussion}: exact zero optimizer drift under \texttt{AdamW} parameter-group exclusion (Proposition~\ref{prop:zero_drift}), standard clamped cubic B-Spline within-chunk continuity and output perturbation bounds (Proposition~\ref{prop:bspline}), and the conceptual isometric zero-padding property noted for future capacity expansion (Proposition~\ref{prop:isometry}). We frame these explicitly as implementation invariants and standard mathematical properties rather than novel theorems.
 
-\subsection{Exact Zero Parameter \& Residual Drift Under Continual Updates}
-\begin{theorem}[Zero Weight and Residual Drift]
-\label{thm:zero_drift}
-Let $\Theta_{\text{frozen}}^{(k)} = \{\mathbf{k}_j, \mathbf{B}_{b_j}, \mathbf{W}_{\text{head},j}\}_{j=1}^{k}$ denote the union of consolidated keys, shared motor bases in \texttt{SharedBasisBank}, and prior cell heads after mastering task $T_k$. Under DTRA registration and Two-Timescale Snap-Back:
+\subsection{Zero Optimizer Drift Under Consolidated Parameter Exclusion}
+\begin{proposition}[Exact Zero Optimizer Drift \& Episode State Reset]
+\label{prop:zero_drift}
+Let $\Theta_{\text{frozen}}^{(k)} = \{\mathbf{k}_j, \mathbf{B}_{b_j}, \mathbf{W}_{\text{node},j}\}_{j=1}^{k}$ denote consolidated keys, shared motor bases in \texttt{SharedBasisBank}, and prior node weights after mastering task $T_k$. Under DTRA registration:
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
   \item \textbf{Zero Optimizer Drift ($L_\infty = 0.0$):} For any subsequent task curriculum $T_{k+1}, \dots, T_K$ trained with decoupled weight decay \texttt{AdamW} ($\lambda > 0$), $\|\Theta_{\text{frozen}}^{(k)}(T_K) - \Theta_{\text{frozen}}^{(k)}(T_k)\|_\infty = 0.0$ holds identically.
-  \item \textbf{Zero Inter-Episode State Contamination:} Across arbitrary rollout length $L$ and elastic compliance $\alpha_i \in (0,1)$, the post-episode ephemeral deformation norm satisfies $\lim_{\text{end}} \|\Delta\mathbf{z}_i\|_2 = 0.0000$ and $\mathbf{e}_t^{\text{trace}} = \mathbf{0}$ prior to every $t=0$ reset.
+  \item \textbf{Deterministic Episode-Boundary Reset:} Calling \texttt{episode\_snap\_back()} prior to $t=0$ clears active routing inertia (\texttt{prev\_selected}, \texttt{prev\_act\_vec}) and diagnostic deformation buffers to exact $0.0000$, preventing inter-episode state carryover.
 \end{enumerate}
-\end{theorem}
+\end{proposition}
 
 \begin{proof}
-(1) Standard \texttt{AdamW} parameter updates obey $\theta_{s+1} = (1 - \eta\lambda)\theta_s - \eta \hat{m}_s / (\sqrt{\hat{v}_s} + \epsilon)$. Even when a frozen parameter's gradient is zero ($\mathbf{g}_s = \nabla_\theta\mathcal{L} = \mathbf{0}$), leaving $\theta_s$ inside an optimizer parameter group induces exponential silent weight decay $(1 - \eta\lambda)^S \theta_0 \neq \theta_0$ over $S$ optimization steps. DTRA enforces two strict structural preconditions upon consolidating task $T_k$: first, setting \texttt{requires\_grad = False} on $\Theta_{\text{frozen}}^{(k)}$; second, constructing a fresh per-task \texttt{AdamW} parameter group containing exclusively newly instantiated active parameters $\Theta_{\text{active}}^{(k+1)}$ ($\Theta_{\text{frozen}}^{(k)} \cap \text{param\_groups}(\texttt{AdamW}) = \emptyset$). Consequently, every step satisfies $\theta_{s+1} = \theta_s$ identically in IEEE-754 floating-point arithmetic, guaranteeing exact $L_\infty = 0.0$.
-
-(2) During control tick $t$, fast-timescale elastic tube displacement is synthesized purely as an ephemeral state tensor $\Delta \mathbf{z}_t^* = \alpha_{i^*} \cdot \Pi_{\mathcal{T}_{\mathbf{c}}(\mathbb{S}^{63})}(\mathbf{c}_t - \mathbf{c}_{\text{ring}, i^*}(\theta_t^*))$ stored outside persistent parameter memory. At the end of each $H=16$ chunk, \texttt{chunk\_snap\_back()} explicitly executes $\Delta\mathbf{z}_i \leftarrow \mathbf{0}$ while preserving the bounded progress counter \texttt{episodic\_trace} to prevent intra-episode perseveration loops. At episode completion, \texttt{episode\_snap\_back()} clears both $\Delta\mathbf{z}_i \leftarrow \mathbf{0}$ and $\mathbf{e}^{\text{trace}} \leftarrow \mathbf{0}$, enforcing an exact $0.0000$ post-episode state norm before the next environment reset.
+(1) Standard \texttt{AdamW} updates obey $\theta_{s+1} = (1 - \eta\lambda)\theta_s - \eta \hat{m}_s / (\sqrt{\hat{v}_s} + \epsilon)$. Even when $\nabla_\theta\mathcal{L} = \mathbf{0}$, retaining $\theta_s$ inside an optimizer parameter group applies silent exponential decay $(1 - \eta\lambda)^S \theta_0 \neq \theta_0$. DTRA sets \texttt{requires\_grad = False} on $\Theta_{\text{frozen}}^{(k)}$ and instantiates each task's \texttt{AdamW} optimizer exclusively over newly created active parameters ($\Theta_{\text{frozen}}^{(k)} \cap \text{param\_groups}(\texttt{AdamW}) = \emptyset$), so $\theta_{s+1} = \theta_s$ identically in IEEE-754 arithmetic. (2) Explicit zero-reinitialization of routing inertia and diagnostic buffers at episode reset guarantees identical initial internal state at every $t=0$. Note that parameter stability (1) is distinct from empirical closed-loop success-rate forgetting, which can still be non-zero due to routing boundary changes or rollout stochasticity.
 \end{proof}
 
-\subsection{Clamped \texorpdfstring{$C^2$}{C2} Cubic B-Spline Continuity \& Output Perturbation Bound}
-\begin{theorem}[Within-Chunk $C^2$ Continuity and Perturbation Bound]
-\label{thm:bspline}
-Let $U = \{0, 0, 0, 0, u_4, \dots, u_{N_k-1}, 1, 1, 1, 1\}$ be a clamped uniform knot vector of degree $p=3$ with $N_k = 6$ control points $\mathbf{P} \in \mathbb{R}^{6 \times d_a}$ evaluated over uniform chunk timesteps $\tau_h = h / (H-1)$ for $h = 0, \dots, H-1$ ($H=16$). Then:
+\subsection{Clamped \texorpdfstring{$C^2$}{C2} Cubic B-Spline Continuity \& Perturbation Bound}
+\begin{proposition}[Within-Chunk $C^2$ Continuity and Convex-Hull Perturbation Bound]
+\label{prop:bspline}
+Let $U = \{0, 0, 0, 0, u_4, \dots, u_{N_{\text{cp}}-1}, 1, 1, 1, 1\}$ be a clamped uniform degree-$3$ knot vector with $N_{\text{cp}}$ control points $\mathbf{P} \in \mathbb{R}^{N_{\text{cp}} \times d_a}$ ($N_{\text{cp}}=8$ on LIBERO-100; $N_{\text{cp}}=6$ on Meta-World), evaluated at $\tau_h = h / (H-1)$ for $h = 0, \dots, H-1$ ($H=16$). By standard spline properties~\cite{deboor1978splines,piegl1997nurbs}:
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
-  \item Every synthesized chunk trajectory $\mathbf{a}(\tau) = \sum_{n=0}^{5} B_{n,3}(\tau)\,\mathbf{p}_n$ satisfies exact endpoint clamping ($\mathbf{a}(0) = \mathbf{p}_0$, $\mathbf{a}(1) = \mathbf{p}_5$) and continuous position ($C^0$), velocity ($C^1$), and acceleration ($C^2$) at all interior knots.
-  \item Because $\sum_{n=0}^{5} B_{n,3}(\tau) = 1$ with $B_{n,3}(\tau) \ge 0$ (convex-hull property), any bounded perturbation $\|\delta\mathbf{P}\|_\infty \le \epsilon$ induced by visual OOD noise or elastic deformation obeys $\sup_{\tau \in [0,1]} \|\delta\mathbf{a}(\tau)\|_\infty \le \epsilon$, bounding spline-output perturbations within a single chunk.
+  \item Every synthesized chunk $\mathbf{a}(\tau) = \sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau)\,\mathbf{p}_n$ satisfies endpoint clamping ($\mathbf{a}(0) = \mathbf{p}_0$, $\mathbf{a}(1) = \mathbf{p}_{N_{\text{cp}}-1}$) and $C^2$ continuity at all interior knots.
+  \item By non-negativity ($B_{n,3}(\tau) \ge 0$) and partition of unity ($\sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau) \equiv 1$), any knot perturbation $\|\delta\mathbf{P}\|_\infty \le \epsilon$ obeys $\sup_{\tau \in [0,1]} \|\delta\mathbf{a}(\tau)\|_\infty \le \epsilon$ within a single chunk.
 \end{enumerate}
-\end{theorem}
+\end{proposition}
 
 \begin{proof}
-By the Cox--de~Boor recursion on multiplicity-$4$ clamped boundary knots $u_0=u_1=u_2=u_3=0$ and $u_6=u_7=u_8=u_9=1$, the basis functions satisfy $B_{0,3}(0) = 1$, $B_{5,3}(1) = 1$, and non-negativity $B_{n,3}(\tau) \ge 0$ with partition of unity $\sum_{n=0}^5 B_{n,3}(\tau) \equiv 1$ for all $\tau \in [0, 1]$. Each interior knot $u_j \in (0,1)$ has multiplicity $m_j = 1$, which guarantees $C^{p - m_j} = C^{3-1} = C^2$ continuity of $\mathbf{a}(\tau)$ across every interior polynomial transition. Finally, by H\"older's inequality and the partition-of-unity property:
-\[
-\left\| \sum_{n=0}^{5} B_{n,3}(\tau)\, \delta\mathbf{p}_n \right\|_\infty \le \left(\sum_{n=0}^5 |B_{n,3}(\tau)|\right) \max_{0 \le n \le 5} \|\delta\mathbf{p}_n\|_\infty = \|\delta\mathbf{P}\|_\infty \le \epsilon.
-\]
-This result applies within a single chunk. Replanning-boundary continuity and physical jerk or torque bounds require additional assumptions and are outside its scope.
+By Cox--de~Boor recursion with multiplicity-$4$ boundary knots and simple interior knots ($m_j=1$), $\mathbf{a}(\tau)$ is $C^{p-m_j}=C^2$ across interior transitions and satisfies $B_{n,3}(\tau) \ge 0$, $\sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau) = 1$. H\"older's inequality immediately yields $\left\| \sum_{n} B_{n,3}(\tau)\, \delta\mathbf{p}_n \right\|_\infty \le (\sum_n |B_{n,3}(\tau)|)\max_n \|\delta\mathbf{p}_n\|_\infty = \|\delta\mathbf{P}\|_\infty \le \epsilon$. Replanning-boundary smoothness across consecutive chunks and physical actuator torque limits are outside this single-chunk bound.
 \end{proof}
 
-\subsection{Isometric Zero-Padding Invariance for Dynamic Manifold Expansion}
-\begin{theorem}[Isometric Zero-Padding Boundary Preservation]
-\label{thm:isometry}
-Suppose an existing Region stores anchored unit keys and query representations $\{\mu_j, \mathbf{k}_j\}_{j=1}^K \subset \mathbb{S}^{d-1}$. Define the isometric zero-padding operator $\Phi_d^{D}: \mathbb{S}^{d-1} \to \mathbb{S}^{D-1}$ ($D > d$) by $\Phi_d^D(\mathbf{v}) = [\mathbf{v}; \mathbf{0}_{D-d}]$. Then for all $\mathbf{u}, \mathbf{v}, \mathbf{k}_j, \mu_j \in \mathbb{S}^{d-1}$:
-\begin{enumerate}[leftmargin=*,itemsep=2pt]
-  \item Norm and inner-product preservation: $\|\Phi_d^D(\mathbf{v})\|_2 = 1$ and $\langle \Phi_d^D(\mathbf{u}), \Phi_d^D(\mathbf{v}) \rangle = \langle \mathbf{u}, \mathbf{v} \rangle$.
-  \item Exact Voronoi partition \& No-Encroachment invariance: every previously valid No-Encroachment inequality $\langle \mu_j, \mathbf{k}_i \rangle \le s_{jj} - m_{\text{safe}}$ remains satisfied identically upon embedding into $\mathbb{S}^{D-1}$, while newly added tasks can allocate orthogonal residual components in the fresh subspace $\mathbf{0}_{D-d}^\perp$.
-\end{enumerate}
-\end{theorem}
-
-\begin{proof}
-For any $\mathbf{u}, \mathbf{v} \in \mathbb{S}^{d-1}$, direct expansion yields
-\[
-\langle \Phi_d^D(\mathbf{u}), \Phi_d^D(\mathbf{v}) \rangle = \sum_{r=1}^{d} u_r v_r + \sum_{r=d+1}^{D} 0 \cdot 0 = \langle \mathbf{u}, \mathbf{v} \rangle,
-\]
-so $\|\Phi_d^D(\mathbf{v})\|_2 = \sqrt{\langle \mathbf{v}, \mathbf{v} \rangle} = 1$, preserving geodesic distances $d_{\text{geo}} = \arccos\langle \mathbf{u}, \mathbf{v} \rangle$ and spherical chord distances $d_{\text{chord}} = \sqrt{2(1-\langle \mathbf{u},\mathbf{v}\rangle)}$ exactly. Similarly, self-similarity floors $s_{jj}' = \langle \Phi(\mu_j), \Phi(\mathbf{k}_j) \rangle = s_{jj}$ and pairwise routing boundaries $\{ \mathbf{c} \in \mathbb{S}^{D-1} : \langle \mathbf{c}, \Phi(\mathbf{k}_j) \rangle \ge \langle \mathbf{c}, \Phi(\mathbf{k}_i) \rangle \}$ induce the identical spherical Voronoi tessellation on the embedded $(d-1)$-submanifold, while any future key $\mathbf{k}_{\text{new}} = [\alpha \mathbf{v}_{\parallel}; \sqrt{1-\alpha^2}\mathbf{v}_\perp]$ can expand capacity strictly along orthogonal coordinates $\mathbf{v}_\perp$ with tunable interference $\alpha \to 0$.
-\end{proof}
+\subsection{Conceptual Isometric Zero-Padding Property (Future Work)}
+\begin{proposition}[Isometric Zero-Padding Inner-Product Preservation]
+\label{prop:isometry}
+For unit vectors $\{\mu_j, \mathbf{k}_j\}_{j=1}^K \subset \mathbb{S}^{d-1}$, the zero-padding map $\Phi_d^{D}(\mathbf{v}) = [\mathbf{v}; \mathbf{0}_{D-d}] \in \mathbb{S}^{D-1}$ ($D > d$) preserves all norms and pairwise inner products identically ($\langle \Phi_d^D(\mathbf{u}), \Phi_d^D(\mathbf{v}) \rangle = \langle \mathbf{u}, \mathbf{v} \rangle$), thereby preserving existing spherical Voronoi partitions and No-Encroachment margins $\langle \mu_j, \mathbf{k}_i \rangle \le s_{jj} - m_{\text{safe}}$ without distortion. This property is noted solely as a conceptual design primitive for future capacity expansion and is not implemented in DTRA~v3.0.
+\end{proposition}
 """
 
 REFERENCES_50_BLOCK = r"""
@@ -279,6 +261,15 @@ P.~Kanerva, ``Hyperdimensional computing: An introduction to computing in distri
 
 \bibitem{papyan2020neural}
 V.~Papyan, X.~Y.~Han, and D.~L.~Donoho, ``Prevalence of neural collapse during the terminal phase of deep learning training,'' \emph{Proc.\ Natl.\ Acad.\ Sci.\ (PNAS)}, vol.~117, no.~40, pp.~24652--24663, 2020.
+
+\bibitem{zhu2022buds}
+Y.~Zhu, P.~Stone, and Y.~Zhu, ``Bottom-up skill discovery from unsegmented demonstrations for long-horizon robot manipulation,'' \emph{IEEE Robot.\ Autom.\ Lett.\ (RA-L)}, vol.~7, no.~2, pp.~4126--4133, 2022.
+
+\bibitem{wan2024lotus}
+W.~Wan, Y.~Zhu, R.~Shah, and Y.~Zhu, ``LOTUS: Continual imitation learning for robot manipulation through unsupervised skill discovery,'' in \emph{Proc.\ IEEE Int.\ Conf.\ Robot.\ Autom.\ (ICRA)}, 2024.
+
+\bibitem{liu2024tail}
+Z.~Liu, J.~Zhang, K.~Asadi, Y.~Liu, D.~Zhao, S.~Sabach, and R.~Fakoor, ``TAIL: Task-specific adapters for imitation learning with large pretrained models,'' in \emph{Proc.\ Int.\ Conf.\ Learn.\ Represent.\ (ICLR)}, 2024.
 
 \bibitem{son2026abkvla}
 S.~Son, ``ABK-VLA: Task-ID-free continual visuomotor policy learning via autonomous B-spline knot compression and visual prototype routing,'' \emph{Zenodo Preprint}, DOI: \texttt{10.5281/zenodo.24208545}, Nov.\ 2026. Repository: \url{https://github.com/5Color/abk-vla}.
