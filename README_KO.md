@@ -16,18 +16,18 @@
 > 2. **2세대 본편 (`dtra`, DTRA v3.0):** LIBERO-100($K=100$), LIBERO-Goal 파일럿($K=5$), 3D Meta-World($K=8$) 단일 링 `Region` 아키텍처 본편 결과입니다.
 > 3. **v3 이후 체화 연속학습 확장 트랙 (`v4.0`–`v6.0`):** `DTRA v3.0` 프리프린트 본편 표와 엄격히 분리되어 `dtra/experiments/{robocasa_v4,calvin_v4,calvin_v5}/` 및 `dtra/outputs/calvin_v6/`에 아카이빙되어 있습니다. `v6.0`의 `OrganSystem2Planner`는 선행 **ARIN** 로드맵의 `Organ` 명칭을 차용한 경량 System 2 프로토타입입니다.
 >
-> 전체 연구 이력은 [RESEARCH_LINEAGE.md](RESEARCH_LINEAGE.md), 공식 릴리즈 노트는 [RELEASE_NOTES_v3.0.0.md](RELEASE_NOTES_v3.0.0.md), 상세 한국어 기술 안내는 [dtra/README_KO.md](dtra/README_KO.md), 버전 경계는 [dtra/PAPER_20P_OUTLINE.md](dtra/PAPER_20P_OUTLINE.md)를 참고하세요.
+> 전체 연구 이력은 [RESEARCH_LINEAGE.md](RESEARCH_LINEAGE.md), 최신 릴리즈 노트는 [RELEASE_NOTES_v3.1.0.md](RELEASE_NOTES_v3.1.0.md)(이전: [v3.0.0](RELEASE_NOTES_v3.0.0.md)), 상세 한국어 기술 안내는 [dtra/README_KO.md](dtra/README_KO.md), 버전 경계는 [dtra/PAPER_20P_OUTLINE.md](dtra/PAPER_20P_OUTLINE.md)를 참고하세요.
 
 > **입력 조건:** 여기서 **Task-ID-free**는 추론 때 정수형 태스크 인덱스를 정책에 직접 전달하지 않는다는 뜻입니다. 라우팅 입력에는 두 카메라 특징(순수 RGB-D 트랙은 깊이 포함), 고유수용성 상태와 언어 임베딩이 포함됩니다. 언어 지시를 제공하는 평가는 순수 시각·고유수용성 관측만 사용하는 평가와 구분해야 합니다.
 
 ---
 
-## 시각 롤아웃 데모 (v3 이후 체화 확장 트랙)
+## 핵심 실증 데모 및 7-Arm 스케일링 결과 (`LIBERO-100`, $K=100$)
 
-| DTRA v6.0 — CALVIN 순수 비전 5-Step 체인 (`System 1 + System 2`) | DTRA v4.0 — RoboCasa 순수 RGB-D 주방 조작 (`Hypertube Transport`) |
+| DTRA Elastic — 저장된 $K=100$ 정책 실제 폐루프 롤아웃 (`리플레이 0%`) | 7-Arm 동일 인코더 스케일링 벤치마크 (`K=10 -> 100`, 완전 `N=3` + `DER++/L2P/O-LoRA`) |
 | :---: | :---: |
-| ![DTRA v6.0 CALVIN 순수 비전 5-Step 체인](dtra/assets/calvin_v6_pure_vision_chain_preview.gif) | ![DTRA v4.0 RoboCasa 순수 RGB-D 롤아웃](dtra/assets/robocasa_v4_pure_rgbd_preview.gif) |
-| 표준 `5/5` 연속 시퀀스 (`Chain #1`, `Mode: VISION`, `Leak: ZERO`, `Drift: 0.0000`, 실시간 System 2 복구 `CELL #108 -> #100`). 34태스크·30체인 전체: **라우팅 `97.65%`**, **평균 체인 길이 `2.37`**(기준 `1.90`), **5/5 완주율 `16.67%`**(기준 `6.67%`), **저크 감소 `+15.12%`**, **지연 `9.30 ms`**. ([범위·한계 문서](dtra/outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md)) | 주방 12태스크(`8` 단일 + `4` 복합, `0%` 리플레이, `object-state` 미사용, `Drift: 0.000000`): `Arm4_DTRA_v4_Hypertube`가 **단일(Atomic) SR `29.17%`**(`OpenMicrowave 100.0%`), **라우팅 `100.0%`**, **지연 `1.928 ms`** 달성(`Flat_MLP`와 `ER_5%`는 `0.00%` 붕괴). 복합 `0.00%` 병목이 `v5.0`/`v6.0` 도입의 근거가 됨. ([결과 JSON](dtra/experiments/robocasa_v4/robocasa_continual_results_4arms.json)) |
+| ![DTRA LIBERO-100 K=100 대표 롤아웃](dtra/assets/libero100_k100_hero_preview.gif) | ![LIBERO-100 7-Arm 스케일링 곡선](outputs/figures/fig7_libero100_scaling_curves.png) |
+| **단일 $K=100$ 동결 체크포인트(`Seed 42`) 실제 성공 4클립:** `T09` (`libero_10` 전자레인지 — 후속 90개 학습 후에도 유지), **`T05` vs. `T87` (동일 지시어 쌍 — 같은 명령을 `#05`/`#87`로 정확히 분리하고 `Basis #04` 재사용)**, `T67` (거실). **`87.00 ± 0.86%`** ($n=5$, $N=3$) \| **12,000 롤아웃 무재학습 검증 `85.20 ± 0.35%`** (미공개 `init[5:20]`: **`84.80%`**). | 동일 동결 ResNet-18 조건에서 **DTRA Elastic (`87.00%`)**·**DTRA Rigid (`86.67%`)**는 100개 기술을 **27개 공유 기저(`-73%`)**로 압축하며 **`99.68%` Dup-Lang 라우팅**을 유지해 **Frozen MLP (`70.33%`)**, **ER 5% (`39.47%`)**, **DER++ (`38.40%`)**, **L2P (`1.20%`)**, **O-LoRA (`1.00%`)**를 압도합니다. |
 
 ---
 
@@ -90,13 +90,23 @@ Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우
 - Meta-World의 3-Seed 인과 분해(`ablate_dtra_v31_final.py`) 결과, Conv4 특징 노이즈 정규화(`p=0.30, σ=0.05`)를 끄면 DTRA Full 정상 성공률이 `72.2%` $\to$ **`83.1 ± 5.1%`**(+10.9%p)로 올라가면서 심한 OOD 성공률 **`45.0 ± 5.4%`**를 유지함을 규명했습니다.
 - LIBERO의 `9.55 ± 0.20 ms`는 GPU 정책 추론 지연이며, 전체 후보 검색은 `O(K)`, 선택 후보 디코딩 코어가 상수 비용입니다.
 
-### C. v3 이후 체화 연속학습 확장 트랙 (`DTRA v4.0 – v6.0`, v3.0 프리프린트와 분리)
+### C. v3 이후 체화 연속학습 확장 트랙 (`DTRA v4.0 – v6.0`, 본편 프리프린트와 분리)
 
 | 트랙 / 벤치마크 | 방법 / 모드 | 핵심 지표 | 드리프트 | 출처 |
 | :--- | :--- | :--- | :---: | :--- |
 | **v4.0 RoboCasa (`12`태스크: `8` 단일 + `4` 복합, `0%` 리플레이)** | `Arm4_DTRA_v4_Hypertube` *(vs `Flat_MLP`/`ER_5%` `0.00%`)* | 단일 SR **`29.17%`**(`OpenMicrowave 100.0%`), 전체 `19.44%`, 라우팅 **`100.0%`**, BWT `+0.00%`, `1.928 ms` *(복합 `0.00%` $\to$ System 2 도입 근거)* | `0.000000` | [`robocasa_continual_results_4arms.json`](dtra/experiments/robocasa_v4/robocasa_continual_results_4arms.json) |
 | **v5.0 + v6.0 CALVIN (`34`태스크, `30` 5-Step 체인)** | `Pure Vision` (`Leak: ZERO`) | 라우팅 **`97.65%`**, 단일 SR `55.88%`, 5-Chain 길이 **`2.37`** *(vs `1.90`)*, 5/5 SR **`16.67%`** *(vs `6.67%`)*, 저크 감소 **`+15.12%`**, `22` 간선, `9.30 ms` | **`0.0000`** | [`calvin_v6_vision_34tasks.json`](dtra/outputs/calvin_v6/calvin_v6_vision_34tasks.json) |
 | **v5.0 + v6.0 CALVIN (`34`태스크, `30` 5-Step 체인)** | `Oracle Anchor` *(상한 비교군)* | 라우팅 `97.65%`, 단일 SR `46.47%`, 5-Chain 길이 `2.53` *(vs `1.90`)*, 5/5 SR `16.67%` *(vs `10.00%`)*, 저크 감소 `+15.24%`, `25` 간선, `8.49 ms` | `0.0000` | [`calvin_v6_oracle_34tasks.json`](dtra/outputs/calvin_v6/calvin_v6_oracle_34tasks.json) |
+
+<details>
+<summary><strong>v3 이후 체화 확장 트랙 롤아웃 프리뷰 펼치기 (CALVIN v6 순수 비전 & RoboCasa v4 순수 RGB-D)</strong></summary>
+
+| DTRA v6.0 — CALVIN 순수 비전 5-Step 체인 (`System 1 + System 2`) | DTRA v4.0 — RoboCasa 순수 RGB-D 주방 조작 (`Hypertube Transport`) |
+| :---: | :---: |
+| ![DTRA v6.0 CALVIN 순수 비전 5-Step 체인](dtra/assets/calvin_v6_pure_vision_chain_preview.gif) | ![DTRA v4.0 RoboCasa 순수 RGB-D 롤아웃](dtra/assets/robocasa_v4_pure_rgbd_preview.gif) |
+| 표준 `5/5` 연속 시퀀스 (`Chain #1`, `Mode: VISION`, `Leak: ZERO`, `Drift: 0.0000`, 실시간 System 2 복구 `CELL #108 -> #100`). ([범위·한계 문서](dtra/outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md)) | 주방 12태스크(`8` 단일 + `4` 복합, `0%` 리플레이, `object-state` 미사용, `Drift: 0.000000`). ([결과 JSON](dtra/experiments/robocasa_v4/robocasa_continual_results_4arms.json)) |
+
+</details>
 
 ---
 

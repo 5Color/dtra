@@ -2,8 +2,9 @@
 
 [English](README.md) | [한국어](README_KO.md)
 
-[![Preprint (DTRA v3.0, 20p)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](paper_v2/DTRA_v3.0_Preprint.pdf)
-[![arXiv Manuscript (20p)](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](paper_v2/dtra_preprint.pdf)
+[![Preprint (DTRA v3.0/v3.1, 23p)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](paper_v2/DTRA_v3.0_Preprint.pdf)
+[![arXiv Manuscript (23p)](https://img.shields.io/badge/arXiv%20Clean-dtra__preprint.pdf-9e1c20.svg)](paper_v2/dtra_preprint.pdf)
+[![arXiv Source Bundle](https://img.shields.io/badge/arXiv%20Bundle-.tar.gz-2ea44f.svg)](paper_v2/dtra_arxiv_submission.tar.gz)
 [![Zenodo v3.0.0 DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24297711.svg)](https://doi.org/10.5281/zenodo.24297711)
 [![Zenodo Concept DOI](https://img.shields.io/badge/Zenodo%20All%20Versions-10.5281%2Fzenodo.24218482-blue.svg)](https://doi.org/10.5281/zenodo.24218482)
 [![LaTeX Source](https://img.shields.io/badge/LaTeX-dtra__preprint.tex-008080.svg)](paper_v2/dtra_preprint.tex)
@@ -13,7 +14,7 @@
 
 > *"If a mind must erase yesterday to learn today, it is not intelligence—it is merely a calculator."* — Seungjoon Son
 
-Research materials, 20-page preprint manuscripts, and continual-learning benchmarks for **DTRA** (*Dynamic Topology Ring Architecture*, corresponding to [`5Color/dtra`](https://github.com/5Color/dtra)), a geometry-first, replay-free, and Task-ID-free continual visuomotor control framework.
+Research materials, 23-page preprint manuscripts, and continual-learning benchmarks for **DTRA** (*Dynamic Topology Ring Architecture*, corresponding to [`5Color/dtra`](https://github.com/5Color/dtra)), a geometry-first, replay-free, and Task-ID-free continual visuomotor control framework.
 
 > **Repository & Scope Separation:**
 > - **Published Preprint Core (`DTRA v3.0`):** Single-ring `Region` architecture (System 1) verified on 3-seed 3D Meta-World ($K=8$), LIBERO-Goal ($K=5$), and 3-seed 7-DoF LIBERO-100 ($K=100$).
@@ -24,14 +25,12 @@ Research materials, 20-page preprint manuscripts, and continual-learning benchma
 
 ---
 
-## Visual Rollout Demos
+## Hero Rollout & Continual Scaling (`LIBERO-100`, $K=100$)
 
-Lightweight `640x360` @ `12 fps` inline previews (`< 8 MB` each for direct GitHub README playback) from the post-v3 pure-vision embodied tracks:
-
-| DTRA v6.0 — CALVIN Pure Vision 5-Step Chain (System 1 + System 2) | DTRA v4.0 — RoboCasa Pure RGB-D Kitchen Rollout (Hypertube Transport) |
+| DTRA Elastic — Live Closed-Loop Rollouts (`Seed 42`, $K=100$ Frozen Policy) | 7-Arm Strict-Parity Scaling Curves (`Full N=3` + `DER++/L2P/O-LoRA`) |
 | :---: | :---: |
-| ![DTRA v6.0 CALVIN Pure Vision 5-Step Chain](assets/calvin_v6_pure_vision_chain_preview.gif) | ![DTRA v4.0 RoboCasa Pure RGB-D Rollout](assets/robocasa_v4_pure_rgbd_preview.gif) |
-| **Canonical `5/5` Sequence (`Chain #1`, `Mode: VISION`, `Leak: ZERO`, `Drift: 0.0000`):** `lift_red_block_table` $\rightarrow$ `place_in_drawer` $\rightarrow$ `close_drawer` $\rightarrow$ `move_slider_left` *(live System 2 recovery `CELL #108 -> #100`)* $\rightarrow$ `turn_on_lightbulb`. Across 34 tasks / 30 chains: **`97.65%` RouteAcc**, **`2.37` mean chain len** (vs `1.90`), **`16.67%` 5/5 SR** (vs `6.67%`), **`+15.12%` jerk reduction**, **`9.30 ms` latency**. ([Scope Notes](outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md) \| Raw HUD MP4: `outputs/calvin_v6/dtra_v6_pure_vision_chain_hud.mp4`) | **12 Kitchen Tasks (`8` Atomic + `4` Composite, `0%` Replay, No `object-state`, `Drift: 0.000000`):** `Arm4_DTRA_v4_Hypertube` achieves **`29.17%` Atomic SR** (`OpenMicrowave 100.0%`, `CloseDrawer 66.67%`, `OpenDrawer 33.33%`, `PickPlaceCounterToSink 33.33%`), **`100.0%` RouteAcc**, **`+0.00%` BWT**, **`1.928 ms` latency**—while `Flat_MLP` and `ER_5%` collapse to `0.00%`. Composite `0.00%` exposes the System 1 bottleneck that motivated `v5.0`/`v6.0`. ([Results JSON](experiments/robocasa_v4/robocasa_continual_results_4arms.json) \| Raw HUD MP4: `experiments/robocasa_v4/robocasa_pure_rgbd_hud_rollout.mp4`) |
+| ![DTRA LIBERO-100 K=100 Hero Rollout](assets/libero100_k100_hero_preview.gif) | ![LIBERO-100 7-Arm Scaling Curves](../outputs/figures/fig7_libero100_scaling_curves.png) |
+| **4 Verified 100%-Success Clips (`2.6 MB`, 12.5 fps):** `T09` (`libero_10` Microwave, retained after 90 more tasks), **`T05` vs. `T87` (`Dup-Lang` identical-prompt pair cleanly separated to `#05`/`#87` while reusing `Basis #04`)**, and `T67` (Living Room). **`87.00 ± 0.86%`** ($n=5$, $N=3$) \| **`85.20 ± 0.35%`** across **12,000 zero-retrain rollouts** ($n=20$, unseen `init[5:20]`: **`84.80%`**). | Across $K=10 \to 100$ under identical frozen ResNet-18 parity, **DTRA Elastic (`87.00%`)** & **DTRA Rigid (`86.67%`)** compress 100 tasks into **27 shared bases (`-73%`)** with **`99.68%` Dup-Lang routing**, decisively outperforming **Frozen MLP (`70.33%`)**, **ER 5% (`39.47%`)**, **DER++ (`38.40%`)**, **L2P (`1.20%`)**, and **O-LoRA (`1.00%`)**. |
 
 ---
 
@@ -64,25 +63,23 @@ Scaling continual visuomotor control from $K=8$ Meta-World tasks to $K=100$ sequ
 
 ---
 
-## 2. Finalized Benchmark Results (`v3.0` Preprint Scope Only)
+## 2. Finalized Benchmark Results (`v3.0 / v3.1` Preprint Scope Only)
 
-### A. LIBERO-100 ($K=10 \to 100$) Multi-Seed Continual Scaling (Seeds `42, 100, 2026`, Strict Encoder Parity)
+### A. LIBERO-100 ($K=10 \to 100$) Multi-Seed & External CL Continual Scaling (Seeds `42, 100, 2026`, Strict Encoder Parity)
 
-![LIBERO-100 Scaling Curves](../outputs/figures/fig7_libero100_scaling_curves.png)
-
-All comparison arms share identical frozen perception and `LightweightTextEncoder`, streaming tasks with DTRA Elastic peak VRAM of `2,713 ± 77 MB` (`n_eval = 5` rollouts per milestone checkpoint; full 4-arm suite on Seeds `{42, 100}` [$N=2$] and 2-arm core parity [`arm_frozen_mlp`, `arm_dtra_elastic`] on Seeds `{42, 100, 2026}` [$N=3$]):
+All comparison arms share identical frozen perception and `LightweightTextEncoder`, streaming tasks with DTRA Elastic peak VRAM of `2,713 ± 77 MB` (`n_eval = 5` rollouts per milestone checkpoint; **all four core arms cover complete `N=3` Seeds `{42, 100, 2026}`**, alongside matched-encoder external baselines `DER++`, `L2P`, and `O-LoRA` on Seed `42`):
 
 | Method (Strict Parity) | $K=10$ SR | $K=30$ SR | $K=50$ SR | $K=70$ SR | **$K=100$ SR $\uparrow$** | FR $\downarrow$ | BWT $\uparrow$ | RouteAcc $\uparrow$ | Dup-Lang $\uparrow$ | Bases | Active Latency |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| `arm_frozen_mlp` ($N=3$) | `82.00±4.32%` | `85.11±2.79%` | `79.07±0.50%` | `76.48±0.97%` | `70.33 ± 1.18%` | `2.90±1.05%` | `+0.20±2.29%` | `81.94±0.24%` | `41.76 ± 2.09%` | `100.0` | `6.46±0.57 ms` |
-| `arm_er_5pct` ($N=2$) | `62.00±2.00%` | `59.67±6.33%` | `54.80±2.40%` | `49.14±4.00%` | `40.50 ± 0.30%` | `27.07±4.04%` | `-20.71±2.93%` | `1.00±0.00%` | `0.00 ± 0.00%` | `1.0` | `5.34±0.03 ms` |
-| `arm_dtra_rigid` ($N=2$) | `84.00±2.00%` | `90.33±1.00%` | `91.00±1.00%` | `87.14±0.57%` | `86.20 ± 0.00%` | `2.93±0.91%` | `+0.10±0.91%` | `99.86±0.14%` | `99.53 ± 0.47%` | `27.0` | `9.36±0.05 ms` |
-| **`arm_dtra_elastic` ($N=3$, Full)** | `80.00±1.63%` | **`91.11±1.37%`** | **`90.67±1.00%`** | **`87.71±0.70%`** | **`87.00 ± 0.86%`** | **`2.69±0.67%`** | **`+0.20±0.72%`** | **`99.90±0.13%`** | **`99.68 ± 0.45%`** | **`27.0`** | `9.55±0.20 ms` |
+| `arm_frozen_mlp` ($N=3$) | `82.00±4.32%` | `85.11±2.79%` | `79.07±0.50%` | `76.48±0.97%` | `70.33 ± 1.18%` | `2.90±1.05%` | `+0.20±2.29%` | `81.94±0.24%` | `41.76 ± 2.09%` | `100` | `6.46±0.57 ms` |
+| `arm_er_5pct` ($N=3$) | `58.67±4.99%` | `56.67±6.69%` | `52.00±4.42%` | `47.43±4.07%` | `39.47 ± 1.48%` | `26.33±3.46%` | `-20.00±2.59%` | `---` | `---` | `1` | `4.93±0.59 ms` |
+| `arm_dtra_rigid` ($N=3$) | `83.33±1.89%` | `90.44±0.83%` | `90.67±0.94%` | `87.52±0.71%` | `86.67 ± 0.66%` | `2.56±0.91%` | `+0.67±1.10%` | `99.91±0.13%` | `99.68 ± 0.45%` | `27` | `8.70±0.93 ms` |
+| **`arm_dtra_elastic` ($N=3$, Full)** | `80.00±1.63%` | **`91.11±1.37%`** | **`90.67±1.00%`** | **`87.71±0.70%`** | **`87.00 ± 0.86%`** | **`2.69±0.67%`** | **`+0.20±0.72%`** | **`99.90±0.13%`** | **`99.68 ± 0.45%`** | **`27`** | `9.55±0.20 ms` |
+| `DER++` (5% Buf. + Distill., Seed 42) | `68.00%` | `60.00%` | `60.40%` | `51.71%` | `38.40%` | `29.70%` | `-16.16%` | `---` | `---` | `1` | `5.49 ms` |
+| `L2P` (Prompt Pool, Seed 42) | `8.00%` | `2.00%` | `1.60%` | `1.14%` | `1.20%` | `51.72%` | `-51.72%` | `---` | `---` | `32` | `7.79 ms` |
+| `O-LoRA` (Ortho Subspace, Seed 42) | `2.00%` | `1.33%` | `2.00%` | `1.14%` | `1.00%` | `42.63%` | `-42.63%` | `---` | `---` | `100` | `7.05 ms` |
 
-* **Per-Seed Final $K=100$ Breakdown:**
-  * `arm_dtra_elastic`: Seed 42 **`87.80%`** (Dup-Lang `99.05%`, BWT `+0.61%`), Seed 100 **`87.40%`**, Seed 2026 **`85.80%`** $\rightarrow$ **3-Seed Mean `87.00 ± 0.86%`** (`+16.67%p` SR and `+57.93%p` Dup-Lang routing over matched `arm_frozen_mlp`; sub-linear `7 -> 13 -> 22 -> 24 -> 27` frozen shared bases across all seeds).
-  * `arm_frozen_mlp`: Seed 42 `72.00%` (Dup-Lang `38.92%`, BWT `+3.43%`), Seed 100 `69.60%`, Seed 2026 `69.40%` $\rightarrow$ Mean `70.33 ± 1.18%`.
-* **Note on Milestone FR/BWT Under Exact Parameter Freezing:** Weight parameters incur strictly **0.0** gradient drift ($\nabla_\theta = 0$). In `arm_frozen_mlp`, intra-interval Voronoi encroachment degrades accuracy between discrete checkpoints prior to peak capture, collapsing `Mean SR` (`70.33%`) rather than inflating milestone-delta `FR` (`2.90%`), while residual `~2%` FR/BWT reflects $n_{\text{eval}}=5$ binomial simulator variance.
+* **Zero-Retrain Extended Initial-State Verification (`n_eval=20`, 12,000 Total Rollouts across Seeds `42, 100, 2026`):** `arm_dtra_elastic` achieves **`85.20 ± 0.35%`** overall (`[84.3, 86.1]%` 95% Wilson CI) and **`84.80 ± 0.36%`** on 15 unseen held-out initial states `init[5:20]` (`[83.7, 85.8]%`), vs. `arm_frozen_mlp` at `69.12 ± 0.74%` overall / `68.82 ± 0.74%` held-out (`+16.08%p` overall; **`+52.72%p`** on `Dup-Lang`: `89.06%` vs. `36.33%` SR; `99.94%` vs. `41.80%` routing).
 
 ### B. LIBERO-Goal 5-Task Pilot (Seed 42, $n_{\text{eval}}=5$)
 
@@ -93,23 +90,19 @@ All comparison arms share identical frozen perception and `LightweightTextEncode
 | DTRA Rigid ($\alpha=0$) | `88.0%` | `10.0%` | `-5.0%` | `100.0%` | `3696 MB` |
 | **DTRA v3.0 Elastic (Ours)** | `92.0%` | `5.0%` | `+0.0%` | `100.0%` | `3696 MB` |
 
-### C. 3D Meta-World 8-Task Continual Ablation (3-Seed Mean ± Std, Seeds `42, 100, 2026`)
+### C. 3D Meta-World 8-Task Continual Ablation, Causal Decomposition & External CL (3-Seed Mean ± Std)
 
 | Method | Clean SR $\uparrow$ | FR $\downarrow$ | Clean Route $\uparrow$ | Severe OOD SR $\uparrow$ | OOD Route $\uparrow$ | CPU Active ($K=1\to 8$) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | ABK-VLA v1.1.3 (DoG Vision) | `82.8 ± 2.6%` | `0.0 ± 0.0%` | `99.7%` | `2.2 ± 1.0%` | `34.7%` | `0.27 -> 0.83 ms` |
 | Frozen Slot MLP (Multimodal) | `85.6 ± 3.1%` | `0.0 ± 0.0%` | `100.0%` | `23.6 ± 3.9%` | `100.0%` | `0.21 -> 0.20 ms` |
-| **DTRA Full (Multimodal, Ours)** | `72.2 ± 6.8%` | **`0.0 ± 0.0%`** | **`100.0%`** | **`51.4 ± 4.4%`** | **`100.0%`** | **`1.87 -> 1.87 ms`** |
+| **DTRA Full (Feat-Reg, Ours)** | `72.2 ± 6.8%` | **`0.0 ± 0.0%`** | **`100.0%`** | **`51.4 ± 4.4%`** | **`100.0%`** | **`1.87 -> 1.87 ms`** |
+| **DTRA Full (No Feat-Reg, `p=0, σ=0`)** | **`83.1 ± 5.1%`** | **`0.0 ± 0.0%`** | **`100.0%`** | **`45.0 ± 5.4%`** | **`100.0%`** | **`1.87 -> 1.87 ms`** |
+| DER++ / L2P / O-LoRA (3-Seed) | `73.3% / 16.7% / 7.2%` | `22.9% / 79.4% / 63.2%` | `---` | `13.6% / 17.5% / 9.4%` | `---` | `---` |
 
 ### Evaluation scope and resource interpretation
 
-Frozen MLP and DTRA Elastic use seeds 42, 100, and 2026; ER 5% and DTRA Rigid use seeds 42 and 100. Each task is evaluated with five rollouts per seed using the same first five provided initial states. Cross-seed standard deviations are not confidence intervals over a broader initial-state distribution.
-
-Parameter freezing and temporary state reset are separate: `post_snap_norm = 0.0000` records a reset state, not an independent before/after weight comparison. LIBERO-100 success-rate forgetting is **2.69 ± 0.67%**. Its sources have not been separated into routing changes and rollout variability.
-
-The **73% reduction concerns motor basis count**, from one basis per task to 27 shared bases at K=100. Recorded policy parameters occupy **183.14 MB** for DTRA versus **151.67 MB** for Frozen MLP, excluding the common frozen backbone. The experiments do not establish an asymptotic memory-growth law or a break-even task count beyond K=100.
-
-On Meta-World, DTRA Full has lower clean success (**72.2 ± 6.8%** vs. **85.6 ± 3.1%**) and higher severe OOD success (**51.4 ± 4.4%** vs. **23.6 ± 3.9%**) than multimodal Frozen MLP. This is an observed trade-off, not a demonstrated causal explanation. Registration involves training; the **9.55 ± 0.20 ms** LIBERO figure measures policy inference. Broad retrieval remains O(K), with a constant-cost selected decoding core.
+All four core LIBERO-100 arms cover Seeds `42, 100, 2026` (`N=3`), with final $K=100$ generalization verified across `n_eval=20` initial states (`12,000` rollouts, including `15` unseen held-out states `init[5:20]` with 95% Wilson CIs). Parameter freezing ($\nabla_\theta=0$), empirical success-rate forgetting (`2.69 ± 0.67%`), and temporary state reset (`post_snap_norm = 0.0000`) are tracked separately. On Meta-World, our three-seed causal ablation isolates Conv4 feature-noise regularization (`p=0.30, σ=0.05`) as the clean-versus-OOD lever: disabling it lifts DTRA Full to `83.1 ± 5.1%` clean SR while retaining `45.0 ± 5.4%` severe OOD SR (nearly 2× unregularized Frozen MLP). The **73% reduction** refers to motor basis count (`100 -> 27`; recorded policy parameters occupy `183.14 MB` vs. `151.67 MB` for Frozen MLP excluding the shared backbone), and broad retrieval remains $O(K)$ with an $O(1)$ active decoding core (`9.55 ± 0.20 ms` GPU inference at $K=100$).
 
 ---
 
@@ -139,6 +132,16 @@ Evaluated across 12 kitchen manipulation tasks (`8` Atomic + `4` Composite) with
 | `Oracle Anchor` *(Upper-Bound Ref)* | `97.65%` | `46.47%` | `2.53` *(vs `1.90`)* | `16.67%` *(vs `10.00%`)* | `+15.24%` (`0.0684` vs `0.0807`) | `25` | `8.49 ms` | `0.0000` |
 
 * See [`outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md`](outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md) for full experimental scope, precondition-chain rules, and limitations (`16.67%` full 5/5 chain SR vs canonical `Chain #1` HUD showcase).
+
+<details>
+<summary><strong>Expand Post-v3 Embodied Rollout Previews (CALVIN v6 Pure Vision & RoboCasa v4 Pure RGB-D)</strong></summary>
+
+| DTRA v6.0 — CALVIN Pure Vision 5-Step Chain (`System 1 + System 2`) | DTRA v4.0 — RoboCasa Pure RGB-D Kitchen (`Hypertube Transport`) |
+| :---: | :---: |
+| ![DTRA v6.0 CALVIN Pure Vision 5-Step Chain](assets/calvin_v6_pure_vision_chain_preview.gif) | ![DTRA v4.0 RoboCasa Pure RGB-D Rollout](assets/robocasa_v4_pure_rgbd_preview.gif) |
+| Canonical `5/5` sequence (`Chain #1`, `Mode: VISION`, `Leak: ZERO`, `Drift: 0.0000`). ([Scope Notes](outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md)) | 12 tasks (`8` Atomic + `4` Composite, `0%` replay, `Drift: 0.000000`). ([Results JSON](experiments/robocasa_v4/robocasa_continual_results_4arms.json)) |
+
+</details>
 
 ---
 

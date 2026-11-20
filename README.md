@@ -20,16 +20,16 @@
 
 > **Inference-input scope:** Task-ID-free means no integer task index is passed to the policy at inference. Routing uses dual-camera features (plus depth in pure RGB-D tracks), proprioception, and a language embedding; evaluations that provide language commands are command-conditioned, not observation-only.
 
-For the complete hypothesis-by-hypothesis chronology, see [**RESEARCH_LINEAGE.md**](RESEARCH_LINEAGE.md), [**RELEASE_NOTES_v3.0.0.md**](RELEASE_NOTES_v3.0.0.md), [**dtra/README.md**](dtra/README.md), and [**dtra/PAPER_20P_OUTLINE.md**](dtra/PAPER_20P_OUTLINE.md).
+For the complete hypothesis-by-hypothesis chronology, see [**RESEARCH_LINEAGE.md**](RESEARCH_LINEAGE.md), [**RELEASE_NOTES_v3.1.0.md**](RELEASE_NOTES_v3.1.0.md) (prior: [v3.0.0](RELEASE_NOTES_v3.0.0.md)), [**dtra/README.md**](dtra/README.md), and [**dtra/PAPER_20P_OUTLINE.md**](dtra/PAPER_20P_OUTLINE.md).
 
 ---
 
-## Visual Rollout Demos (Post-v3 Embodied Tracks)
+## Hero Rollout & Continual Scaling (`LIBERO-100`, $K=100$)
 
-| DTRA v6.0 — CALVIN Pure Vision 5-Step Chain (`System 1 + System 2`) | DTRA v4.0 — RoboCasa Pure RGB-D Kitchen (`Hypertube Transport`) |
+| DTRA Elastic — Live Closed-Loop Rollouts from Saved $K=100$ Checkpoint (`Replay: 0%`) | 7-Arm Strict-Parity Scaling Benchmark (`K=10 -> 100`, Full `N=3` + `DER++/L2P/O-LoRA`) |
 | :---: | :---: |
-| ![DTRA v6.0 CALVIN Pure Vision 5-Step Chain](dtra/assets/calvin_v6_pure_vision_chain_preview.gif) | ![DTRA v4.0 RoboCasa Pure RGB-D Rollout](dtra/assets/robocasa_v4_pure_rgbd_preview.gif) |
-| Canonical `5/5` sequence (`Chain #1`, `Mode: VISION`, `Leak: ZERO`, `Drift: 0.0000`, live System 2 recovery `CELL #108 -> #100`). 34 tasks / 30 chains: **`97.65%` RouteAcc**, **`2.37` mean chain len** (vs `1.90`), **`16.67%` 5/5 SR** (vs `6.67%`), **`+15.12%` jerk reduction**, **`9.30 ms`**. ([Scope Notes](dtra/outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md)) | 12 tasks (`8` Atomic + `4` Composite, `0%` replay, no `object-state`, `Drift: 0.000000`): `Arm4_DTRA_v4_Hypertube` reaches **`29.17%` Atomic SR** (`OpenMicrowave 100.0%`), **`100.0%` RouteAcc**, **`1.928 ms`** (`Flat_MLP` & `ER_5%` collapse to `0.00%`). Composite `0.00%` motivated `v5.0`/`v6.0`. ([Results JSON](dtra/experiments/robocasa_v4/robocasa_continual_results_4arms.json)) |
+| ![DTRA LIBERO-100 K=100 Hero Rollout](dtra/assets/libero100_k100_hero_preview.gif) | ![LIBERO-100 7-Arm Scaling Curves](outputs/figures/fig7_libero100_scaling_curves.png) |
+| **4 Verified 100%-Success Clips from One Frozen $K=100$ Policy (`Seed 42`):** `T09` (`libero_10` Kitchen Microwave — retained after 90 more tasks), **`T05` vs. `T87` (`Dup-Lang` Pair — identical prompt routed cleanly to `#05` vs. `#87` while reusing `Basis #04`)**, and `T67` (Living Room). **`87.00 ± 0.86%`** ($n=5$, $N=3$) \| **`85.20 ± 0.35%`** over **12,000 zero-retrain rollouts** ($n=20$, unseen `init[5:20]`: **`84.80%`**). | Under identical frozen ResNet-18 parity, **DTRA Elastic (`87.00%`)** & **DTRA Rigid (`86.67%`)** compress 100 skills into **27 frozen bases (`-73%`)** with **`99.68%` Dup-Lang routing**, outperforming **Frozen MLP (`70.33%`)**, **ER 5% (`39.47%`)**, **DER++ (`38.40%`)**, **L2P (`1.20%`)**, and **O-LoRA (`1.00%`)**. |
 
 ---
 
@@ -67,10 +67,11 @@ drawing-vla/
 │   ├── README.md                          # DTRA package overview (English)
 │   ├── README_KO.md                       # DTRA package overview (Korean)
 │   └── paper_v2/
-│       ├── DTRA_v3.0_Preprint.pdf         # Exact 20-page DTRA v3.0 preprint (XeTeX build, >=8.5pt tables)
-│       ├── dtra_preprint.pdf              # Exact 20-page clean ASCII arXiv build (pdfLaTeX/XeTeX safe)
-│       ├── dtra_v3.0_preprint.tex         # XeTeX 20-page LaTeX source
-│       ├── dtra_preprint.tex              # Pure ASCII 20-page arXiv LaTeX source
+│       ├── DTRA_v3.0_Preprint.pdf         # Final 23-page DTRA preprint (XeTeX build, >=8pt tables)
+│       ├── dtra_preprint.pdf              # Final 23-page clean ASCII arXiv build (pdfLaTeX/XeTeX safe)
+│       ├── dtra_arxiv_submission.tar.gz   # Standalone arXiv source submission bundle (verified build)
+│       ├── dtra_v3.0_preprint.tex         # XeTeX 23-page LaTeX source
+│       ├── dtra_preprint.tex              # Pure ASCII 23-page arXiv LaTeX source
 │
 ├── outputs/
 │   ├── libero/                            # Locked LIBERO-100 3-seed JSONs (42, 100, 2026) & LIBERO-Goal pilot
@@ -145,13 +146,23 @@ The **73% reduction concerns motor basis count**, from one basis per task to 27 
 
 On Meta-World, our three-seed causal ablation (`ablate_dtra_v31_final.py`) isolates the clean-versus-OOD trade-off: removing Conv4 feature-noise regularization (`p=0, σ=0`) lifts DTRA Full from `72.2 ± 6.8%` to **`83.1 ± 5.1%` clean SR** while preserving **`45.0 ± 5.4%` severe OOD SR** (nearly 2× unregularized Frozen MLP's `23.6 ± 3.9%`). Broad retrieval remains $O(K)$, with a constant-cost selected decoding core (`9.55 ± 0.20 ms` GPU policy inference at $K=100$).
 
-### C. Post-v3 Embodied Continual Tracks (`DTRA v4.0 – v6.0`, Separate from v3.0 Preprint)
+### C. Post-v3 Embodied Continual Tracks (`DTRA v4.0 – v6.0`, Separate from Preprint)
 
 | Track / Benchmark | Arm / Mode | Key Metrics | Drift | Source |
 | :--- | :--- | :--- | :---: | :--- |
 | **v4.0 RoboCasa (`12` Tasks: `8` Atomic + `4` Composite, `0%` Replay)** | `Arm4_DTRA_v4_Hypertube` (vs `Flat_MLP`/`ER_5%` `0.00%`) | Atomic SR **`29.17%`** (`OpenMicrowave 100.0%`), Overall `19.44%`, RouteAcc **`100.0%`**, BWT `+0.00%`, `1.928 ms` *(Composite `0.00%` $\rightarrow$ System 2 motivation)* | `0.000000` | [`robocasa_continual_results_4arms.json`](dtra/experiments/robocasa_v4/robocasa_continual_results_4arms.json) |
 | **v5.0 + v6.0 CALVIN (`34` Tasks, `30` 5-Step Chains)** | `Pure Vision` (`Leak: ZERO`) | RouteAcc **`97.65%`**, Single SR `55.88%`, 5-Chain Len **`2.37`** *(vs `1.90`)*, 5/5 SR **`16.67%`** *(vs `6.67%`)*, Jerk **`+15.12%`**, `22` edges, `9.30 ms` | **`0.0000`** | [`calvin_v6_vision_34tasks.json`](dtra/outputs/calvin_v6/calvin_v6_vision_34tasks.json) |
 | **v5.0 + v6.0 CALVIN (`34` Tasks, `30` 5-Step Chains)** | `Oracle Anchor` *(Upper-Bound Ref)* | RouteAcc `97.65%`, Single SR `46.47%`, 5-Chain Len `2.53` *(vs `1.90`)*, 5/5 SR `16.67%` *(vs `10.00%`)*, Jerk `+15.24%`, `25` edges, `8.49 ms` | `0.0000` | [`calvin_v6_oracle_34tasks.json`](dtra/outputs/calvin_v6/calvin_v6_oracle_34tasks.json) |
+
+<details>
+<summary><strong>Expand Post-v3 Embodied Rollout Previews (CALVIN v6 Pure Vision & RoboCasa v4 Pure RGB-D)</strong></summary>
+
+| DTRA v6.0 — CALVIN Pure Vision 5-Step Chain (`System 1 + System 2`) | DTRA v4.0 — RoboCasa Pure RGB-D Kitchen (`Hypertube Transport`) |
+| :---: | :---: |
+| ![DTRA v6.0 CALVIN Pure Vision 5-Step Chain](dtra/assets/calvin_v6_pure_vision_chain_preview.gif) | ![DTRA v4.0 RoboCasa Pure RGB-D Rollout](dtra/assets/robocasa_v4_pure_rgbd_preview.gif) |
+| Canonical `5/5` sequence (`Chain #1`, `Mode: VISION`, `Leak: ZERO`, `Drift: 0.0000`, live System 2 recovery `CELL #108 -> #100`). ([Scope Notes](dtra/outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md)) | 12 tasks (`8` Atomic + `4` Composite, `0%` replay, no `object-state`, `Drift: 0.000000`). ([Results JSON](dtra/experiments/robocasa_v4/robocasa_continual_results_4arms.json)) |
+
+</details>
 
 ---
 

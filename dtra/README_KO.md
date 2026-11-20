@@ -2,8 +2,9 @@
 
 [English](README.md) | **한국어**
 
-[![프리프린트 (DTRA v3.0, 20쪽)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](paper_v2/DTRA_v3.0_Preprint.pdf)
-[![arXiv 원고 (20쪽)](https://img.shields.io/badge/arXiv%20Manuscript-dtra__preprint.pdf-9e1c20.svg)](paper_v2/dtra_preprint.pdf)
+[![프리프린트 (DTRA v3.0/v3.1, 23쪽)](https://img.shields.io/badge/Preprint-DTRA__v3.0__Preprint.pdf-b31b1b.svg)](paper_v2/DTRA_v3.0_Preprint.pdf)
+[![arXiv 원고 (23쪽)](https://img.shields.io/badge/arXiv%20Manuscript-dtra__preprint.pdf-9e1c20.svg)](paper_v2/dtra_preprint.pdf)
+[![arXiv 소스 번들](https://img.shields.io/badge/arXiv%20Bundle-.tar.gz-2ea44f.svg)](paper_v2/dtra_arxiv_submission.tar.gz)
 [![Zenodo v3.0.0 DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24297711.svg)](https://doi.org/10.5281/zenodo.24297711)
 [![Zenodo Concept DOI](https://img.shields.io/badge/Zenodo%20All%20Versions-10.5281%2Fzenodo.24218482-blue.svg)](https://doi.org/10.5281/zenodo.24218482)
 [![LaTeX 소스](https://img.shields.io/badge/LaTeX-dtra__preprint.tex-008080.svg)](paper_v2/dtra_preprint.tex)
@@ -24,14 +25,12 @@
 
 ---
 
-## Visual Rollout Demos
+## 핵심 실증 데모 및 7-Arm 스케일링 결과 (`LIBERO-100`, $K=100$)
 
-GitHub README에서 바로 재생되도록 `640×360` @ `12 fps`, `8 MB` 이하로 경량화한 순수 비전/RGB-D 롤아웃 프리뷰입니다.
-
-| DTRA v6.0 — CALVIN 순수 비전 5-Step 체인 (System 1 + System 2) | DTRA v4.0 — RoboCasa 순수 RGB-D 주방 조작 (Hypertube Transport) |
+| DTRA Elastic — 저장된 $K=100$ 정책 실제 폐루프 롤아웃 (`Seed 42`, 리플레이 `0%`) | 7-Arm 동일 인코더 스케일링 곡선 (`완전 N=3` + `DER++/L2P/O-LoRA`) |
 | :---: | :---: |
-| ![DTRA v6.0 CALVIN 순수 비전 5-Step 체인](assets/calvin_v6_pure_vision_chain_preview.gif) | ![DTRA v4.0 RoboCasa 순수 RGB-D 롤아웃](assets/robocasa_v4_pure_rgbd_preview.gif) |
-| **표준 5/5 연속 시퀀스 (`Chain #1`, `Mode: VISION`, `Leak: ZERO`, `Drift: 0.0000`):** `lift_red_block_table` $\rightarrow$ `place_in_drawer` $\rightarrow$ `close_drawer` $\rightarrow$ `move_slider_left` *(실시간 System 2 복구 `CELL #108 -> #100`)* $\rightarrow$ `turn_on_lightbulb`. 34태스크·30체인 전체: **라우팅 `97.65%`**, **평균 체인 길이 `2.37`** (기준 `1.90`), **5/5 완주율 `16.67%`** (기준 `6.67%`), **저크 감소 `+15.12%`**, **지연 `9.30 ms`**. ([범위/한계 문서](outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md) \| 원본 HUD MP4: `outputs/calvin_v6/dtra_v6_pure_vision_chain_hud.mp4`) | **주방 12태스크 (`8` 단일 + `4` 복합, `0%` 리플레이, `object-state` 미사용, `Drift: 0.000000`):** `Arm4_DTRA_v4_Hypertube`가 **단일(Atomic) SR `29.17%`** (`OpenMicrowave 100.0%`, `CloseDrawer 66.67%`, `OpenDrawer 33.33%`, `PickPlaceCounterToSink 33.33%`), **라우팅 `100.0%`**, **BWT `+0.00%`**, **지연 `1.928 ms`** 달성(`Flat_MLP`와 `ER_5%`는 `0.00%`로 붕괴). 복합 태스크 `0.00%` 병목이 `v5.0`/`v6.0` System 2 도입의 근거가 되었습니다. ([결과 JSON](experiments/robocasa_v4/robocasa_continual_results_4arms.json) \| 원본 HUD MP4: `experiments/robocasa_v4/robocasa_pure_rgbd_hud_rollout.mp4`) |
+| ![DTRA LIBERO-100 K=100 대표 롤아웃](assets/libero100_k100_hero_preview.gif) | ![LIBERO-100 7-Arm 스케일링 곡선](../outputs/figures/fig7_libero100_scaling_curves.png) |
+| **검증된 100% 성공 4클립 (`2.6 MB`, 12.5 fps):** `T09` (`libero_10` 전자레인지 — 후속 90개 학습 후에도 유지), **`T05` vs. `T87` (동일 지시어 쌍 — 같은 명령을 `#05`/`#87`로 분리하고 `Basis #04` 재사용)**, `T67` (거실). **`87.00 ± 0.86%`** ($n=5$, $N=3$) \| **12,000 롤아웃 무재학습 검증 `85.20 ± 0.35%`** (미공개 `init[5:20]`: **`84.80%`**). | 동일 동결 ResNet-18 조건에서 **DTRA Elastic (`87.00%`)**·**DTRA Rigid (`86.67%`)**는 100개 태스크를 **27개 공유 기저(`-73%`)**로 압축하며 **`99.68%` Dup-Lang 라우팅**을 유지해 **Frozen MLP (`70.33%`)**, **ER 5% (`39.47%`)**, **DER++ (`38.40%`)**, **L2P (`1.20%`)**, **O-LoRA (`1.00%`)**를 압도합니다. |
 
 ---
 
@@ -64,22 +63,23 @@ Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우
 
 ---
 
-## 2. 최종 벤치마크 결과 (`v3.0` 프리프린트 범위)
+## 2. 최종 벤치마크 결과 (`v3.0 / v3.1` 프리프린트 범위)
 
-### A. LIBERO-100 순차 확장 ($K=10 \to 100$, Seeds `42, 100, 2026`)
+### A. LIBERO-100 순차 확장 ($K=10 \to 100$, Seeds `42, 100, 2026` — 핵심 4암 완전 $N=3$ + 외부 공인 CL)
 
-![LIBERO-100 확장 곡선](../outputs/figures/fig7_libero100_scaling_curves.png)
-
-태스크 10개에서 100개까지 순차 학습했습니다. 비교군은 동일한 동결 인식 경로와 `LightweightTextEncoder`를 사용합니다. 각 마일스톤에서 시드당 5회 롤아웃을 평가했습니다. 전체 4개 방법 비교는 2개 시드(`42, 100`)이며, `Frozen MLP`와 `DTRA Elastic` 핵심 비교는 3개 시드(`42, 100, 2026`)입니다.
+태스크 10개에서 100개까지 순차 학습했습니다. 모든 비교군은 동일한 동결 인식 경로와 `LightweightTextEncoder`를 사용하며, **핵심 4개 암 전부가 3개 시드(`42, 100, 2026`, `N=3`)**를 완료했고 외부 공인 CL 베이스라인(`DER++`, `L2P`, `O-LoRA`, 시드 42)과 정면 비교했습니다.
 
 | 방법 | 최종 성공률 ($K=100$) | 망각률 | BWT | 라우팅 정확도 | 동일 지시어 라우팅 | 기저 수 | 활성 추론 지연 |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | `arm_frozen_mlp` ($N=3$) | `70.33 ± 1.18%` | `2.90 ± 1.05%` | `+0.20 ± 2.29%` | `81.94 ± 0.24%` | `41.76 ± 2.09%` | `100` | `6.46 ± 0.57 ms` |
-| `arm_er_5pct` ($N=2$) | `40.50 ± 0.30%` | `27.07 ± 4.04%` | `−20.71 ± 2.93%` | `1.00 ± 0.00%` | `0.00 ± 0.00%` | `1` | `5.34 ± 0.03 ms` |
-| `arm_dtra_rigid` ($N=2$) | `86.20 ± 0.00%` | `2.93 ± 0.91%` | `+0.10 ± 0.91%` | `99.86 ± 0.14%` | `99.53 ± 0.47%` | `27` | `9.36 ± 0.05 ms` |
+| `arm_er_5pct` ($N=3$) | `39.47 ± 1.48%` | `26.33 ± 3.46%` | `−20.00 ± 2.59%` | `---` | `---` | `1` | `4.93 ± 0.59 ms` |
+| `arm_dtra_rigid` ($N=3$) | `86.67 ± 0.66%` | `2.56 ± 0.91%` | `+0.67 ± 1.10%` | `99.91 ± 0.13%` | `99.68 ± 0.45%` | `27` | `8.70 ± 0.93 ms` |
 | **`arm_dtra_elastic` ($N=3$)** | **`87.00 ± 0.86%`** | **`2.69 ± 0.67%`** | **`+0.20 ± 0.72%`** | **`99.90 ± 0.13%`** | **`99.68 ± 0.45%`** | **`27`** | `9.55 ± 0.20 ms` |
+| `DER++` (5% 버퍼+증류, S42) | `38.40%` | `29.70%` | `−16.16%` | `---` | `---` | `1` | `5.49 ms` |
+| `L2P` (프롬프트 풀, S42) | `1.20%` | `51.72%` | `−51.72%` | `---` | `---` | `32` | `7.79 ms` |
+| `O-LoRA` (직교 LoRA, S42) | `1.00%` | `42.63%` | `−42.63%` | `---` | `---` | `100` | `7.05 ms` |
 
-* `arm_dtra_elastic`의 최종 시드별 성공률은 **Seed 42 `87.80%`**(`Dup-Lang 99.05%`, `BWT +0.61%`), **Seed 100 `87.40%`**, **Seed 2026 `85.80%`**이며 3-시드 평균은 **`87.00 ± 0.86%`**입니다(`arm_frozen_mlp` Seed 42는 `72.00%`, `Dup-Lang 38.92%`, `BWT +3.43%`). 시드 간 표준편차는 더 넓은 초기 상태 분포에 대한 신뢰구간이 아닙니다.
+* **무재학습 확장 초기상태 검증 (`n_eval=20`, 3시드 합계 12,000 롤아웃):** `arm_dtra_elastic`은 전체 `85.20 ± 0.35%` (`[84.3, 86.1]%` 95% Wilson CI), 미공개 `init[5:20]` 15개 초기상태 **`84.80 ± 0.36%`** (`[83.7, 85.8]%`)로 `arm_frozen_mlp` (`69.12%` 전체 / `68.82%` 미공개) 대비 **`+16.08%p`** (`Dup-Lang` **`+52.72%p`**: `89.06%` vs `36.33%`, 라우팅 `99.94%` vs `41.80%`) 우위를 유지합니다.
 
 ### B. LIBERO-Goal 5태스크 파일럿 (시드 42, 태스크별 평가 5회)
 
@@ -90,21 +90,22 @@ Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우
 | DTRA Rigid (`α=0`) | `88.0%` | `10.0%` | `−5.0%` | `100.0%` | `3696 MB` |
 | **DTRA v3.0 Elastic** | **`92.0%`** | `5.0%` | `0.0%` | **`100.0%`** | `3696 MB` |
 
-### C. 3D Meta-World 8태스크 절제 실험 (3개 시드 평균 ± 표준편차)
+### C. 3D Meta-World 8태스크 절제 · 인과 분해 · 외부 CL (3개 시드 평균 ± 표준편차)
 
 | 방법 | 정상 조건 성공률 | 망각률 | 정상 라우팅 | 심한 OOD 성공률 | OOD 라우팅 | CPU 활성 추론 ($K=1\to 8$) |
 | :--- | ---: | ---: | ---: | ---: | ---: | :--- |
 | ABK-VLA v1.1.3 (DoG Vision) | `82.8 ± 2.6%` | `0.0 ± 0.0%` | `99.7%` | `2.2 ± 1.0%` | `34.7%` | `0.27 → 0.83 ms` |
 | Frozen Slot MLP (멀티모달) | `85.6 ± 3.1%` | `0.0 ± 0.0%` | `100.0%` | `23.6 ± 3.9%` | `100.0%` | `0.21 → 0.20 ms` |
-| **DTRA Full (멀티모달)** | `72.2 ± 6.8%` | **`0.0 ± 0.0%`** | **`100.0%`** | **`51.4 ± 4.4%`** | **`100.0%`** | **`1.87 → 1.87 ms`** |
+| **DTRA Full (Feat-Reg)** | `72.2 ± 6.8%` | **`0.0 ± 0.0%`** | **`100.0%`** | **`51.4 ± 4.4%`** | **`100.0%`** | **`1.87 → 1.87 ms`** |
+| **DTRA Full (No Feat-Reg, `p=0, σ=0`)** | **`83.1 ± 5.1%`** | **`0.0 ± 0.0%`** | **`100.0%`** | **`45.0 ± 5.4%`** | **`100.0%`** | **`1.87 → 1.87 ms`** |
+| `DER++` / `L2P` / `O-LoRA` (3시드) | `73.3% / 16.7% / 7.2%` | `22.9% / 79.4% / 63.2%` | `---` | `13.6% / 17.5% / 9.4%` | `---` | `---` |
 
 ### 평가 범위와 자원 수치 해석
 
-- Frozen MLP와 DTRA Elastic은 시드 `42, 100, 2026`을 사용했습니다. ER 5%와 DTRA Rigid는 시드 `42, 100`을 사용했습니다. 각 태스크에서 시드당 동일한 첫 5개 초기 상태로 5회 평가했습니다.
-- 파라미터 동결과 임시 상태 초기화는 서로 다른 항목입니다. `post_snap_norm = 0.0000`은 상태 초기화를 기록하며, 파라미터의 전후 독립 비교를 대신하지 않습니다. LIBERO-100 성공률 기준 망각률은 `2.69 ± 0.67%`입니다. 이 수치에서 라우팅 변화와 롤아웃 변동의 기여는 분리되지 않았습니다.
-- `27`개 기저라는 수치는 태스크당 하나씩 두는 방식과 비교한 **기저 개수** 감소입니다. 공통 동결 백본을 제외한 정책 파라미터 저장 공간은 DTRA `183.14 MB`, Frozen MLP `151.67 MB`였습니다. $K=100$을 넘어서는 점근적 메모리 증가율이나 손익분기 태스크 수는 입증하지 않았습니다.
-- Meta-World에서 DTRA Full은 멀티모달 Frozen MLP보다 정상 조건 성공률이 낮고(`72.2%` 대 `85.6%`), 심한 OOD에서 성공률이 높았습니다(`51.4%` 대 `23.6%`). 이는 관측된 성능 절충이며 인과적 설명이 입증된 것은 아닙니다.
-- LIBERO의 `9.55 ± 0.20 ms`는 정책 추론 측정입니다. 넓은 후보 검색은 여전히 $O(K)$이며, 선택된 후보의 디코딩 코어가 상수 비용입니다. 따라서 이를 전체 로봇 제어 루프의 종단 간 지연이나 $O(1)$ 전체 라우팅으로 해석하면 안 됩니다.
+- LIBERO-100 핵심 4개 암 전부가 3개 시드(`42, 100, 2026`, `N=3`)를 완료했으며, 최종 일반화는 `n_eval=20` (`12,000` 롤아웃, 미공개 `init[5:20]` 15개 초기상태 + 95% Wilson 신뢰구간)으로 검증했습니다.
+- 파라미터 동결($\nabla_\theta=0$), 경험적 성공률 망각률(`2.69 ± 0.67%`), 임시 상태 초기화(`post_snap_norm = 0.0000`)는 별도로 보고합니다.
+- Meta-World 3-Seed 인과 분해(`ablate_dtra_v31_final.py`)를 통해 Conv4 특징 노이즈 정규화(`p=0.30, σ=0.05`)를 끄면 정상 성공률이 `72.2%` $\to$ **`83.1 ± 5.1%`**로 올라가면서 OOD **`45.0 ± 5.4%`**를 유지함을 규명했습니다.
+- `27`개 기저(`-73%`)는 기저 개수 기준 감소이며(동결 백본 제외 정책 파라미터: DTRA `183.14 MB` vs Frozen MLP `151.67 MB`), 넓은 후보 검색은 $O(K)$, 선택 후보 디코딩 코어는 $O(1)$ (`9.55 ± 0.20 ms` GPU 추론)입니다.
 
 ---
 
@@ -132,6 +133,16 @@ Meta-World 8태스크에서 LIBERO의 순차 100태스크로 확장하면 라우
 | `Oracle Anchor` *(상한 비교군)* | `97.65%` | `46.47%` | `2.53` *(vs `1.90`)* | `16.67%` *(vs `10.00%`)* | `+15.24%` (`0.0684` vs `0.0807`) | `25` | `8.49 ms` | `0.0000` |
 
 * 전체 실험 범위·선행조건 규칙 및 한계(순수 비전 전체 5/5 완주율 `16.67%` vs 대표 `Chain #1` HUD 시연)는 [`outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md`](outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md)를 참고하세요.
+
+<details>
+<summary><strong>v3 이후 체화 확장 트랙 롤아웃 프리뷰 펼치기 (CALVIN v6 순수 비전 & RoboCasa v4 순수 RGB-D)</strong></summary>
+
+| DTRA v6.0 — CALVIN 순수 비전 5-Step 체인 (`System 1 + System 2`) | DTRA v4.0 — RoboCasa 순수 RGB-D 주방 조작 (`Hypertube Transport`) |
+| :---: | :---: |
+| ![DTRA v6.0 CALVIN 순수 비전 5-Step 체인](assets/calvin_v6_pure_vision_chain_preview.gif) | ![DTRA v4.0 RoboCasa 순수 RGB-D 롤아웃](assets/robocasa_v4_pure_rgbd_preview.gif) |
+| 표준 `5/5` 연속 시퀀스 (`Chain #1`, `Mode: VISION`, `Leak: ZERO`, `Drift: 0.0000`). ([범위/한계 문서](outputs/calvin_v6/BENCHMARK_SCOPE_AND_LIMITATIONS.md)) | 주방 12태스크(`8` 단일 + `4` 복합, `0%` 리플레이, `Drift: 0.000000`). ([결과 JSON](experiments/robocasa_v4/robocasa_continual_results_4arms.json)) |
+
+</details>
 
 ---
 
