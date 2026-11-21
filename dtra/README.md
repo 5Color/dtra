@@ -14,7 +14,7 @@
 
 > *"If a mind must erase yesterday to learn today, it is not intelligence—it is merely a calculator."* — Seungjoon Son
 
-Research materials, 23-page preprint manuscripts, and continual-learning benchmarks for **DTRA** (*Dynamic Topology Ring Architecture*, corresponding to [`5Color/dtra`](https://github.com/5Color/dtra)), a geometry-first, replay-free, and Task-ID-free continual visuomotor control framework.
+Research materials, 23-page preprint manuscripts, and continual-learning benchmarks for **DTRA** (*Dynamic Topology Ring Architecture*, corresponding to [`5Color/dtra`](https://github.com/5Color/dtra)), a geometry-first, Task-ID-free continual visuomotor control framework without raw-demonstration replay (retaining lightweight $\le 96$-vector key-validation exemplars/task during registration).
 
 > **Repository & Scope Separation:**
 > - **Published Preprint Core (`DTRA v3.0`):** Single-ring `Region` architecture (System 1) verified on 3-seed 3D Meta-World ($K=8$), LIBERO-Goal ($K=5$), and 3-seed 7-DoF LIBERO-100 ($K=100$).
@@ -30,7 +30,7 @@ Research materials, 23-page preprint manuscripts, and continual-learning benchma
 | DTRA Elastic — Live Closed-Loop Rollouts (`Seed 42`, $K=100$ Frozen Policy) | 7-Arm Strict-Parity Scaling Curves (`Full N=3` + `DER++/L2P/O-LoRA`) |
 | :---: | :---: |
 | ![DTRA LIBERO-100 K=100 Hero Rollout](assets/libero100_k100_hero_preview.gif) | ![LIBERO-100 7-Arm Scaling Curves](../outputs/figures/fig7_libero100_scaling_curves.png) |
-| **4 Verified 100%-Success Clips (`2.6 MB`, 12.5 fps):** `T09` (`libero_10` Microwave, retained after 90 more tasks), **`T05` vs. `T87` (`Dup-Lang` identical-prompt pair cleanly separated to `#05`/`#87` while reusing `Basis #04`)**, and `T67` (Living Room). **`87.00 ± 0.86%`** ($n=5$, $N=3$) \| **`85.20 ± 0.35%`** across **12,000 zero-retrain rollouts** ($n=20$, unseen `init[5:20]`: **`84.80%`**). | Across $K=10 \to 100$ under identical frozen ResNet-18 parity, **DTRA Elastic (`87.00%`)** & **DTRA Rigid (`86.67%`)** compress 100 tasks into **27 shared bases (`-73%`)** with **`99.68%` Dup-Lang routing**, decisively outperforming **Frozen MLP (`70.33%`)**, **ER 5% (`39.47%`)**, **DER++ (`38.40%`)**, **L2P (`1.20%`)**, and **O-LoRA (`1.00%`)**. |
+| **4 Verified 100%-Success Clips (`2.6 MB`, 12.5 fps):** `T09` (`libero_10` Microwave, retained after 90 more tasks), **`T05` vs. `T87` (`Dup-Lang` identical-prompt pair cleanly separated to `#05`/`#87` while reusing `Basis #04`)**, and `T67` (Living Room). **`87.00 ± 1.06%`** ($n=5$, $N=3$, `ddof=1`) \| **`85.20 ± 0.43%`** across **12,000 zero-retrain rollouts** ($n=20$, unseen `init[5:20]`: **`84.80 ± 0.44%`**). | Across $K=10 \to 100$ under identical frozen ResNet-18 parity, **DTRA Elastic (`87.00%`)** & **DTRA Rigid (`86.67%`)** compress 100 tasks into **27 shared bases (`-73%` basis slots / `-5.33%` total params)** with **`99.68%` Dup-Lang routing**, decisively outperforming **Frozen MLP (`70.33%`)**, **ER 5% (`39.47%`)**, **DER++ (`38.40%`)**, **L2P (`1.20%`)**, and **O-LoRA (`1.00%`)**. |
 
 ---
 
@@ -42,10 +42,10 @@ Rather than scaling a single monolithic parameter matrix, DTRA builds sensorimot
 
 | Stage | Version / Work | Key Mechanism & Hierarchy Role | Benchmark & Verified Milestone |
 | :--- | :--- | :--- | :--- |
-| **Stage 0** | **ARIN** *(DYN-39–65 empirical; DYN-66 spec)* | Bounded Cell experience sharing (`+34.18%p`) & independent audit protocol; isolated `Read Preservation` (`DYN-63: 99.57%`) vs. `Next WRITE` interference (`DYN-65`) | Established `Cell -> Coalition -> Region -> Organ` emergent taxonomy |
+| **Stage 0** | **ARIN** *(DYN-39–65 empirical; DYN-66 spec)* | Bounded Cell experience sharing (`+34.18 pp`) & independent audit protocol; isolated `Read Preservation` (`DYN-63: 99.57%`) vs. `Next WRITE` interference (`DYN-65`) | Established `Cell -> Coalition -> Region -> Organ` emergent taxonomy |
 | **Stage 1** | **Drawing-VLA** *(v1.0.0 DOI: `24122154`)* | Closed-loop ACT (`K=16`, `q=6`, `w_up=10.0`) + Catmull-Rom brush rendering | `HandVsAI` (`324` human demos): `99.9/100` S-Tier, `1.000` F1, `+20px` recovery |
-| **Stage 2** | **ABK-VLA** *(v1.1.1 `24208545` / v1.1.3 `24212130`)* | $C^2$ clamped cubic B-Spline compression ($N_k=6 \rightarrow H=16$) & pure cosine routing (`Select-then-Blend`) | 2D ($K=4$): **`99.98%` conf**, **`1.66%` FR** (`0.00%` Hard Argmax/Oracle), `85.59%` F1; 3D Meta-World ($K=4$): **`91.7%` SR**, **`0.00%` FR**, **`100.0%` RouteAcc** |
-| **Stage 3** | **DTRA v3.0** *(`v3.0.0` Preprint Core)* | $\mathbb{S}^{63}$ hyperspherical isolation + No-Encroachment + Top-$M$ CMC + `SharedBasisBank` + Two-Timescale Snap-Back (**Single-Ring `Region`, System 1**) | LIBERO-100 ($K=100$, 3-seed): **`87.00 ± 0.86%` SR** (Seed 42 `87.80%`), **`99.90%` RouteAcc**, **`99.68%` Dup-Lang**, **`27` bases** (`73%` reduction), **`0.0` drift** |
+| **Stage 2** | **ABK-VLA** *(v1.1.1 `24208545` / v1.1.3 `24212130`)* | $C^2$ clamped cubic B-Spline compression ($N_{\text{cp}}=6 \rightarrow H=16$) & pure cosine routing (`Select-then-Blend`) | 2D ($K=4$): **`99.98%` conf**, **`1.66%` FR** (`0.00%` Hard Argmax/Oracle), `85.59%` F1; 3D Meta-World ($K=4$): **`91.7%` SR**, **`0.00%` FR**, **`100.0%` RouteAcc** |
+| **Stage 3** | **DTRA v3.0/v3.1** *(Preprint Core)* | $\mathbb{S}^{63}$ hyperspherical isolation + No-Encroachment + conditional Top-$M$ CMC + `SharedBasisBank` + episode-boundary state reset (**Single-Ring `Region`, System 1**) | LIBERO-100 ($K=100$, 3-seed `ddof=1`): **`87.00 ± 1.06%` SR** (Seed 42 `87.80%`), **`99.90%` RouteAcc**, **`99.68%` Dup-Lang**, **`27` bases** (`73%` slot / `5.33%` total reduction), **`0.0` drift** |
 | **Stage 4** | **DTRA v4.0** *(Kitchen Extension)* | Pure RGB-D stereo 3D `Hypertube Transport` & peak-margin gating | RoboCasa 12 tasks (`0%` replay): **`29.17%` Atomic SR**, **`100.0%` RouteAcc**; `0.00%` Composite diagnosed need for System 2 |
 | **Stage 5** | **DTRA v5.0** *(CALVIN System 1 Backbone)* | 34-task System 1 backbone + `CalvinCameraVisionAnchorEstimatorV5` 3D $Z$-gating & myelinated transition graph extraction | Physically separates upper slider ($Z\in[0.52,0.65]\text{ m}$), tabletop blocks ($[0.43,0.50]\text{ m}$), and drawer ($[0.31,0.44]\text{ m}$) |
 | **Stage 6** | **DTRA v6.0** *(CALVIN System 1+2)* | v5 System 1 + $C^2$ Geodesic Bridge (`Open String <-> Closed Ring`) + `OrganSystem2Planner` (noun-cluster/polarity filter + refractory backtracking) | CALVIN 34 tasks / 30 chains (Pure Vision): **`97.65%` RouteAcc**, **`2.37` mean chain len**, **`16.67%` 5/5 SR**, **`+15.12%` jerk reduction**, **`9.30 ms`**, **`0.0000` drift**, live **`5/5`** chain completion |
@@ -56,53 +56,53 @@ Rather than scaling a single monolithic parameter matrix, DTRA builds sensorimot
 
 Scaling continual visuomotor control from $K=8$ Meta-World tasks to $K=100$ sequential 7-DoF LIBERO manipulation tasks (`libero_10 + libero_90`, including 30 tasks across 13 identical-instruction groups) exposes **Voronoi encroachment** and **$O(K)$ action-head parameter growth**. Under strict matched-encoder parity (`Frozen ResNet-18` DualCam + proprioception + `LightweightTextEncoder`), **DTRA v3.0** resolves both via four mechanisms:
 
-1. **No-Encroachment Margin Refinement:** Caches prior task raw query anchors $\mu_j$ and self-similarity floors $s_{jj} = \cos(\mu_j, \mathbf{k}_j)$, projecting out repulsive key updates that would steal routing territory from prior Voronoi cells $0 \dots i-1$ on $\mathbb{S}^{63}$.
-2. **Two-Stage Top-$M$ Common-Mode Cancellation (CMC):** Stage 1 retrieves Top-$M$ ($M=5$) candidates via $O(K)$ multimodal cosine scan; Stage 2 subtracts the candidate set's shared language/scene mean to isolate fine DualCam spatial grids ($4 \times 4 / 2 \times 2$ + DoG) and proprioceptive residuals, lifting $K=100$ `Dup-Lang` routing accuracy across 3 seeds from **41.76%** to **99.68 ± 0.45%** (Seed 42: `38.92%` $\rightarrow$ `99.05%`).
-3. **SharedBasisBank + Zero AdamW Silent Drift:** Factorizes $H=16$ action chunks via clamped $C^2$ cubic B-Spline control points (`num_cp=8` for 7-DoF LIBERO-100 with `num_knots=6` internal basis width; `N_k=6` for 2D/Meta-World) into a dynamically shared library of frozen primitive bases, compressing $K=100$ tasks into **27 bases** (**73% basis-count reduction**) while enforcing `requires_grad=False` and optimizer exclusion ($L_\infty\text{ drift} = 0.0$).
-4. **Two-Timescale Snap-Back:** Separates intra-episode chunk reset (`chunk_snap_back()`, $\Delta \mathbf{z}_i \leftarrow \mathbf{0}$) from episode-end refractory reset (`episode_snap_back()`, `post_snap_norm = 0.0000`) while retaining progress traces to prevent long-horizon perseveration.
+1. **No-Encroachment Margin Refinement:** Caches prior task raw query anchors $\mu_j$, self-similarity floors $s_{jj} = \cos(\mu_j, \mathbf{k}_j)$, and lightweight key-validation exemplars ($\le 96$ normalized vectors/task; no raw image/action replay), penalizing key updates that would encroach on prior Voronoi cells $0 \dots i-1$ on $\mathbb{S}^{63}$.
+2. **Conditional Two-Stage Top-$M$ 3-Modality CMC:** Stage 1 retrieves Top-$M$ ($M=5$) candidates via $O(K)$ multimodal cosine scan (with temporal inertia and Hebbian myelination bias); when language collisions or narrow margins occur, Stage 2 subtracts the candidate-subset mean to isolate fine DualCam spatial grids ($4 \times 4 + 2 \times 2$ + DoG) and z-scored proprioceptive residuals, lifting $K=100$ `Dup-Lang` routing accuracy across 3 seeds (`ddof=1`) from **41.76 ± 2.56%** to **99.68 ± 0.55%** (Seed 42: `38.92%` $\rightarrow$ `99.05%`).
+3. **SharedBasisBank + Zero AdamW Silent Drift:** Factorizes $H=16$ action chunks via clamped $C^2$ cubic B-Spline control points ($N_{\text{cp}}=8$ for 7-DoF LIBERO-100; $N_{\text{cp}}=6$ for 2D/Meta-World) into a shared library of frozen primitive bases matched via normalized motion signatures, compressing $K=100$ tasks into **27 bases** (**73% basis-slot reduction / 5.33% total policy-parameter reduction**, as per-task adapters occupy `179.33 MB` = `97.92%` of total policy memory) while enforcing `requires_grad=False` and `AdamW` exclusion ($L_\infty\text{ drift} = 0.0$).
+4. **Episode-Boundary State Reset:** On Meta-World, active per-chunk `snap_back()` resets ephemeral ring deformation; on LIBERO-100, `episode_snap_back()` clears routing inertia and write-only diagnostic buffers (`episodic_trace`, `delta_z_state` $\to 0.0000$, so `chunk_snap_back()` does not alter LIBERO-100 forward control outputs).
 
 ---
 
 ## 2. Finalized Benchmark Results (`v3.0 / v3.1` Preprint Scope Only)
 
-### A. LIBERO-100 ($K=10 \to 100$) Multi-Seed & External CL Continual Scaling (Seeds `42, 100, 2026`, Strict Encoder Parity)
+### A. LIBERO-100 ($K=10 \to 100$) Multi-Seed & External CL Continual Scaling (Seeds `42, 100, 2026`, Sample Std `ddof=1`)
 
-All comparison arms share identical frozen perception and `LightweightTextEncoder`, streaming tasks with DTRA Elastic peak VRAM of `2,713 ± 77 MB` (`n_eval = 5` rollouts per milestone checkpoint; **all four core arms cover complete `N=3` Seeds `{42, 100, 2026}`**, alongside matched-encoder external baselines `DER++`, `L2P`, and `O-LoRA` on Seed `42`):
+All comparison arms share identical frozen perception (`ResNet-18 L1–L3`) and `LightweightTextEncoder`, streaming tasks with DTRA Elastic peak VRAM of `2,713 ± 94 MB` (`n_eval = 5` rollouts per milestone checkpoint; **all four core arms cover complete `N=3` Seeds `{42, 100, 2026}`**, alongside matched-encoder external baselines `DER++`, `L2P`, and `O-LoRA` on Seed `42`):
 
 | Method (Strict Parity) | $K=10$ SR | $K=30$ SR | $K=50$ SR | $K=70$ SR | **$K=100$ SR $\uparrow$** | FR $\downarrow$ | BWT $\uparrow$ | RouteAcc $\uparrow$ | Dup-Lang $\uparrow$ | Bases | Active Latency |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| `arm_frozen_mlp` ($N=3$) | `82.00±4.32%` | `85.11±2.79%` | `79.07±0.50%` | `76.48±0.97%` | `70.33 ± 1.18%` | `2.90±1.05%` | `+0.20±2.29%` | `81.94±0.24%` | `41.76 ± 2.09%` | `100` | `6.46±0.57 ms` |
-| `arm_er_5pct` ($N=3$) | `58.67±4.99%` | `56.67±6.69%` | `52.00±4.42%` | `47.43±4.07%` | `39.47 ± 1.48%` | `26.33±3.46%` | `-20.00±2.59%` | `---` | `---` | `1` | `4.93±0.59 ms` |
-| `arm_dtra_rigid` ($N=3$) | `83.33±1.89%` | `90.44±0.83%` | `90.67±0.94%` | `87.52±0.71%` | `86.67 ± 0.66%` | `2.56±0.91%` | `+0.67±1.10%` | `99.91±0.13%` | `99.68 ± 0.45%` | `27` | `8.70±0.93 ms` |
-| **`arm_dtra_elastic` ($N=3$, Full)** | `80.00±1.63%` | **`91.11±1.37%`** | **`90.67±1.00%`** | **`87.71±0.70%`** | **`87.00 ± 0.86%`** | **`2.69±0.67%`** | **`+0.20±0.72%`** | **`99.90±0.13%`** | **`99.68 ± 0.45%`** | **`27`** | `9.55±0.20 ms` |
+| `arm_frozen_mlp` ($N=3$) | `82.00±5.29%` | `85.11±3.42%` | `79.07±0.61%` | `76.48±1.19%` | `70.33 ± 1.45%` | `2.90±1.28%` | `+0.20±2.81%` | `81.94±0.29%` | `41.76 ± 2.56%` | `100` | `6.46±0.70 ms` |
+| `arm_er_5pct` ($N=3$) | `58.67±6.11%` | `56.67±8.19%` | `52.00±5.41%` | `47.43±4.98%` | `39.47 ± 1.81%` | `26.33±4.24%` | `-20.00±3.17%` | `---` | `---` | `1` | **`4.93±0.72 ms`** |
+| `arm_dtra_rigid` ($N=3$) | **`83.33±2.31%`** | `90.44±1.02%` | **`90.67±1.15%`** | `87.52±0.87%` | `86.67 ± 0.81%` | **`2.56±1.11%`** | **`+0.67±1.35%`** | **`99.91±0.16%`** | **`99.68 ± 0.55%`** | **`27`** | `8.70±1.14 ms` |
+| **`arm_dtra_elastic` ($N=3$, Full)** | `80.00±2.00%` | **`91.11±1.68%`** | **`90.67±1.22%`** | **`87.71±0.86%`** | **`87.00 ± 1.06%`** | `2.69±0.82%` | `+0.20±0.88%` | `99.90±0.16%` | **`99.68 ± 0.55%`** | **`27`** | `9.55±0.24 ms` |
 | `DER++` (5% Buf. + Distill., Seed 42) | `68.00%` | `60.00%` | `60.40%` | `51.71%` | `38.40%` | `29.70%` | `-16.16%` | `---` | `---` | `1` | `5.49 ms` |
 | `L2P` (Prompt Pool, Seed 42) | `8.00%` | `2.00%` | `1.60%` | `1.14%` | `1.20%` | `51.72%` | `-51.72%` | `---` | `---` | `32` | `7.79 ms` |
 | `O-LoRA` (Ortho Subspace, Seed 42) | `2.00%` | `1.33%` | `2.00%` | `1.14%` | `1.00%` | `42.63%` | `-42.63%` | `---` | `---` | `100` | `7.05 ms` |
 
-* **Zero-Retrain Extended Initial-State Verification (`n_eval=20`, 12,000 Total Rollouts across Seeds `42, 100, 2026`):** `arm_dtra_elastic` achieves **`85.20 ± 0.35%`** overall (`[84.3, 86.1]%` 95% Wilson CI) and **`84.80 ± 0.36%`** on 15 unseen held-out initial states `init[5:20]` (`[83.7, 85.8]%`), vs. `arm_frozen_mlp` at `69.12 ± 0.74%` overall / `68.82 ± 0.74%` held-out (`+16.08%p` overall; **`+52.72%p`** on `Dup-Lang`: `89.06%` vs. `36.33%` SR; `99.94%` vs. `41.80%` routing).
+* **Zero-Retrain Extended Initial-State Verification (`n_eval=20`, 12,000 Total Rollouts across Seeds `42, 100, 2026`, `ddof=1`):** `arm_dtra_elastic` achieves **`85.20 ± 0.43%`** overall (`[84.3, 86.1]%` descriptive pooled 95% Wilson CI) and **`84.80 ± 0.44%`** on 15 unseen held-out initial states `init[5:20]` (`[83.7, 85.8]%`), vs. `arm_frozen_mlp` at `69.12 ± 0.90%` overall / `68.82 ± 0.91%` held-out (`+16.08 pp` overall; **`+52.72 pp`** on `Dup-Lang`: `89.06%` vs. `36.33%` SR; `99.94%` vs. `41.80%` routing).
 
 ### B. LIBERO-Goal 5-Task Pilot (Seed 42, $n_{\text{eval}}=5$)
 
 | Method (4 Parity Arms) | Mean SR $\uparrow$ | FR $\downarrow$ | BWT $\uparrow$ | Route $\uparrow$ | Peak VRAM |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| Frozen Slot MLP (Baseline) | `100.0%` | `0.0%` | `+15.0%` | `100.0%` | `3695 MB` |
+| Frozen Slot MLP (Baseline) | **`100.0%`** | **`0.0%`** | **`+15.0%`** | **`100.0%`** | `3695 MB` |
 | Experience Replay (5%) | `88.0%` | `10.0%` | `-5.0%` | --- | `3298 MB` |
-| DTRA Rigid ($\alpha=0$) | `88.0%` | `10.0%` | `-5.0%` | `100.0%` | `3696 MB` |
-| **DTRA v3.0 Elastic (Ours)** | `92.0%` | `5.0%` | `+0.0%` | `100.0%` | `3696 MB` |
+| DTRA Rigid ($\alpha=0$) | `88.0%` | `10.0%` | `-5.0%` | **`100.0%`** | `3696 MB` |
+| **DTRA v3.0 Elastic (Ours)** | `92.0%` | `5.0%` | `+0.0%` | **`100.0%`** | `3696 MB` |
 
-### C. 3D Meta-World 8-Task Continual Ablation, Causal Decomposition & External CL (3-Seed Mean ± Std)
+### C. 3D Meta-World 8-Task Continual Ablation, Causal Decomposition & External CL (3-Seed Mean ± Sample Std `ddof=1`)
 
 | Method | Clean SR $\uparrow$ | FR $\downarrow$ | Clean Route $\uparrow$ | Severe OOD SR $\uparrow$ | OOD Route $\uparrow$ | CPU Active ($K=1\to 8$) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| ABK-VLA v1.1.3 (DoG Vision) | `82.8 ± 2.6%` | `0.0 ± 0.0%` | `99.7%` | `2.2 ± 1.0%` | `34.7%` | `0.27 -> 0.83 ms` |
-| Frozen Slot MLP (Multimodal) | `85.6 ± 3.1%` | `0.0 ± 0.0%` | `100.0%` | `23.6 ± 3.9%` | `100.0%` | `0.21 -> 0.20 ms` |
-| **DTRA Full (Feat-Reg, Ours)** | `72.2 ± 6.8%` | **`0.0 ± 0.0%`** | **`100.0%`** | **`51.4 ± 4.4%`** | **`100.0%`** | **`1.87 -> 1.87 ms`** |
-| **DTRA Full (No Feat-Reg, `p=0, σ=0`)** | **`83.1 ± 5.1%`** | **`0.0 ± 0.0%`** | **`100.0%`** | **`45.0 ± 5.4%`** | **`100.0%`** | **`1.87 -> 1.87 ms`** |
+| ABK-VLA v1.1.3 (DoG Vision) | `82.8 ± 3.2%` | **`0.0 ± 0.0%`** | `99.7%` | `2.2 ± 1.3%` | `34.7%` | `0.27 -> 0.83 ms` |
+| Frozen Slot MLP (Multimodal) | **`85.6 ± 3.8%`** | **`0.0 ± 0.0%`** | **`100.0%`** | `23.6 ± 4.8%` | **`100.0%`** | **`0.21 -> 0.20 ms`** |
+| **DTRA Full (Feat-Reg, Ours)** | `72.2 ± 8.3%` | **`0.0 ± 0.0%`** | **`100.0%`** | **`51.4 ± 5.4%`** | **`100.0%`** | `1.87 -> 1.87 ms` |
+| **DTRA Full (No Feat-Reg, `p=0, σ=0`)** | `83.1 ± 6.3%` | **`0.0 ± 0.0%`** | **`100.0%`** | `45.0 ± 6.6%` | **`100.0%`** | `1.87 -> 1.87 ms` |
 | DER++ / L2P / O-LoRA (3-Seed) | `73.3% / 16.7% / 7.2%` | `22.9% / 79.4% / 63.2%` | `---` | `13.6% / 17.5% / 9.4%` | `---` | `---` |
 
 ### Evaluation scope and resource interpretation
 
-All four core LIBERO-100 arms cover Seeds `42, 100, 2026` (`N=3`), with final $K=100$ generalization verified across `n_eval=20` initial states (`12,000` rollouts, including `15` unseen held-out states `init[5:20]` with 95% Wilson CIs). Parameter freezing ($\nabla_\theta=0$), empirical success-rate forgetting (`2.69 ± 0.67%`), and temporary state reset (`post_snap_norm = 0.0000`) are tracked separately. On Meta-World, our three-seed causal ablation isolates Conv4 feature-noise regularization (`p=0.30, σ=0.05`) as the clean-versus-OOD lever: disabling it lifts DTRA Full to `83.1 ± 5.1%` clean SR while retaining `45.0 ± 5.4%` severe OOD SR (nearly 2× unregularized Frozen MLP). The **73% reduction** refers to motor basis count (`100 -> 27`; recorded policy parameters occupy `183.14 MB` vs. `151.67 MB` for Frozen MLP excluding the shared backbone), and broad retrieval remains $O(K)$ with an $O(1)$ active decoding core (`9.55 ± 0.20 ms` GPU inference at $K=100$).
+All four core LIBERO-100 arms cover Seeds `42, 100, 2026` (`N=3`, unified sample std `ddof=1`), with final $K=100$ generalization verified across `n_eval=20` initial states (`12,000` rollouts, including `15` unseen held-out states `init[5:20]` with descriptive pooled 95% Wilson CIs). Parameter freezing ($\nabla_\theta=0$), empirical success-rate forgetting (`2.69 ± 0.82%`), and temporary state reset (`post_snap_norm = 0.0000`) are tracked separately. On Meta-World, our three-seed causal ablation isolates Conv4 feature-noise regularization (`p=0.30, σ=0.05`) as the clean-versus-OOD lever: disabling it lifts DTRA Full to `83.1 ± 6.3%` clean SR (`+10.8 pp` unrounded) while retaining `45.0 ± 6.6%` severe OOD SR (vs. unregularized Frozen MLP `23.6 ± 4.8%`). The **73% reduction** refers to motor basis slot count (`100 -> 27`, `3.81 MB`), yielding a **5.33% total policy-parameter reduction** (`193.45 -> 183.14 MB` vs. `151.67 MB` for Frozen MLP and `1.70–2.09 MB` for monolithic baselines, excluding the shared backbone and non-parameter buffers), and broad retrieval remains $O(K)$ with an $O(1)$ active decoding core (`9.55 ± 0.24 ms` GPU inference at $K=100$).
 
 ---
 
@@ -150,9 +150,9 @@ Evaluated across 12 kitchen manipulation tasks (`8` Atomic + `4` Composite) with
 ```text
 dtra/
 ├── assets/                              # Lightweight README preview GIFs (< 8 MB, 640x360 @ 12 fps)
-├── PAPER_20P_OUTLINE.md                 # Exact 20-page NeurIPS/CoRL outline & v3.0/v4.0 boundary ledger
+├── PAPER_20P_OUTLINE.md                 # Initial 20-page NeurIPS/CoRL outline & v3.0/v4.0 boundary ledger
 ├── core/
-│   ├── bspline_core.py                  # C^2 clamped cubic B-Spline trajectory decoder (N_k=6 [2D/Meta-World] or num_cp=8 [7-DoF LIBERO] -> H=16)
+│   ├── bspline_core.py                  # C^2 clamped cubic B-Spline trajectory decoder (N_cp=6 [2D/Meta-World] or N_cp=8 [7-DoF LIBERO] -> H=16)
 │   ├── hypertube_transport.py           # [v4.0+ Track] Object-centric hypertube coordinate transport
 │   ├── sim_dtra_tube_dynamics.py        # Hypertube ring dynamics, elastic attraction & snap-back kernel
 │   └── topological_bridge.py            # C^2 geodesic bridge & myelinated transition graph core
@@ -170,10 +170,11 @@ dtra/
 ├── visualization/
 │   └── visualize_dtra_xai.py            # White-box routing & hypertube XAI diagnostics
 └── paper_v2/
-    ├── DTRA_v3.0_Preprint.pdf           # GitHub/personal build (DTRA v3.0, 20 pages, >=8.5pt tables)
-    ├── dtra_preprint.pdf                # Clean arXiv build (pure ASCII TeX + pdfLaTeX safe, 20 pages)
-    ├── dtra_v3.0_preprint.tex           # XeTeX 20-page LaTeX source
-    ├── dtra_preprint.tex                # Pure ASCII arXiv 20-page LaTeX source
+    ├── DTRA_v3.0_Preprint.pdf           # GitHub/versioned build (23 pages, 0 warnings/overfull)
+    ├── dtra_preprint.pdf                # Clean arXiv build (pure ASCII TeX, 23 pages, 0 warnings/overfull)
+    ├── dtra_arxiv_submission.tar.gz     # Standalone verified arXiv source bundle
+    ├── dtra_v3.0_preprint.tex           # 23-page versioned LaTeX source
+    ├── dtra_preprint.tex                # Pure ASCII arXiv 23-page LaTeX source
     └── DTRA_v2_Spec.md                  # Technical specification archive
 ```
 
@@ -199,9 +200,9 @@ python -m dtra.experiments.libero.benchmark_dtra_libero \
   --out-json outputs/libero/benchmark_dtra_libero_10_libero_90_k100.json
 
 # 3D Meta-World 3-Seed Scientific Ablation (requires metaworld/mujoco)
-python -m dtra.experiments.metaworld.ablate_dtra_scientific --seeds 42 100 2026 --epochs 80
+python -m dtra.experiments.metaworld.ablate_dtra_scientific --seeds 42 100 2026 --epochs 55
 
-# Rebuild 3-Seed Tables, Figures & 20-Page Manuscripts
+# Rebuild 3-Seed Tables, Figures & 23-Page Manuscripts
 python scripts/summarize_libero_multiseed.py
 python scripts/generate_libero100_figures.py
 python scripts/build_dtra_v3_paper.py
@@ -220,7 +221,7 @@ python scripts/build_dtra_v3_paper.py
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.24297711},
   url          = {https://doi.org/10.5281/zenodo.24297711},
-  note         = {v3.0.0; Concept DOI: 10.5281/zenodo.24218482; prior v2.1.0: 10.5281/zenodo.24218483}
+  note         = {v3.1.0 23-page Preprint (v3.0.0 Zenodo archive); Concept DOI: 10.5281/zenodo.24218482; prior v2.1.0: 10.5281/zenodo.24218483; Repository: \url{https://github.com/5Color/dtra}}
 }
 
 @misc{son2026abkvla,

@@ -8,12 +8,12 @@ the 20-page NeurIPS/CoRL 10pt single-column DTRA v3.0 manuscript.
 from __future__ import annotations
 
 METHOD_PARADIGM_TABLE = r"""
-\begin{table}[t]
+\begin{table}[ht!]
   \centering
   \caption{Structural comparison of continual visuomotor control paradigms. DTRA~v3.0 combines Task-ID-free inference, zero raw-demonstration replay (retaining lightweight 96-vector key-validation exemplars per task during registration), exact parameter freezing ($\nabla_\theta = 0$), constant $O(1)$ active decoding core, and shared knot bases within a white-box routing stack.}
   \label{tab:paradigm_compare}
-  \fontsize{7.8pt}{9.6pt}\selectfont
-  \setlength{\tabcolsep}{2.0pt}
+  \fontsize{7.7pt}{9.5pt}\selectfont
+  \setlength{\tabcolsep}{1.9pt}
   \begin{tabular}{lccccccc}
     \toprule
     \textbf{Paradigm / Method} & \textbf{Task-Free} & \textbf{No Raw Rep.} & \textbf{$\nabla_\theta=0$} & \textbf{Active} & \textbf{Scaling} & \textbf{Dup-Lang} & \textbf{No VLM} \\
@@ -28,27 +28,27 @@ METHOD_PARADIGM_TABLE = r"""
     OrthoSkillVLA / SAMBAR~\cite{wang2026orthoskill,shrivastava2026sambar} & Depends & \checkmark & Subsp. & VLA & Subsp./Anch. & $\times$ & VLA \\
     $\text{R}^2$-WAM~\cite{fang2026r2wam} & \checkmark & Gen.Rep. & $\times$ & WAM & Video WAM & $\times$ & WAM+VLM \\
     ABK-VLA v1.1.3~\cite{son2026abkvla} & \checkmark & \checkmark & \checkmark & $O(K)$ & Linear $O(K)$ & $\times$ (DoG) & \checkmark \\
-    \textbf{DTRA v3.0 (Ours)} & \textbf{\checkmark} & \textbf{\checkmark (Key Ex.)} & \textbf{\checkmark ($0$)} & \textbf{$O(1)$} & \textbf{27b / $O(K)$ ad.} & \textbf{\checkmark (CMC)} & \textbf{\checkmark} \\
+    \textbf{DTRA v3.0 (Ours)} & \textbf{\checkmark} & \textbf{\checkmark (Key Ex.)} & \textbf{\checkmark ($\bm{0}$)} & $\bm{O(1)}$ & \textbf{27b / $\bm{O(K)}$ ad.} & \textbf{\checkmark (CMC)} & \textbf{\checkmark} \\
     \bottomrule
   \end{tabular}
 \end{table}
 """
 
 ALGORITHM_1_BLOCK = r"""
-\begin{algorithm}[t]
+\begin{algorithm}[ht!]
 \caption{\textbf{DTRA v3.0 Training Registration \& Closed-Loop Control (LIBERO-100 Implementation)}}
 \label{alg:dtra_v3}
 \small
 \begin{algorithmic}[1]
-\Require Frozen DualCam \texttt{ResNet-18} + proprioception + \texttt{LightweightTextEncoder}; frozen \texttt{SharedBasisBank} $\mathcal{B} = \{\mathbf{B}_b\}_{b=1}^{B}$ (LIBERO-100: $N_{\text{cp}}=8$ clamped cubic B-Spline knots $\to H=16$; Meta-World: $N_k=6$); empty cell registry $\mathcal{C} = \emptyset$.
+\Require Frozen DualCam \texttt{ResNet-18} (\texttt{L1}--\texttt{L3}) + proprioception + \texttt{LightweightTextEncoder}; frozen \texttt{SharedBasisBank} $\mathcal{B} = \{\mathbf{B}_b\}_{b=1}^{B}$ (LIBERO-100: $N_{\text{cp}}=8$ clamped cubic B-Spline knots $\to H=16$; Meta-World: $N_{\text{cp}}=6$); empty cell registry $\mathcal{C} = \emptyset$.
 \Statex \textbf{Phase I: Sequential Continual Registration ($k = 1, \dots, K$, Task-ID Stored Only for Audit)}
-\State Project visual, proprioceptive, and language features into normalized query $\mathbf{c}_t \in \mathbb{S}^{63}$ via fixed random projections ($0.25\mathbf{k}_v + 0.10\mathbf{k}_p + 0.65\mathbf{k}_\ell$ on LIBERO-100); compute task prototype $\mu_k$ and 3-modality signature prototypes $(\mathbf{v}_k^{\text{sig}}, \mathbf{p}_k^{\text{sig}}, \boldsymbol{\ell}_k^{\text{sig}})$ using $4\times 4+\text{DoG}$ visual features.
+\State Project Stage-1 visual (\texttt{GAP}+$2\times 2$), proprioceptive, and language features into normalized query $\mathbf{c}_t \in \mathbb{S}^{63}$ via fixed Gaussian projections ($0.25\mathbf{k}_v + 0.10\mathbf{k}_p + 0.65\mathbf{k}_\ell$ on LIBERO-100); compute task prototype $\mu_k$ and 3-modality Stage-2 signature prototypes $(\mathbf{v}_k^{\text{sig}}, \mathbf{p}_k^{\text{sig}}, \boldsymbol{\ell}_k^{\text{sig}})$ using $4\times 4+2\times 2+\text{DoG}$ visual features.
 \State Refine routing key $\mathbf{k}_k$ against prior tasks $\{j < k\}$ subject to \textbf{No-Encroachment}: penalize $\langle \mu_j, \mathbf{k}_k \rangle > s_{jj} - m_{\text{safe}}$ and verify accuracy on cached lightweight key-validation exemplars ($\le 96$ normalized query vectors/task, \texttt{\_val\_queries}; no raw image/action replay).
-\State Fit $C^2$ clamped cubic B-Spline knots ($\mathbf{P}_k \in \mathbb{R}^{8\times 7}$ on LIBERO-100; $\mathbb{R}^{6\times 4}$ on Meta-World); match cosine similarity to $\mathcal{B}$. If below threshold, append new frozen basis $\mathbf{B}_{B+1}$ ($\texttt{requires\_grad=False}$, excluded from \texttt{AdamW}); else share $\mathbf{B}_{b_k}$ and train per-task node adapter \texttt{LIBEROHypertubeNode} (spatial context + phase/residual heads).
-\State Freeze all consolidated node and basis parameters permanently ($\nabla_\theta = 0$, $L_\infty$ silent drift $= 0.0$).
+\State Fit $C^2$ clamped cubic B-Spline knots ($\mathbf{P}_k \in \mathbb{R}^{8\times 7}$ on LIBERO-100; $\mathbb{R}^{6\times 4}$ on Meta-World) and compute normalized motion signature $\mathbf{s}_k^{\text{mot}} = \mathrm{norm}([\bar{\mathbf{P}}_k, \overline{|\Delta\mathbf{P}_k|}])$. If max cosine similarity to stored basis signatures is below $0.88$ (and $B < 48$), append new frozen basis $\mathbf{B}_{B+1}$; else bind to existing $\mathbf{B}_{b_k}$ and train per-task node adapter \texttt{LIBEROHypertubeNode} (spatial context + phase/residual heads) with \texttt{AdamW} (\texttt{weight\_decay=1e-4}, frozen params excluded).
+\State Freeze all consolidated node and basis parameters permanently (\texttt{requires\_grad=False}, $\nabla_\theta = 0$, $L_\infty$ silent drift $= 0.0$).
 \Statex \textbf{Phase II: No-Raw-Replay, Task-ID-Free Closed-Loop Evaluation (At Control Tick $t$)}
-\State \textbf{Stage 1 ($O(K)$ Broad Scan):} Score all $K$ keys on $\mathbb{S}^{63}$ (with optional temporal inertia) and retrieve Top-$M$ ($M=5$) candidates $\mathcal{M}_t$.
-\State \textbf{Stage 2 (3-Modality Common-Mode Cancellation):} Compute candidate-local means across visual ($4\times 4+\text{DoG}$ 256-d), proprioceptive (12-d), and language (128-d) signature banks; strip common modes and select active cell $i^* = \arg\max_{j \in \mathcal{M}_t} s_{\text{CMC}}(t, j)$.
+\State \textbf{Stage 1 ($O(K)$ Broad Scan):} Score all $K$ keys on $\mathbb{S}^{63}$ with temporal inertia ($\eta_{\text{inertia}}=0.20$) and Hebbian myelination bias ($\eta_{\text{myelin}}=0.25$), and retrieve Top-$M$ ($M=5$) candidates $\mathcal{M}_t$.
+\State \textbf{Stage 2 (Conditional 3-Modality Common-Mode Cancellation):} When candidate language similarities collide or Top-1/Top-2 margin $< 0.025$, form subset $\mathcal{C}_t \subseteq \mathcal{M}_t$, subtract candidate-local means across visual ($256$-d), z-scored proprioceptive ($12$-d), and language ($128$-d) banks, and add weighted CMC residuals to Stage-1 scores to select $i^* = \arg\max_{j \in \mathcal{C}_t} s_{\text{comb}}(t, j)$.
 \State Decode selected node $i^*$ and shared basis $\mathbf{B}_{b_{i^*}}$ via phase head (\texttt{theta\_head} on LIBERO-100; elliptical \texttt{atan2} on Meta-World) and bounded spherical interpolation $\alpha_{i^*}$ into $H=16$ chunk $\mathbf{A}_t = \mathbf{B}_{\text{spline}}\mathbf{P}_{\text{eff}}$; execute \texttt{exec\_steps=8} steps.
 \State At episode termination, call \texttt{episode\_snap\_back()} to reset routing inertia (\texttt{prev\_selected}, \texttt{prev\_act\_vec}) and diagnostic buffers to exact $0.0000$.
 \end{algorithmic}
@@ -72,13 +72,13 @@ Let $\Theta_{\text{frozen}}^{(k)} = \{\mathbf{k}_j, \mathbf{B}_{b_j}, \mathbf{W}
 \end{proposition}
 
 \begin{proof}
-(1) Standard \texttt{AdamW} updates obey $\theta_{s+1} = (1 - \eta\lambda)\theta_s - \eta \hat{m}_s / (\sqrt{\hat{v}_s} + \epsilon)$. Even when $\nabla_\theta\mathcal{L} = \mathbf{0}$, retaining $\theta_s$ inside an optimizer parameter group applies silent exponential decay $(1 - \eta\lambda)^S \theta_0 \neq \theta_0$. DTRA sets \texttt{requires\_grad = False} on $\Theta_{\text{frozen}}^{(k)}$ and instantiates each task's \texttt{AdamW} optimizer exclusively over newly created active parameters ($\Theta_{\text{frozen}}^{(k)} \cap \text{param\_groups}(\texttt{AdamW}) = \emptyset$), so $\theta_{s+1} = \theta_s$ identically in IEEE-754 arithmetic. (2) Explicit zero-reinitialization of routing inertia and diagnostic buffers at episode reset guarantees identical initial internal state at every $t=0$. Note that parameter stability (1) is distinct from empirical closed-loop success-rate forgetting, which can still be non-zero due to routing boundary changes or rollout stochasticity.
+(1) Standard \texttt{AdamW} updates obey $\theta_{s+1} = (1 - \eta\lambda)\theta_s - \eta \hat{m}_s / (\sqrt{\hat{v}_s} + \epsilon)$. Even when $\nabla_\theta\mathcal{L} = \mathbf{0}$, retaining $\theta_s$ inside an optimizer parameter group applies silent exponential decay $(1 - \eta\lambda)^S \theta_0 \neq \theta_0$. DTRA sets \texttt{requires\_grad=False} on $\Theta_{\text{frozen}}^{(k)}$ and instantiates each task's \texttt{AdamW} optimizer exclusively over newly created active parameters ($\Theta_{\text{frozen}}^{(k)} \cap \text{param\_groups}(\texttt{AdamW}) = \emptyset$), so $\theta_{s+1} = \theta_s$ identically in IEEE-754 arithmetic. (2) Explicit zero-reinitialization of routing inertia and diagnostic buffers at episode reset guarantees identical initial internal state at every $t=0$. Note that parameter stability (1) is distinct from empirical closed-loop success-rate forgetting, which can still be non-zero due to routing boundary changes or rollout stochasticity.
 \end{proof}
 
 \subsection{Clamped \texorpdfstring{$C^2$}{C2} Cubic B-Spline Continuity \& Perturbation Bound}
 \begin{proposition}[Within-Chunk $C^2$ Continuity and Convex-Hull Perturbation Bound]
 \label{prop:bspline}
-Let the clamped uniform degree-$3$ knot vector $U = \{0, 0, 0, 0, u_4, \dots, u_{N_{\text{cp}}-1}, 1, 1, 1, 1\}$ have $N_{\text{cp}}$ control points $\mathbf{P} \in \mathbb{R}^{N_{\text{cp}} \times d_a}$ ($N_{\text{cp}}=8$ on LIBERO-100; $N_{\text{cp}}=6$ on Meta-World), evaluated at $\tau_h = h / (H-1)$ for $h = 0, \dots, H-1$ ($H=16$). By standard spline properties~\cite{deboor1978splines,piegl1997nurbs}:
+Let the clamped uniform degree $p=3$ knot vector $U = \{0, 0, 0, 0, u_4, \dots, u_{N_{\text{cp}}-1}, 1, 1, 1, 1\}$ have $N_{\text{cp}}$ control points $\mathbf{P} \in \mathbb{R}^{N_{\text{cp}} \times d_a}$ ($N_{\text{cp}}=8$ on LIBERO-100; $N_{\text{cp}}=6$ on Meta-World), evaluated at $\tau_h = h / (H-1)$ for $h = 0, \dots, H-1$ ($H=16$). By standard spline properties~\cite{deboor1978splines,piegl1997nurbs}:
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
   \item Every synthesized chunk $\mathbf{a}(\tau) = \sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau)\,\mathbf{p}_n$ satisfies endpoint clamping ($\mathbf{a}(0) = \mathbf{p}_0$, $\mathbf{a}(1) = \mathbf{p}_{N_{\text{cp}}-1}$) and $C^2$ continuity at all interior knots.
   \item By non-negativity ($B_{n,3}(\tau) \ge 0$) and partition of unity ($\sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau) \equiv 1$), any knot perturbation $\|\delta\mathbf{P}\|_\infty \le \epsilon$ obeys $\sup_{\tau \in [0,1]} \|\delta\mathbf{a}(\tau)\|_\infty \le \epsilon$ within a single chunk.
@@ -97,7 +97,7 @@ For unit vectors $\{\mu_j, \mathbf{k}_j\}_{j=1}^K \subset \mathbb{S}^{d-1}$, the
 """
 
 REFERENCES_50_BLOCK = r"""
-\begin{thebibliography}{50}
+\begin{thebibliography}{57}
 \small
 \raggedright
 \setlength{\itemsep}{1.1pt}
@@ -272,7 +272,7 @@ W.~Wan, Y.~Zhu, R.~Shah, and Y.~Zhu, ``LOTUS: Continual imitation learning for r
 Z.~Liu, J.~Zhang, K.~Asadi, Y.~Liu, D.~Zhao, S.~Sabach, and R.~Fakoor, ``TAIL: Task-specific adapters for imitation learning with large pretrained models,'' in \emph{Proc.\ Int.\ Conf.\ Learn.\ Represent.\ (ICLR)}, 2024.
 
 \bibitem{son2026abkvla}
-S.~Son, ``ABK-VLA: Task-ID-free continual visuomotor policy learning via autonomous B-spline knot compression and visual prototype routing,'' \emph{Zenodo Preprint}, DOI: \texttt{10.5281/zenodo.24208545}, Nov.\ 2026. Repository: \url{https://github.com/5Color/abk-vla}.
+S.~Son, ``ABK-VLA: Task-ID-free continual visuomotor policy learning via autonomous B-Spline knot compression and visual prototype routing,'' \emph{Zenodo Preprint}, v1.1.3 DOI: \texttt{10.5281/zenodo.24212130} (Concept DOI: \texttt{10.5281/zenodo.24208544}), Nov.\ 2026. Repository: \url{https://github.com/5Color/abk-vla}.
 
 \end{thebibliography}
 """

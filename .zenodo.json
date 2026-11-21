@@ -1,6 +1,6 @@
 {
   "title": "DTRA: Dynamic Topology Ring Architecture for Replay-Free Continual Visuomotor Control via Hyperspherical Isolation and Shared Motor Bases",
-  "description": "DTRA v3.0 preprints and verified results for replay-free, Task-ID-free continual visuomotor control. The 20-page manuscripts report LIBERO-100 results across three seeds for Frozen MLP and DTRA Elastic and two seeds for ER 5% and DTRA Rigid, plus three-seed 8-task Meta-World experiments. The approach combines hyperspherical routing, shared motor bases, parameter freezing, and temporary state reset. Five-rollout evaluation limits, measured parameter footprints, and clean/OOD trade-offs are documented.",
+  "description": "DTRA v3.1.0 preprints (23-page pure-ASCII arXiv manuscript and versioned preprint) and verified multi-seed results for Task-ID-free continual visuomotor control without raw-demonstration replay. Reports full N=3 LIBERO-100 (K=100) results across all four core arms (Frozen MLP, ER 5%, DTRA Rigid, DTRA Elastic; unified sample std ddof=1), matched-encoder external CL baselines (DER++, L2P, O-LoRA), zero-retrain n_eval=20 extended initial-state verification (12,000 rollouts), and 3-seed 8-task Meta-World causal regularization ablations. Full parameter accounting (73% basis-slot / 5.33% total parameter reduction), routing-feature asymmetry, and clean/OOD trade-offs are documented transparently.",
   "creators": [
     {
       "name": "Son, Seungjoon",
@@ -21,7 +21,7 @@
   ],
   "related_identifiers": [
     {
-      "identifier": "10.5281/zenodo.24208545",
+      "identifier": "10.5281/zenodo.24212130",
       "relation": "continues",
       "scheme": "doi"
     }

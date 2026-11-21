@@ -65,7 +65,7 @@ def _draw_box(
         xy,
         w,
         h,
-        boxstyle="round,pad=0.012,rounding_size=0.015",
+        boxstyle="round,pad=0.008,rounding_size=0.014",
         facecolor=fc,
         edgecolor=ec,
         linewidth=lw,
@@ -325,7 +325,8 @@ def load_libero_seed_jsons(json_paths: List[Path]) -> List[dict]:
                     supp_p = target.parent / supp_fn
                     if arm_k not in data["arms"] and supp_p.exists():
                         try:
-                            sd = json.load(open(supp_p, "r", encoding="utf-8"))
+                            with open(supp_p, "r", encoding="utf-8") as sf:
+                                sd = json.load(sf)
                             av = sd.get("arms", {}).get(arm_k, {})
                             if av.get("status") == "completed" or "100" in av.get("milestones", {}):
                                 data["arms"][arm_k] = av
@@ -362,22 +363,26 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
     datasets = load_libero_seed_jsons(json_paths)
     if not datasets:
         raise FileNotFoundError("No LIBERO-100 JSON files found.")
+    n_seeds = len(datasets)
 
     # Load matched-encoder external CL baselines (DER++, L2P, O-LoRA) if present
     ext_cl_path = LIBERO_DIR / "benchmark_dtra_libero_v31_ext_cl_k100_seed42.json"
-    ext_datasets = [json.load(open(ext_cl_path, "r", encoding="utf-8"))] if ext_cl_path.exists() else []
+    ext_datasets: List[dict] = []
+    if ext_cl_path.exists():
+        with open(ext_cl_path, "r", encoding="utf-8") as ef:
+            ext_datasets = [json.load(ef)]
 
     milestones = [10, 30, 50, 70, 100]
     styles = {
-        "arm_frozen_mlp": ("Frozen MLP (1-Stage Argmax)", "#2563EB", "s", "--"),
-        "arm_er_5pct": ("Experience Replay (5%)", "#64748B", "^", ":"),
-        "arm_dtra_rigid": ("DTRA Rigid (alpha=0, N=3)", "#D97706", "D", "-."),
-        "arm_dtra_elastic": ("DTRA Elastic (Ours, N=3)", "#059669", "o", "-"),
+        "arm_frozen_mlp": (f"Frozen MLP (1-Stage, N={n_seeds})", "#2563EB", "s", "--"),
+        "arm_er_5pct": (f"Experience Replay 5% (N={n_seeds})", "#64748B", "^", ":"),
+        "arm_dtra_rigid": (f"DTRA Rigid (α=0, N={n_seeds})", "#D97706", "D", "-."),
+        "arm_dtra_elastic": (f"DTRA Elastic (Ours, N={n_seeds})", "#059669", "o", "-"),
     }
     ext_styles = {
-        "arm_derpp": ("DER++ (5% Buf. + Distill.)", "#9333EA", "v", "--"),
-        "arm_l2p": ("L2P (Prompt Pool)", "#DC2626", "X", ":"),
-        "arm_olora": ("O-LoRA (Ortho Subspace)", "#B45309", "P", ":"),
+        "arm_derpp": ("DER++ (5% Buf., S42)", "#9333EA", "v", "--"),
+        "arm_l2p": ("L2P (Prompt Pool, S42)", "#DC2626", "X", ":"),
+        "arm_olora": ("O-LoRA (Subspace, S42)", "#B45309", "P", ":"),
     }
 
     fig, axes = plt.subplots(2, 2, figsize=(12.8, 9.0))
@@ -402,16 +407,17 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
         )
         if arm in ("arm_dtra_elastic", "arm_frozen_mlp") and 100 in ks:
             idx = ks.index(100)
-            dy = 3.2 if arm == "arm_dtra_elastic" else -5.2
+            dy = 3.2 if arm == "arm_dtra_elastic" else -5.5
             ax_sr.annotate(
                 f"{means[idx]:.2f}%",
                 (100, means[idx]),
-                xytext=(89, means[idx] + dy),
+                xytext=(88, means[idx] + dy),
                 fontsize=8.2,
                 fontweight="bold",
                 color=color,
             )
     if ext_datasets:
+        ext_k100_sr: Dict[str, float] = {}
         for arm, (label, color, marker, ls) in ext_styles.items():
             ks, means, _ = aggregate_milestone_series(ext_datasets, arm, milestones, "mean_sr", 100.0)
             if not ks:
@@ -428,23 +434,42 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
                 alpha=0.92,
             )
             if 100 in ks:
-                idx = ks.index(100)
+                ext_k100_sr[arm] = means[ks.index(100)]
                 if arm == "arm_derpp":
-                    ax_sr.annotate(f"{means[idx]:.1f}%", (100, means[idx]), xytext=(89, means[idx] - 6.5), fontsize=7.8, fontweight="bold", color=color)
-                elif arm == "arm_l2p":
-                    ax_sr.annotate(f"{means[idx]:.1f}% / 1.0%", (100, means[idx]), xytext=(76, 6.5), fontsize=7.6, fontweight="bold", color=color)
-    ax_sr.set_title("(A) LIBERO-100 Milestone Mean Success Rate (K=10 -> 100)")
+                    ax_sr.annotate(
+                        f"{ext_k100_sr[arm]:.1f}%",
+                        (100, ext_k100_sr[arm]),
+                        xytext=(88, ext_k100_sr[arm] - 6.5),
+                        fontsize=7.8,
+                        fontweight="bold",
+                        color=color,
+                    )
+        if "arm_l2p" in ext_k100_sr and "arm_olora" in ext_k100_sr:
+            ax_sr.annotate(
+                f"{ext_k100_sr['arm_l2p']:.1f}% / {ext_k100_sr['arm_olora']:.1f}%",
+                (100, ext_k100_sr["arm_l2p"]),
+                xytext=(84, 6.0),
+                fontsize=7.6,
+                fontweight="bold",
+                color="#DC2626",
+            )
+    ax_sr.set_title("(A) LIBERO-100 Milestone Mean Success Rate (K = 10 → 100)")
     ax_sr.set_xlabel("Learned Tasks K")
     ax_sr.set_ylabel("Mean Success Rate (%)")
     ax_sr.set_xticks(milestones)
     ax_sr.set_ylim(-4.0, 104.0)
     ax_sr.grid(True, linestyle="--", alpha=0.35)
-    ax_sr.legend(loc="center left", bbox_to_anchor=(0.01, 0.36), frameon=True, framealpha=0.92, fontsize=7.2, ncol=1)
+    ax_sr.legend(loc="lower center", bbox_to_anchor=(0.42, 0.14), frameon=True, framealpha=0.94, fontsize=6.6, ncol=2)
 
     # Panel B: Dup-Lang RouteAcc (and Overall RouteAcc thin overlay)
     mlp_dup_k100 = None
+    dup_labels = {
+        "arm_frozen_mlp": "Frozen MLP Dup-Lang (1-Stage)",
+        "arm_dtra_rigid": f"DTRA Rigid Dup-Lang (α=0, N={n_seeds})",
+        "arm_dtra_elastic": f"DTRA Elastic Dup-Lang (Ours, N={n_seeds})",
+    }
     for arm in ("arm_frozen_mlp", "arm_dtra_rigid", "arm_dtra_elastic"):
-        label, color, marker, ls = styles[arm]
+        _, color, marker, ls = styles[arm]
         ks, dup_m, dup_s = aggregate_milestone_series(datasets, arm, milestones, "dup_lang_route_acc", 100.0)
         _, rt_m, _ = aggregate_milestone_series(datasets, arm, milestones, "mean_route_acc", 100.0)
         if not ks:
@@ -453,7 +478,7 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
             ks,
             dup_m,
             yerr=dup_s if any(s > 0 for s in dup_s) else None,
-            label=f"{label.split(':')[0]} Dup-Lang" if arm != "arm_dtra_elastic" else "DTRA v3.0 Full Dup-Lang (Ours)",
+            label=dup_labels[arm],
             color=color,
             marker=marker,
             linestyle=ls,
@@ -469,7 +494,7 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
                 ax_dup.annotate(
                     f"{mlp_dup_k100:.2f}%\n(Voronoi Crash)",
                     (100, mlp_dup_k100),
-                    xytext=(68, mlp_dup_k100 + 3.0),
+                    xytext=(66, mlp_dup_k100 + 3.5),
                     arrowprops=dict(arrowstyle="->", color=color, lw=1.2),
                     fontsize=8.2,
                     fontweight="bold",
@@ -478,11 +503,11 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
         elif arm == "arm_dtra_elastic" and 100 in ks:
             idx = ks.index(100)
             el_dup = dup_m[idx]
-            gap_str = f" (+{el_dup - mlp_dup_k100:.2f}%p)" if mlp_dup_k100 is not None else ""
+            gap_str = f" (+{el_dup - mlp_dup_k100:.2f} pp)" if mlp_dup_k100 is not None else ""
             ax_dup.annotate(
                 f"{el_dup:.2f}%{gap_str}",
                 (100, el_dup),
-                xytext=(55, 91.5),
+                xytext=(52, 91.0),
                 arrowprops=dict(arrowstyle="->", color=color, lw=1.2),
                 fontsize=8.2,
                 fontweight="bold",
@@ -494,12 +519,14 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
     ax_dup.set_xticks(milestones)
     ax_dup.set_ylim(30.0, 106.0)
     ax_dup.grid(True, linestyle="--", alpha=0.35)
-    ax_dup.legend(loc="lower left", frameon=True, framealpha=0.92, fontsize=7.8)
+    ax_dup.legend(loc="lower left", frameon=True, framealpha=0.92, fontsize=7.6)
 
     # Panel C: SharedBasisBank Sub-Linear Saturation vs Uncompressed Linear Bases
     ks_b, bs_m, bs_s = aggregate_milestone_series(datasets, "arm_dtra_elastic", milestones, "active_basis_count", 1.0)
     ax_basis.plot(milestones, milestones, color="#2563EB", linestyle="--", marker="s", linewidth=1.8, label="Baseline Unshared Slots (O(K) = 100)")
     if ks_b:
+        final_b = int(round(bs_m[-1]))
+        red_pct = int(round((1.0 - final_b / 100.0) * 100.0))
         ax_basis.errorbar(
             ks_b,
             bs_m,
@@ -509,47 +536,71 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
             linewidth=2.4,
             markersize=7.0,
             capsize=3.5,
-            label="DTRA SharedBasisBank (73% Compression)",
+            label=f"DTRA SharedBasisBank ({red_pct}% Basis-Slot Reduction)",
         )
         for k_v, b_v in zip(ks_b, bs_m):
-            ax_basis.annotate(f"{int(round(b_v))}", (k_v, b_v), xytext=(k_v - 2.0, b_v + 4.5), fontsize=8.5, fontweight="bold", color="#065F46")
+            dy_b = -6.5 if k_v == 10 else 4.5
+            dx_b = 1.5 if k_v == 10 else -2.0
+            ax_basis.annotate(f"{int(round(b_v))}", (k_v, b_v), xytext=(k_v + dx_b, b_v + dy_b), fontsize=8.5, fontweight="bold", color="#065F46")
     ax_basis.fill_between(ks_b, bs_m, milestones[: len(ks_b)], color="#10B981", alpha=0.14)
     ax_basis.set_title("(C) Sub-Linear Shared Motor Basis Growth (SharedBasisBank)")
     ax_basis.set_xlabel("Learned Tasks K")
     ax_basis.set_ylabel("Active Primitive Bases")
     ax_basis.set_xticks(milestones)
-    ax_basis.set_ylim(0, 112)
+    ax_basis.set_ylim(-2, 112)
     ax_basis.grid(True, linestyle="--", alpha=0.35)
-    ax_basis.legend(loc="upper left", frameon=True, framealpha=0.92, fontsize=8.0)
+    ax_basis.legend(loc="upper left", frameon=True, framealpha=0.92, fontsize=7.8)
 
     # Panel D: K=100 Final Comparison Bars across all 7 Parity Arms (Mean SR & Forgetting Rate)
     bar_specs = [
-        ("arm_olora", "O-LoRA\n(S42)", ext_datasets, "#B45309"),
-        ("arm_l2p", "L2P\n(S42)", ext_datasets, "#DC2626"),
-        ("arm_derpp", "DER++\n(S42)", ext_datasets, "#9333EA"),
-        ("arm_er_5pct", "ER 5%\n(N=3)", datasets, "#64748B"),
-        ("arm_frozen_mlp", "Frozen\nMLP", datasets, "#2563EB"),
-        ("arm_dtra_rigid", "DTRA\nRigid", datasets, "#D97706"),
-        ("arm_dtra_elastic", "DTRA\nElastic", datasets, "#059669"),
+        ("arm_olora", "O-LoRA\n(S42)", ext_datasets, False),
+        ("arm_l2p", "L2P\n(S42)", ext_datasets, False),
+        ("arm_derpp", "DER++\n(S42)", ext_datasets, False),
+        ("arm_er_5pct", f"ER 5%\n(N={n_seeds})", datasets, True),
+        ("arm_frozen_mlp", f"Frozen MLP\n(N={n_seeds})", datasets, True),
+        ("arm_dtra_rigid", f"DTRA Rigid\n(N={n_seeds})", datasets, True),
+        ("arm_dtra_elastic", f"DTRA Elastic\n(N={n_seeds})", datasets, True),
     ]
     x = np.arange(len(bar_specs))
     w = 0.36
-    sr_vals, sr_errs, fr_vals, fr_errs, labels_d = [], [], [], [], []
-    for arm, lbl, ds_list, _ in bar_specs:
+    sr_vals, sr_errs, fr_vals, fr_errs, labels_d, has_err = [], [], [], [], [], []
+    for arm, lbl, ds_list, is_multi in bar_specs:
         labels_d.append(lbl)
+        has_err.append(is_multi and len(ds_list) > 1)
         ks_k, sr_m, sr_s = aggregate_milestone_series(ds_list, arm, [100], "mean_sr", 100.0)
         _, fr_m, fr_s = aggregate_milestone_series(ds_list, arm, [100], "forgetting_rate", 100.0)
         if ks_k:
             sr_vals.append(sr_m[0])
-            sr_errs.append(sr_s[0])
+            sr_errs.append(sr_s[0] if is_multi else 0.0)
             fr_vals.append(fr_m[0])
-            fr_errs.append(fr_s[0])
+            fr_errs.append(fr_s[0] if is_multi else 0.0)
         else:
             sr_vals.append(0.0); sr_errs.append(0.0)
             fr_vals.append(0.0); fr_errs.append(0.0)
 
-    b1 = ax_bar.bar(x - w / 2, sr_vals, width=w, yerr=sr_errs, capsize=2.5, color="#059669", label="Final Mean SR (%) ↑")
-    b2 = ax_bar.bar(x + w / 2, fr_vals, width=w, yerr=fr_errs, capsize=2.5, color="#EF4444", alpha=0.82, label="Forgetting Rate FR (%) ↓")
+    b1 = ax_bar.bar(x - w / 2, sr_vals, width=w, color="#059669", label="Final Mean SR (%) ↑")
+    b2 = ax_bar.bar(x + w / 2, fr_vals, width=w, color="#EF4444", alpha=0.82, label="Forgetting Rate FR (%) ↓")
+    # Draw error bars ONLY for multi-seed arms (no zero-cap error bars on single-seed S42 baselines)
+    multi_idx = [i for i, flag in enumerate(has_err) if flag]
+    if multi_idx:
+        ax_bar.errorbar(
+            x[multi_idx] - w / 2,
+            [sr_vals[i] for i in multi_idx],
+            yerr=[sr_errs[i] for i in multi_idx],
+            fmt="none",
+            ecolor="#111827",
+            elinewidth=1.1,
+            capsize=2.5,
+        )
+        ax_bar.errorbar(
+            x[multi_idx] + w / 2,
+            [fr_vals[i] for i in multi_idx],
+            yerr=[fr_errs[i] for i in multi_idx],
+            fmt="none",
+            ecolor="#111827",
+            elinewidth=1.1,
+            capsize=2.5,
+        )
 
     for rect, err in zip(b1, sr_errs):
         h = rect.get_height()
@@ -558,18 +609,17 @@ def generate_fig7_libero100_scaling(json_paths: List[Path], out_path: Path) -> N
         h = rect.get_height()
         ax_bar.text(rect.get_x() + rect.get_width() / 2.0, h + err + 1.8, f"{h:.1f}", ha="center", va="bottom", fontsize=6.6, color="#991B1B")
 
-    ax_bar.set_title("(D) K=100 Final Mean SR vs. Forgetting (7 Parity Arms)")
+    ax_bar.set_title("(D) K = 100 Final Mean SR vs. Forgetting (7 Parity Arms)")
     ax_bar.set_xticks(x)
-    ax_bar.set_xticklabels(labels_d, fontsize=7.6)
+    ax_bar.set_xticklabels(labels_d, fontsize=7.4)
     ax_bar.set_ylabel("Percentage (%)")
     ax_bar.set_ylim(0, 108)
     ax_bar.grid(True, axis="y", linestyle="--", alpha=0.35)
     ax_bar.legend(loc="upper left", frameon=True, framealpha=0.92, fontsize=7.5)
 
-    n_seeds = len(datasets)
     fig.suptitle(
-        f"LIBERO-100 (K=100 Tasks) Continual Learning Scaling Benchmark (Observed Seeds N={n_seeds})",
-        fontsize=12.5,
+        f"LIBERO-100 (K = 100 Tasks) Continual Learning Scaling Benchmark (Core Arms N = {n_seeds}, ddof = 1)",
+        fontsize=12.4,
         fontweight="bold",
         y=0.99,
     )
@@ -591,12 +641,14 @@ def generate_fig8_basis_and_encroachment(json_paths: List[Path], out_path: Path)
     if len(tl) < 10:
         return
 
-    tasks = np.arange(1, len(tl) + 1)
+    n_tasks = len(tl)
+    tasks = np.arange(1, n_tasks + 1)
     basis_ids = np.array([int(x.get("key_stats", {}).get("basis_idx", 0)) for x in tl])
     is_new = np.array([bool(x.get("key_stats", {}).get("is_new_basis", 0.0)) for x in tl])
     cos_before = np.array([float(x.get("key_stats", {}).get("max_cos_before", 0.0)) for x in tl])
     cos_after = np.array([float(x.get("key_stats", {}).get("max_cos_after", 0.0)) for x in tl])
     n_bases = int(basis_ids.max()) + 1
+    red_pct = int(round((1.0 - n_bases / n_tasks) * 100.0))
 
     fig = plt.figure(figsize=(12.8, 7.6))
     gs = fig.add_gridspec(2, 2, height_ratios=[1.15, 1.0], hspace=0.38, wspace=0.25)
@@ -606,24 +658,24 @@ def generate_fig8_basis_and_encroachment(json_paths: List[Path], out_path: Path)
 
     # Panel A: Sparse 100 x 27 assignment scatter / stem
     ax_map.scatter(tasks[~is_new], basis_ids[~is_new], s=26, color="#2563EB", alpha=0.82, label="Reused Existing Basis")
-    ax_map.scatter(tasks[is_new], basis_ids[is_new], s=48, color="#059669", marker="D", edgecolor="#064E3B", linewidth=0.8, label="Newly Allocated Basis (Total 27)")
+    ax_map.scatter(tasks[is_new], basis_ids[is_new], s=48, color="#059669", marker="D", edgecolor="#064E3B", linewidth=0.8, label=f"Newly Allocated Basis (Total {n_bases})")
     ax_map.axvline(10.5, color="#94A3B8", linestyle="--", linewidth=1.2)
-    ax_map.text(5.5, n_bases - 1.5, "libero_10", ha="center", fontsize=8.5, fontweight="bold", color="#475569")
-    ax_map.text(55.0, n_bases - 1.5, "libero_90 (90 sequential diverse + Dup-Lang tasks)", ha="center", fontsize=8.5, fontweight="bold", color="#475569")
-    ax_map.set_title("(A) SharedBasisBank Sparse Task-to-Basis Allocation (K=100 Tasks -> 27 Frozen Bases, 73% Compression)")
-    ax_map.set_xlabel("Sequential Task Index T_k (1 .. 100)")
-    ax_map.set_ylabel("Assigned Basis ID (0 .. 26)")
-    ax_map.set_xlim(0, 102)
-    ax_map.set_ylim(-1.2, n_bases + 1.5)
+    ax_map.text(5.5, n_bases - 0.8, "libero_10", ha="center", fontsize=8.5, fontweight="bold", color="#475569")
+    ax_map.text(56.0, n_bases - 0.8, "libero_90 (90 sequential diverse + Dup-Lang tasks)", ha="center", fontsize=8.5, fontweight="bold", color="#475569")
+    ax_map.set_title(f"(A) SharedBasisBank Sparse Task-to-Basis Allocation (K = {n_tasks} → {n_bases} Frozen Bases, {red_pct}% Basis-Slot Reduction)")
+    ax_map.set_xlabel(f"Sequential Task Index $T_k$ (1 .. {n_tasks})")
+    ax_map.set_ylabel(f"Assigned Basis ID (0 .. {n_bases - 1})")
+    ax_map.set_xlim(0, n_tasks + 2)
+    ax_map.set_ylim(-1.2, n_bases + 2.2)
     ax_map.grid(True, linestyle="--", alpha=0.30)
-    ax_map.legend(loc="lower right", frameon=True, framealpha=0.92, fontsize=8.3)
+    ax_map.legend(loc="upper left", bbox_to_anchor=(0.01, 0.86), frameon=True, framealpha=0.94, fontsize=8.1)
 
     # Panel B: No-Encroachment Max Cosine Before vs After projection
     ax_cos.plot(tasks[1:], cos_before[1:], color="#DC2626", alpha=0.55, linewidth=1.3, label="Raw Max Prior Cos (Before)")
     ax_cos.plot(tasks[1:], cos_after[1:], color="#059669", linewidth=1.7, label="Guarded Max Prior Cos (After No-Encroachment)")
     ax_cos.fill_between(tasks[1:], cos_after[1:], cos_before[1:], where=cos_before[1:] > cos_after[1:], color="#10B981", alpha=0.18)
-    ax_cos.set_title("(B) No-Encroachment Key Projection Across K=100 Tasks")
-    ax_cos.set_xlabel("Sequential Task Index T_k")
+    ax_cos.set_title(f"(B) No-Encroachment Key Projection Across K = {n_tasks} Tasks")
+    ax_cos.set_xlabel("Sequential Task Index $T_k$")
     ax_cos.set_ylabel("Max Cosine Sim to Prior Keys")
     ax_cos.set_ylim(0.25, 1.03)
     ax_cos.grid(True, linestyle="--", alpha=0.35)
@@ -632,18 +684,20 @@ def generate_fig8_basis_and_encroachment(json_paths: List[Path], out_path: Path)
     # Panel C: Per-basis reuse count
     counts = np.bincount(basis_ids, minlength=n_bases)
     bids = np.arange(n_bases)
-    colors = ["#059669" if c >= 6 else "#2563EB" for c in counts]
-    ax_hist.bar(bids, counts, color=colors, alpha=0.88)
+    hi_mask = counts >= 6
+    ax_hist.bar(bids[hi_mask], counts[hi_mask], color="#059669", alpha=0.88, label="High Reuse (≥ 6 tasks)")
+    ax_hist.bar(bids[~hi_mask], counts[~hi_mask], color="#2563EB", alpha=0.88, label="Standard Reuse (≤ 5 tasks)")
     for b, c in zip(bids, counts):
         ax_hist.text(b, c + 0.15, str(c), ha="center", va="bottom", fontsize=7.0, color="#1E293B")
-    ax_hist.set_title("(C) Task Sharing Frequency Across the 27 Frozen Bases")
-    ax_hist.set_xlabel("SharedBasisBank Primitive ID (0 .. 26)")
+    ax_hist.set_title(f"(C) Task Sharing Frequency Across the {n_bases} Frozen Bases")
+    ax_hist.set_xlabel(f"SharedBasisBank Primitive ID (0 .. {n_bases - 1})")
     ax_hist.set_ylabel("Number of Assigned Tasks")
     ax_hist.set_xticks(np.arange(0, n_bases, 2))
-    ax_hist.set_ylim(0, max(counts) + 1.8)
+    ax_hist.set_ylim(0, max(counts) + 2.4)
     ax_hist.grid(True, axis="y", linestyle="--", alpha=0.35)
+    ax_hist.legend(loc="upper right", frameon=True, framealpha=0.92, fontsize=7.8)
 
-    fig.suptitle("DTRA v3.0 Telemetry Diagnostics: SharedBasisBank & No-Encroachment Projection (Seed 42)", fontsize=12.0, fontweight="bold", y=0.98)
+    fig.suptitle("DTRA Telemetry Diagnostics: SharedBasisBank & No-Encroachment Projection (Seed 42)", fontsize=12.0, fontweight="bold", y=0.98)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=300, bbox_inches="tight")
     plt.close(fig)

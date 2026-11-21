@@ -53,7 +53,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision.models as tv_models
+try:
+    import torchvision.models as tv_models
+except ImportError:
+    tv_models = None  # type: ignore[assignment]
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(PROJECT_ROOT) not in sys.path:
@@ -586,6 +589,8 @@ class FrozenResNet18DualCam(nn.Module):
 
     def __init__(self):
         super().__init__()
+        if tv_models is None:
+            raise ImportError("torchvision is required to instantiate FrozenResNet18DualCam.")
         backbone = tv_models.resnet18(weights=tv_models.ResNet18_Weights.DEFAULT)
         self.trunk = nn.Sequential(
             backbone.conv1,

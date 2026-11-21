@@ -27,7 +27,36 @@ from dtra.experiments.libero.benchmark_dtra_libero import (
     _refine_key_with_contrastive_margin,
     calc_cl_metrics,
     set_seed,
+    tv_models,
 )
+
+
+class _DummyDualCamBackbone(torch.nn.Module):
+    """Lightweight deterministic fallback when torchvision is unavailable in minimal test envs."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.conv = torch.nn.Conv2d(3, 256, kernel_size=16, stride=16, bias=False)
+        for p in self.parameters():
+            p.requires_grad_(False)
+        self.eval()
+
+    @torch.no_grad()
+    def forward(
+        self,
+        av: torch.Tensor,
+        eih: torch.Tensor,
+        augment: bool = False,
+        random_shift: bool = False,
+    ):
+        del augment, random_shift
+        return self.conv(av.float() / 255.0), self.conv(eih.float() / 255.0)
+
+
+def _make_test_backbone(device: torch.device) -> torch.nn.Module:
+    if tv_models is not None:
+        return FrozenResNet18DualCam().to(device)
+    return _DummyDualCamBackbone().to(device)
 
 
 class TestDTRAv3Modules(unittest.TestCase):
@@ -110,7 +139,7 @@ class TestDTRAv3Modules(unittest.TestCase):
 
     def test_two_timescale_snap_back(self) -> None:
         """chunk_snap_back(delta_z만 리셋, episodic_trace 유지) 및 episode_snap_back(전부 0.0000 리셋) 검증."""
-        backbone = FrozenResNet18DualCam().to(self.device)
+        backbone = _make_test_backbone(self.device)
         key_ext = MultimodalMagneticKeyExtractor(d_topo=64, d_lang=128, seed=42).to(self.device)
         decoder = BSplineDecoder(num_control_points=8, horizon=16, degree=3).to(self.device)
         policy = DTRALiberoPolicy(
@@ -154,7 +183,7 @@ class TestDTRAv3Modules(unittest.TestCase):
 
     def test_shared_basis_bank_and_adamw_zero_silent_drift(self) -> None:
         """SharedBasisBank 기저 공유 및 후속 태스크 AdamW(weight_decay>0) 학습 시 과거 기저/튜브 드리프트 == 0.0 검증."""
-        backbone = FrozenResNet18DualCam().to(self.device)
+        backbone = _make_test_backbone(self.device)
         key_ext = MultimodalMagneticKeyExtractor(d_topo=64, d_lang=128, seed=42).to(self.device)
         decoder = BSplineDecoder(num_control_points=8, horizon=16, degree=3).to(self.device)
         policy = DTRALiberoPolicy(

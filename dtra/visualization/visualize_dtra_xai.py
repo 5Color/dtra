@@ -319,33 +319,36 @@ def generate_fig1_ood_curves() -> None:
         ax1.plot(x, srs, label=label, color=color, marker=marker, linestyle=ls, linewidth=lw, markersize=6.5, zorder=zo)
         ax2.plot(x, rts, color=color, marker=marker, linestyle=ls, linewidth=lw, markersize=5.8, zorder=zo)
 
-    # 주요 격차 주석
+    # 주요 격차 주석 (곡선/마커와 겹치지 않는 공백 영역에 배치)
     ax1.annotate(
-        "90.8% → 56.7% (−34.1%p)\nat mild noise σ=0.05",
+        "90.8% → 56.7% (−34.1 pp)\nat Noise σ=0.05",
         xy=(1, p2["arm4_frozen_mlp_multimodal"]["noise_0.05"]["avg_sr"] * 100.0),
-        xytext=(1.15, 41.0),
-        fontsize=8.2,
+        xytext=(-0.18, 32.0),
+        fontsize=8.0,
         color="#a81d1d",
         fontweight="bold",
-        arrowprops=dict(arrowstyle="->", color="#a81d1d", lw=1.2),
+        bbox=dict(boxstyle="round,pad=0.20", fc="white", ec="#a81d1d", lw=0.75, alpha=0.92),
+        arrowprops=dict(arrowstyle="->", color="#a81d1d", lw=1.2, shrinkB=4),
     )
     ax1.annotate(
-        "Bright High: DTRA 68.3%\nvs Frozen MLP 27.5% (+40.8%p)",
+        "Bright High: DTRA 68.3%\nvs Frozen MLP 27.5% (+40.8 pp)",
         xy=(7, p2["arm4_frozen_mlp_multimodal"]["bright_high"]["avg_sr"] * 100.0),
-        xytext=(5.1, 14.5),
-        fontsize=8.2,
+        xytext=(6.25, 6.5),
+        fontsize=8.1,
         color="#1b6ca8",
         fontweight="bold",
-        arrowprops=dict(arrowstyle="->", color="#d62828", lw=1.2),
+        bbox=dict(boxstyle="round,pad=0.20", fc="white", ec="#1b6ca8", lw=0.75, alpha=0.92),
+        arrowprops=dict(arrowstyle="->", color="#d62828", lw=1.2, shrinkB=4),
     )
     ax1.annotate(
-        "σ=0.20: DTRA 50.8%\nvs MLP 32.5%",
+        "σ=0.20: DTRA 50.8%\nvs MLP 32.5% (+18.3 pp)",
         xy=(3, p2["arm6_dtra_full_multimodal"]["noise_0.20"]["avg_sr"] * 100.0),
-        xytext=(2.35, 67.5),
-        fontsize=8.2,
+        xytext=(3.45, 70.0),
+        fontsize=8.1,
         color="#1b6ca8",
         fontweight="bold",
-        arrowprops=dict(arrowstyle="->", color="#1b6ca8", lw=1.2),
+        bbox=dict(boxstyle="round,pad=0.20", fc="white", ec="#1b6ca8", lw=0.75, alpha=0.92),
+        arrowprops=dict(arrowstyle="->", color="#1b6ca8", lw=1.2, connectionstyle="arc3,rad=0.18", shrinkB=5),
     )
 
     ax1.text(2.5, 96.5, "Gaussian Sensor Noise Sweep", ha="center", va="top", fontsize=8.5, color="#3b4d63", style="italic")
@@ -362,22 +365,25 @@ def generate_fig1_ood_curves() -> None:
     ax2.set_xticks(x)
     ax2.set_xticklabels(x_labels)
     ax2.annotate(
-        "Multimodal Keys (Arms 4/5/6): 100.0% RouteAcc across all OOD regimes",
-        xy=(4.0, 100.0),
-        xytext=(0.15, 76.0),
-        fontsize=8.3,
+        "Multimodal Keys (Arms 4/5/6):\n100.0% RouteAcc\n(All 9 OOD Regimes)",
+        xy=(5.48, 100.0),
+        xytext=(5.48, 70.5),
+        ha="center",
+        fontsize=7.5,
         color="#1b6ca8",
         fontweight="bold",
-        arrowprops=dict(arrowstyle="->", color="#1b6ca8", lw=1.1),
+        bbox=dict(boxstyle="round,pad=0.18", fc="white", ec="#1b6ca8", lw=0.75, alpha=0.92),
+        arrowprops=dict(arrowstyle="->", color="#1b6ca8", lw=1.1, shrinkB=4),
     )
     ax2.annotate(
         "Vision-Only Cutout Collapse\n(35.8% / 20.0%)",
         xy=(6, p2["arm3_dtra_full_vision"]["cutout_30"]["avg_route_acc"] * 100.0),
-        xytext=(3.2, 23.0),
-        fontsize=8.2,
+        xytext=(1.65, 22.0),
+        fontsize=8.1,
         color="#c45f00",
         fontweight="bold",
-        arrowprops=dict(arrowstyle="->", color="#c45f00", lw=1.1),
+        bbox=dict(boxstyle="round,pad=0.20", fc="white", ec="#c45f00", lw=0.75, alpha=0.92),
+        arrowprops=dict(arrowstyle="->", color="#c45f00", lw=1.1, shrinkB=5),
     )
 
     out_path = FIG_DIR / "fig1_ood_perturbation_curves.png"
@@ -852,9 +858,9 @@ def generate_fig2_manifold_snapback(registry: MetaWorldEvalRegistry, device: tor
         zorder=8,
     )
     ax_ins.text(0.015, 0.036, "$\\delta z^*$", color="#d62828", fontsize=8.4, fontweight="bold")
-    ax_ins.text(-0.014, 0.022, "snap_back", color="#006d6f", fontsize=7.6, fontweight="bold")
+    ax_ins.text(-0.025, 0.031, "snap_back", color="#006d6f", fontsize=7.4, fontweight="bold")
     ax_ins.text(0.023, 0.011, "Clean", color="#111111", fontsize=7.2, fontweight="bold")
-    ax_ins.set_xlim(-0.022, max(0.038, float(zt_cln_2d[0]) + 0.014))
+    ax_ins.set_xlim(-0.027, max(0.038, float(zt_cln_2d[0]) + 0.014))
     ax_ins.set_ylim(-0.012, max(0.044, float(zt_ood_2d[1]) + 0.015))
     ax_ins.set_xticks([])
     ax_ins.set_yticks([])
@@ -939,8 +945,8 @@ def generate_fig2_manifold_snapback(registry: MetaWorldEvalRegistry, device: tor
     ax_c.set_xticks(bx)
     ax_c.set_xticklabels(cats, fontsize=8.8)
     ax_c.set_ylim(0, max(vals_6 + vals_3) * 1.24)
-    ax_c.set_ylabel("L2 Norm on $S^{63}$ Manifold")
-    ax_c.set_title("(c) Stress & Zero-Residual Verification", pad=10)
+    ax_c.set_ylabel("Fine-Tube L2 Norm on $S^{63}$ Manifold")
+    ax_c.set_title("(c) Fine-Tube Stress & Zero-Residual", pad=10)
     ax_c.legend(loc="upper left", frameon=True, framealpha=0.95, fontsize=8.4)
     ax_c.grid(axis="y", linestyle="--", alpha=0.35)
 
@@ -1118,8 +1124,23 @@ def generate_fig3_xai_rollout(registry: MetaWorldEvalRegistry, device: torch.dev
         ax_img.plot(tu, tv, color="#00f5d4", lw=2.3, label="16-Step Decoded B-Spline", zorder=4)
         ax_img.plot(cu, cv, color="#ffd166", lw=1.2, ls="--", alpha=0.85, zorder=4)
         ax_img.scatter(cu, cv, color="#ffbe0b", edgecolors="#111111", s=44, lw=1.0, zorder=5, label="6 Control Points")
-        for cp_idx in (0, 2, 5):
-            ax_img.text(cu[cp_idx] + 2.5, cv[cp_idx] - 2.0, f"P{cp_idx}", color="#fff3b0", fontsize=7.6, fontweight="bold", zorder=6)
+        cp_offsets = {
+            0: (3.2, -3.0, "left", "bottom"),
+            2: (-3.2, 3.8, "right", "top"),
+            5: (3.2, 3.5, "left", "top"),
+        }
+        for cp_idx, (dx_cp, dy_cp, ha_cp, va_cp) in cp_offsets.items():
+            ax_img.text(
+                cu[cp_idx] + dx_cp,
+                cv[cp_idx] + dy_cp,
+                f"P{cp_idx}",
+                color="#fff3b0",
+                fontsize=7.4,
+                fontweight="bold",
+                ha=ha_cp,
+                va=va_cp,
+                zorder=6,
+            )
         ax_img.scatter([eu], [ev], color="#ff006e", edgecolors="white", marker="D", s=46, lw=1.0, zorder=6, label="Current EEF")
         h_im, w_im = snap["ood_img"].shape[:2]
         ax_img.set_xlim(0, w_im - 1)
@@ -1180,7 +1201,7 @@ def generate_fig3_xai_rollout(registry: MetaWorldEvalRegistry, device: torch.dev
         ax_g.set_ylabel("Conf Gate", color="#555555", fontsize=8.5)
         ax_g.spines["top"].set_visible(False)
 
-        ax_dz.set_ylim(-0.02, max(max(c_dz + f_dz) * 1.35, 0.35))
+        ax_dz.set_ylim(-0.02, max(max(c_dz + f_dz) * 1.42, 0.38))
         ax_dz.set_ylabel("Elastic Displacement $||\\Delta z^*||$")
         if row == 2:
             ax_dz.set_xlabel("Control Step $t$")
@@ -1192,7 +1213,14 @@ def generate_fig3_xai_rollout(registry: MetaWorldEvalRegistry, device: torch.dev
         if row == 0:
             lines1, labs1 = ax_dz.get_legend_handles_labels()
             lines2, labs2 = ax_g.get_legend_handles_labels()
-            ax_dz.legend(lines1 + lines2, labs1 + labs2, loc="center right", bbox_to_anchor=(0.98, 0.56), fontsize=6.8, framealpha=0.92)
+            ax_dz.legend(
+                lines1 + lines2,
+                labs1 + labs2,
+                loc="upper right",
+                bbox_to_anchor=(0.98, 0.88),
+                fontsize=6.6,
+                framealpha=0.92,
+            )
 
     fig.suptitle(
         "White-Box XAI Rollout Telemetry under Severe OOD Noise ($\\sigma=0.20$, Arm 6 Seed 42)",
@@ -1572,7 +1600,7 @@ def generate_fig4_cl_forgetting_heatmap() -> None:
             else:
                 ax_bar.text(
                     rect.get_x() + rect.get_width() / 2.0,
-                    val + 1.3,
+                    val + 1.6,
                     f"{val:.1f}",
                     ha="center",
                     va="bottom",
@@ -1583,14 +1611,14 @@ def generate_fig4_cl_forgetting_heatmap() -> None:
     # DTRA 영역 강조 배경 하이라이트
     ax_bar.axvspan(3.55, 4.45, color="#e0f2fe", alpha=0.45, zorder=0)
     ax_bar.annotate(
-        "DTRA: 0.0% FR AND\n+36.7%p OOD SR vs Frozen MLP",
-        xy=(4 + bw, ood_vals[-1]),
-        xytext=(2.50, 95.0),
-        fontsize=8.5,
+        "DTRA: 0.0% FR AND\n+36.7 pp OOD SR vs Frozen MLP",
+        xy=(4 + bw, ood_vals[-1] + 5.8),
+        xytext=(2.60, 96.0),
+        fontsize=8.4,
         fontweight="bold",
         color="#0f4c75",
         bbox=dict(boxstyle="round,pad=0.28", fc="#e0f2fe", ec="#1b6ca8", lw=1.0),
-        arrowprops=dict(arrowstyle="->", color="#1b6ca8", lw=1.3),
+        arrowprops=dict(arrowstyle="->", color="#1b6ca8", lw=1.3, connectionstyle="arc3,rad=-0.22"),
         zorder=8,
     )
 
