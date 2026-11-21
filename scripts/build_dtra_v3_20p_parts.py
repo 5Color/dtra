@@ -78,7 +78,7 @@ Let $\Theta_{\text{frozen}}^{(k)} = \{\mathbf{k}_j, \mathbf{B}_{b_j}, \mathbf{W}
 \subsection{Clamped \texorpdfstring{$C^2$}{C2} Cubic B-Spline Continuity \& Perturbation Bound}
 \begin{proposition}[Within-Chunk $C^2$ Continuity and Convex-Hull Perturbation Bound]
 \label{prop:bspline}
-Let $U = \{0, 0, 0, 0, u_4, \dots, u_{N_{\text{cp}}-1}, 1, 1, 1, 1\}$ be a clamped uniform degree-$3$ knot vector with $N_{\text{cp}}$ control points $\mathbf{P} \in \mathbb{R}^{N_{\text{cp}} \times d_a}$ ($N_{\text{cp}}=8$ on LIBERO-100; $N_{\text{cp}}=6$ on Meta-World), evaluated at $\tau_h = h / (H-1)$ for $h = 0, \dots, H-1$ ($H=16$). By standard spline properties~\cite{deboor1978splines,piegl1997nurbs}:
+Let the clamped uniform degree-$3$ knot vector $U = \{0, 0, 0, 0, u_4, \dots, u_{N_{\text{cp}}-1}, 1, 1, 1, 1\}$ have $N_{\text{cp}}$ control points $\mathbf{P} \in \mathbb{R}^{N_{\text{cp}} \times d_a}$ ($N_{\text{cp}}=8$ on LIBERO-100; $N_{\text{cp}}=6$ on Meta-World), evaluated at $\tau_h = h / (H-1)$ for $h = 0, \dots, H-1$ ($H=16$). By standard spline properties~\cite{deboor1978splines,piegl1997nurbs}:
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
   \item Every synthesized chunk $\mathbf{a}(\tau) = \sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau)\,\mathbf{p}_n$ satisfies endpoint clamping ($\mathbf{a}(0) = \mathbf{p}_0$, $\mathbf{a}(1) = \mathbf{p}_{N_{\text{cp}}-1}$) and $C^2$ continuity at all interior knots.
   \item By non-negativity ($B_{n,3}(\tau) \ge 0$) and partition of unity ($\sum_{n=0}^{N_{\text{cp}}-1} B_{n,3}(\tau) \equiv 1$), any knot perturbation $\|\delta\mathbf{P}\|_\infty \le \epsilon$ obeys $\sup_{\tau \in [0,1]} \|\delta\mathbf{a}(\tau)\|_\infty \le \epsilon$ within a single chunk.

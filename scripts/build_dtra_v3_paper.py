@@ -199,7 +199,47 @@ def build_main_tables(
     lib_neval20: Optional[dict] = None,
 ) -> Dict[str, str]:
     lib_100_list = [d for _, d in lib_entries]
-    # 1. Meta-World 3-Seed Table
+    # 1. Meta-World 3-Seed Table (computed with sample std ddof=1 from per_seed JSONs)
+    def _mw_sci_ddof1(sci_obj: dict, arm_k: str) -> Optional[Dict[str, float]]:
+        ps = sci_obj.get("per_seed", {})
+        seeds = [str(s) for s in sci_obj.get("seeds", []) if str(s) in ps and arm_k in ps[str(s)]]
+        if not seeds:
+            return None
+        c_sr = [float(np.mean(ps[s][arm_k]["clean_id"]["per_task_sr"])) for s in seeds]
+        fr_v = [float(ps[s][arm_k]["clean_id"]["avg_forgetting"]) for s in seeds]
+        c_rt = [float(ps[s][arm_k]["clean_id"]["avg_route_acc"]) for s in seeds]
+        o_sr = [float(np.mean(ps[s][arm_k]["ood_severe_sigma020"]["per_task_sr"])) for s in seeds]
+        o_rt = [float(ps[s][arm_k]["ood_severe_sigma020"]["avg_route_acc"]) for s in seeds]
+        ddof = 1 if len(seeds) > 1 else 0
+        return {
+            "clean_avg_sr_mean": float(np.mean(c_sr)),
+            "clean_avg_sr_std": float(np.std(c_sr, ddof=ddof)),
+            "clean_fr_mean": float(np.mean(fr_v)),
+            "clean_fr_std": float(np.std(fr_v, ddof=ddof)),
+            "clean_route_mean": float(np.mean(c_rt)),
+            "ood_severe_sr_mean": float(np.mean(o_sr)),
+            "ood_severe_sr_std": float(np.std(o_sr, ddof=ddof)),
+            "ood_severe_route_mean": float(np.mean(o_rt)),
+        }
+
+    def _mw_v31_ddof1(v31_obj: dict, arm_k: str) -> Optional[Dict[str, float]]:
+        ps = v31_obj.get("per_seed", {})
+        seeds = [s for s in ps if arm_k in ps[s]]
+        if not seeds:
+            return v31_obj.get("aggregated", {}).get(arm_k)
+        c_l = [float(ps[s][arm_k].get("clean_sr", ps[s][arm_k].get("clean_avg_sr"))) for s in seeds]
+        f_l = [float(ps[s][arm_k].get("fr", ps[s][arm_k].get("forgetting_rate"))) for s in seeds]
+        o_l = [float(ps[s][arm_k].get("ood_sr", ps[s][arm_k].get("ood_severe_sr"))) for s in seeds]
+        ddof = 1 if len(seeds) > 1 else 0
+        return {
+            "clean_sr_mean": float(np.mean(c_l)),
+            "clean_sr_std": float(np.std(c_l, ddof=ddof)),
+            "fr_mean": float(np.mean(f_l)),
+            "fr_std": float(np.std(f_l, ddof=ddof)),
+            "ood_sr_mean": float(np.mean(o_l)),
+            "ood_sr_std": float(np.std(o_l, ddof=ddof)),
+        }
+
     mw_rows = []
     mw_arm_labels = [
         ("arm1_abk_dog_vision", r"ABK-VLA v1.1.3 (DoG Vision)"),
@@ -212,7 +252,8 @@ def build_main_tables(
     if sci and "aggregated" in sci:
         agg = sci["aggregated"]
         for key, label in mw_arm_labels:
-            v = agg.get(key)
+            v_agg = agg.get(key)
+            v = _mw_sci_ddof1(sci, key) or v_agg
             if not v:
                 continue
             c_sr = f"{v['clean_avg_sr_mean']*100:.1f} $\\pm$ {v['clean_avg_sr_std']*100:.1f}"
@@ -220,7 +261,7 @@ def build_main_tables(
             rt = f"{v['clean_route_mean']*100:.1f}"
             o_sr = f"{v['ood_severe_sr_mean']*100:.1f} $\\pm$ {v['ood_severe_sr_std']*100:.1f}"
             o_rt = f"{v['ood_severe_route_mean']*100:.1f}"
-            lat = v.get("cpu_latency", {})
+            lat = (v_agg or {}).get("cpu_latency", {})
             l1 = lat.get("K=1", {}).get("active_exec_ms")
             l8 = lat.get("K=8", {}).get("active_exec_ms")
             lat_str = f"{l1:.2f} $\\to$ {l8:.2f}" if (l1 is not None and l8 is not None) else "--"
@@ -228,8 +269,7 @@ def build_main_tables(
                 fr, rt, o_sr, o_rt, lat_str = [r"\textbf{" + x + "}" for x in (fr, rt, o_sr, o_rt, lat_str)]
             mw_rows.append(f"    {label} & {c_sr} & {fr} & {rt} & {o_sr} & {o_rt} & {lat_str} \\\\")
     if mw_v31 and "aggregated" in mw_v31:
-        v31_agg = mw_v31["aggregated"]
-        v_nf = v31_agg.get("causal_dtra_no_featreg")
+        v_nf = _mw_v31_ddof1(mw_v31, "causal_dtra_no_featreg")
         if v_nf:
             c_sr = f"\\textbf{{{v_nf['clean_sr_mean']*100:.1f} $\\pm$ {v_nf['clean_sr_std']*100:.1f}}}"
             fr = f"\\textbf{{{v_nf['fr_mean']*100:.1f} $\\pm$ {v_nf['fr_std']*100:.1f}}}"
@@ -243,7 +283,7 @@ def build_main_tables(
             ("ext_l2p", "L2P (Prompt Pool, Replay-Free)"),
             ("ext_olora", "O-LoRA (Ortho Subspace, Replay-Free)"),
         ]:
-            ev = v31_agg.get(ek)
+            ev = _mw_v31_ddof1(mw_v31, ek)
             if ev:
                 c_sr = f"{ev['clean_sr_mean']*100:.1f} $\\pm$ {ev['clean_sr_std']*100:.1f}"
                 fr = f"{ev['fr_mean']*100:.1f} $\\pm$ {ev['fr_std']*100:.1f}"
@@ -265,13 +305,12 @@ def build_main_tables(
                     f"    {label} & {v['clean_avg_sr']*100:.1f}\\% & {v['fr']*100:.1f}\\% & {v['ood_severe_sr']*100:.1f}\\% \\\\"
                 )
     if mw_v31 and "aggregated" in mw_v31:
-        v31_agg = mw_v31["aggregated"]
         for ek, elab in [
             ("ext_derpp", "DER++ (3-Seed Mean $\\pm$ Std)"),
             ("ext_l2p", "L2P Prompt Pool (3-Seed Mean $\\pm$ Std)"),
             ("ext_olora", "O-LoRA Subspace (3-Seed Mean $\\pm$ Std)"),
         ]:
-            ev = v31_agg.get(ek)
+            ev = _mw_v31_ddof1(mw_v31, ek)
             if ev:
                 supp_rows.append(
                     f"    {elab} & {ev['clean_sr_mean']*100:.1f}$\\pm${ev['clean_sr_std']*100:.1f}\\% & "
@@ -285,7 +324,7 @@ def build_main_tables(
             ("causal_dtra_no_featreg", r"\textbf{DTRA Full (No Feat-Reg $p=0,\sigma=0$, 3-Seed)}"),
             ("causal_dtra_res075", r"DTRA Rigid (Mild Feat-Reg $p=0.15,\sigma=0.025,r=0.75$, 3-Seed)"),
         ]:
-            cv = v31_agg.get(ck)
+            cv = _mw_v31_ddof1(mw_v31, ck)
             if cv:
                 c_s = f"{cv['clean_sr_mean']*100:.1f}$\\pm${cv['clean_sr_std']*100:.1f}\\%"
                 f_s = f"{cv['fr_mean']*100:.1f}$\\pm${cv['fr_std']*100:.1f}\\%"
@@ -422,6 +461,10 @@ def build_main_tables(
             ms_sr = _fmt_mean_std(ad["sr"], 100.0, 2).replace(" $\\pm$ ", "$\\pm$")
             fr_s = _fmt_mean_std(ad["fr"], 100.0, 2).replace(" $\\pm$ ", "$\\pm$")
             bwt_s = _fmt_mean_std(ad["bwt"], 100.0, 2, signed=True).replace(" $\\pm$ ", "$\\pm$")
+            if bwt_s.startswith("-"):
+                bwt_s = "$-$" + bwt_s[1:]
+            elif bwt_s.startswith("+"):
+                bwt_s = "$+$" + bwt_s[1:]
             rt_s = "---" if arm_key == "arm_er_5pct" else _fmt_mean_std(ad["rt"], 100.0, 2).replace(" $\\pm$ ", "$\\pm$")
             dup_s = "---" if arm_key == "arm_er_5pct" else _fmt_mean_std(ad["dup"], 100.0, 2).replace(" $\\pm$ ", "$\\pm$")
             bs_s = f"{int(round(np.mean(ad['bs'])))}" if np.std(ad["bs"]) < 1e-6 else _fmt_mean_std(ad["bs"], 1.0, 1).replace(" $\\pm$ ", "$\\pm$")
@@ -448,9 +491,10 @@ def build_main_tables(
             sr_v = mv["mean_sr"] * 100.0
             fr_v = mv["forgetting_rate"] * 100.0
             bwt_v = mv["bwt"] * 100.0
+            bwt_ext_s = f"$-${abs(bwt_v):.2f}" if bwt_v < 0 else f"$+${bwt_v:.2f}"
             lat_v = mv.get("active_latency_ms", 0.0)
             k100_rows.append(
-                f"    {elab} & {sr_v:.1f}/--/-- & {sr_v:.2f} & {fr_v:.2f} & {bwt_v:+.2f} & --- & --- & {ebs} & {lat_v:.2f} \\\\"
+                f"    {elab} & {sr_v:.1f}/--/-- & {sr_v:.2f} & {fr_v:.2f} & {bwt_ext_s} & --- & --- & {ebs} & {lat_v:.2f} \\\\"
             )
 
     n_rigid = summary["arms"]["arm_dtra_rigid"]["n"]
@@ -544,7 +588,7 @@ def build_main_tables(
     mw_block = f"""
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{3D Meta-World 8-Task Continual Benchmark (3-Seed Mean $\\pm$ Std over Seeds~42, 100, 2026; $n_{{\\text{{eval}}}}=15$ clean / $15$ severe OOD per task, $55$ epochs/task) and CPU Active Latency ($K=1 \\to 8$).}}
+  \\caption{{3D Meta-World 8-Task Continual Benchmark (3-Seed Mean $\\pm$ Sample Std \\texttt{{ddof=1}} over Seeds~42, 100, 2026; $n_{{\\text{{eval}}}}=15$ clean / $15$ severe OOD per task, $55$ epochs/task) and CPU Active Latency ($K=1 \\to 8$).}}
   \\label{{tab:mw_3seed}}
   \\tblfont
   \\setlength{{\\tabcolsep}}{{3.2pt}}
@@ -561,7 +605,7 @@ def build_main_tables(
     mw_supp_block = f"""
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{Supplemental 3D Meta-World External Baselines, 3-Seed Causal Feature-Regularization Decomposition, and Reverse Task Ordering ($T_7 \\to T_0$) Verification.}}
+  \\caption{{Supplemental 3D Meta-World External Baselines, 3-Seed Causal Feature-Regularization Decomposition (Mean $\\pm$ Sample Std \\texttt{{ddof=1}}), and Reverse Task Ordering ($T_7 \\to T_0$) Verification.}}
   \\label{{tab:mw_supp}}
   \\tblfont
   \\setlength{{\\tabcolsep}}{{5pt}}
@@ -593,10 +637,10 @@ def build_main_tables(
 
 \\begin{{table}}[ht!]
   \\centering
-  \\caption{{LIBERO-100 Final $K=100$ Cross-Seed Summary (Seeds~42/100/2026 SR (\\%); {cov_note}{ext_note}).}}
+  \\caption{{LIBERO-100 Final $K=100$ Cross-Seed Summary (Seeds~42/100/2026 SR (\\%); Mean $\\pm$ Sample Std \\texttt{{ddof=1}}; {cov_note}{ext_note}).}}
   \\label{{tab:libero100_final}}
-  \\tblfont
-  \\setlength{{\\tabcolsep}}{{1.6pt}}
+  \\fontsize{{8.0pt}}{{9.8pt}}\\selectfont
+  \\setlength{{\\tabcolsep}}{{3.0pt}}
   \\begin{{tabular}}{{lcccccccc}}
     \\toprule
     \\textbf{{Method}} & \\textbf{{42/100/2026}} & \\textbf{{Mean$\\pm$Std}} & \\textbf{{FR$\\downarrow$}} & \\textbf{{BWT$\\uparrow$}} & \\textbf{{Route$\\uparrow$}} & \\textbf{{Dup-Lang}} & \\textbf{{Bases}} & \\textbf{{Lat.(ms)}} \\\\
@@ -952,7 +996,7 @@ Table~\\ref{{tab:seed_registry}} documents the exact provenance of every LIBERO-
 
 \\clearpage
 \\subsection{{Long-Horizon (\\texttt{{libero\\_10}}) vs.\\ High-Density (\\texttt{{libero\\_90}}) Crossover Split}}
-Splitting the 100-task continual stream at $K=100$ exposes the density-driven crossover inside one curriculum (Table~\\ref{{tab:libero_split}}). On the initial 10 long-horizon tasks (\\texttt{{libero\\_10}}), unconstrained MLPs memorize sparse skills cleanly while replay/prompt/LoRA baselines forget early skills severely (\\texttt{{DER++}} drops to $12.00\\%$ on \\texttt{{libero\\_10}}, while \\texttt{{L2P}} and \\texttt{{O-LoRA}} fall to $0.00\\%$), whereas across the high-density 90-task suffix (\\texttt{{libero\\_90}}), DTRA sustains near-perfect routing and lifts Success Rate dramatically. Table~\\ref{{tab:libero_resources}} reports Forward Transfer (FWT), parameter footprint, peak VRAM, and GPU active latency.
+Splitting the 100-task continual stream at $K=100$ exposes the density-driven crossover inside one curriculum (Table~\\ref{{tab:libero_split}}). On the initial 10 long-horizon tasks (\\texttt{{libero\\_10}}), unconstrained MLPs memorize sparse skills cleanly while replay/prompt/LoRA baselines forget early skills severely (\\texttt{{DER++}} drops to $12.00\\%$ on \\texttt{{libero\\_10}}, while \\texttt{{L2P}} and \\texttt{{O-LoRA}} fall to $0.00\\%$), whereas across the high-density 90-task suffix (\\texttt{{libero\\_90}}), DTRA sustains near-perfect routing and lifts Success Rate dramatically. Table~\\ref{{tab:libero_resources}} reports relative parameter capacity ratio, policy parameter footprint, peak CUDA VRAM, and GPU active latency.
 
 \\begin{{table}}[ht!]
   \\centering
@@ -1160,6 +1204,7 @@ def build_manuscript_text(
         el_bwt_txt = f"{_fmt_mean_std(el['bwt'], 100.0, 2, signed=True)}\\%"
         el_rt_txt = f"{_fmt_mean_std(el['rt'], 100.0, 2)}\\%"
         el_dup_txt = f"{_fmt_mean_std(el['dup'], 100.0, 2)}\\%"
+        el_lat_txt = _fmt_mean_std(el["lat"], 1.0, 2)
         mlp_sr_txt = f"{_fmt_mean_std(mlp['sr'], 100.0, 2)}\\%"
         mlp_dup_txt = f"{_fmt_mean_std(mlp['dup'], 100.0, 2)}\\%"
         mlp_fr_txt = f"{_fmt_mean_std(mlp['fr'], 100.0, 2)}\\%"
@@ -1182,6 +1227,7 @@ def build_manuscript_text(
             seed_status_clause = r"across finalized Seeds~42, 100, and~2026"
     else:
         el_sr_txt, el_fr_txt, el_bwt_txt, el_rt_txt, el_dup_txt = seed42_sr, "2.22\\%", "+0.61\\%", "99.71\\%", "99.05\\%"
+        el_lat_txt = "9.42"
         mlp_sr_txt, mlp_dup_txt, mlp_fr_txt = "72.00\\%", "38.92\\%", "1.41\\%"
         rg_sr_txt, rg_fr_txt = "86.20\\%", "3.84\\%"
         er_sr_txt, er_fr_txt = "40.50\\%", "27.07\\%"
@@ -1240,7 +1286,7 @@ def build_manuscript_text(
 \maketitle
 
 \begin{{abstract}}
-Continual visuomotor policy learning faces parameter interference, routing ambiguity when distinct scenes share identical language instructions, and growth in task-specific motor heads. We present \textbf{{Dynamic Topology Ring Architecture (DTRA)}}, a geometric parameter-isolation framework for Task-ID-free continual manipulation without raw-demonstration replay (retaining lightweight 96-vector key-validation exemplars per task during registration). DTRA combines hyperspherical routing on $\mathbb{{S}}^{{63}}$, No-Encroachment key refinement, Two-Stage Top-$M$ 3-modality Common-Mode Cancellation (CMC), and a \textbf{{SharedBasisBank}} for clamped $C^2$ cubic B-spline action decoding ($N_{{\text{{cp}}}}=8$ on 7-DoF LIBERO-100; $N_k=6$ on Meta-World). Consolidated parameters are frozen and excluded from subsequent \texttt{{AdamW}} parameter groups ($\nabla_\theta=0$), while episode-boundary reset clears active routing inertia. On sequential 7-DoF \textbf{{LIBERO-100}} ($\texttt{{libero\_10}}+\texttt{{libero\_90}}$, $K=100$, Mean $\pm$ Sample Std \texttt{{ddof=1}} across three seeds), DTRA Elastic achieves \textbf{{{el_sr_txt}}} and DTRA Rigid achieves {rg_sr_txt} (statistically comparable), outperforming matched-encoder Frozen MLP ({mlp_sr_txt}), Experience Replay 5\% ({er_sr_txt}), and naive continuous-control adaptations of published baselines (\texttt{{DER++}} $38.40\%$ / $29.70\%$ FR; \texttt{{L2P}} $1.20\%$; \texttt{{O-LoRA}} $1.00\%$; note that DTRA allocates $183.14\,$MB of isolated per-task nodes vs.\ $151.67\,$MB for Frozen MLP and $1.70\text{{--}}2.09\,$MB for monolithic baselines). Overall routing accuracy is {el_rt_txt}, duplicate-instruction routing is \textbf{{{el_dup_txt}}}, and empirical success-rate forgetting is {el_fr_txt}. Zero-retrain extended evaluation on all three saved $K=100$ checkpoints across $n_{{\text{{eval}}}}=20$ initial states ($12{{,}}000$ rollouts total) confirms generalization to $15$ unseen initial states per task (\textbf{{85.20 $\pm$ 0.43\%}} vs.\ $69.12 \pm 0.90\%$ overall; \textbf{{84.80 $\pm$ 0.44\%}} vs.\ $68.82 \pm 0.91\%$ held-out \texttt{{init[5:20]}}). \texttt{{SharedBasisBank}} compresses motor basis slots by \textbf{{73\%}} ($100 \to 27$ bases, $3.81\,$MB), yielding a \textbf{{5.33\%}} total parameter reduction relative to unshared bases while per-task adapters remain $O(K)$, with $9.55 \pm 0.25\,$ms GPU policy latency. On three-seed Meta-World, causal ablation isolates Conv4 feature-noise regularization: disabling it lifts DTRA Full to \textbf{{83.1 $\pm$ 5.1\%}} clean and \textbf{{45.0 $\pm$ 5.4\%}} severe OOD SR ($0.0\%$ FR), while heavy regularization trades clean SR ($72.2 \pm 6.8\%$) for $51.4 \pm 4.4\%$ OOD SR.
+Continual visuomotor policy learning faces parameter interference, routing ambiguity when distinct scenes share identical language instructions, and growth in task-specific motor heads. We present \textbf{{Dynamic Topology Ring Architecture (DTRA)}}, a geometric parameter-isolation framework for Task-ID-free continual manipulation without raw-demonstration replay (retaining lightweight 96-vector key-validation exemplars per task during registration). DTRA combines hyperspherical routing on $\mathbb{{S}}^{{63}}$, No-Encroachment key refinement, Two-Stage Top-$M$ 3-modality Common-Mode Cancellation (CMC), and a \textbf{{SharedBasisBank}} for clamped $C^2$ cubic B-spline action decoding ($N_{{\text{{cp}}}}=8$ on 7-DoF LIBERO-100; $N_k=6$ on Meta-World). Consolidated parameters are frozen and excluded from subsequent \texttt{{AdamW}} parameter groups ($\nabla_\theta=0$), while episode-boundary reset clears active routing inertia. On sequential 7-DoF \textbf{{LIBERO-100}} ($\texttt{{libero\_10}}+\texttt{{libero\_90}}$, $K=100$, Mean $\pm$ Sample Std \texttt{{ddof=1}} across three seeds), DTRA Elastic achieves \textbf{{{el_sr_txt}}} and DTRA Rigid achieves {rg_sr_txt} (statistically comparable), outperforming matched-encoder Frozen MLP ({mlp_sr_txt}), Experience Replay 5\% ({er_sr_txt}), and naive continuous-control adaptations of published baselines (\texttt{{DER++}} $38.40\%$ / $29.70\%$ FR; \texttt{{L2P}} $1.20\%$; \texttt{{O-LoRA}} $1.00\%$; note that DTRA allocates $183.14\,$MB of isolated per-task nodes vs.\ $151.67\,$MB for Frozen MLP and $1.70\text{{--}}2.09\,$MB for monolithic baselines). Overall routing accuracy is {el_rt_txt}, duplicate-instruction routing is \textbf{{{el_dup_txt}}}, and empirical success-rate forgetting is {el_fr_txt}. Zero-retrain extended evaluation on all three saved $K=100$ checkpoints across $n_{{\text{{eval}}}}=20$ initial states ($12{{,}}000$ rollouts total) confirms generalization to $15$ unseen initial states per task (\textbf{{85.20 $\pm$ 0.43\%}} vs.\ $69.12 \pm 0.90\%$ overall; \textbf{{84.80 $\pm$ 0.44\%}} vs.\ $68.82 \pm 0.91\%$ held-out \texttt{{init[5:20]}}). \texttt{{SharedBasisBank}} compresses motor basis slots by \textbf{{73\%}} ($100 \to 27$ bases, $3.81\,$MB), yielding a \textbf{{5.33\%}} total parameter reduction relative to unshared bases while per-task adapters remain $O(K)$, with {el_lat_txt}\,ms GPU policy latency. On three-seed Meta-World (\texttt{{ddof=1}}), causal ablation isolates Conv4 feature-noise regularization: disabling it lifts DTRA Full to \textbf{{83.1 $\pm$ 6.3\%}} clean and \textbf{{45.0 $\pm$ 6.6\%}} severe OOD SR ($0.0\%$ FR), while heavy regularization trades clean SR ($72.2 \pm 8.3\%$) for $51.4 \pm 5.4\%$ OOD SR.
 \end{{abstract}}
 
 % ==========================================================================
@@ -1254,7 +1300,7 @@ Vision-Language-Action (VLA) policies~\cite{{vaswani2017attention,brohan2023rt1,
 \begin{{figure}}[ht!]
   \centering
   \includegraphics[width=0.71\textwidth]{{../../outputs/figures/fig6_dtra_v3_architecture_schematic.png}}
-  \caption{{\textbf{{DTRA v3.0 end-to-end architecture and implementation scope boundary.}} \textbf{{Top:}} Strict-parity multimodal perception (\texttt{{Frozen ResNet-18}} + proprioception + \texttt{{LightweightTextEncoder}}), two-stage Top-$M$ common-mode cancellation with No-Encroachment keys on $\mathbb{{S}}^{{63}}$, active hypertube + \texttt{{SharedBasisBank}} ($K=100 \to 27$ frozen bases), $C^2$ cubic B-Spline decoding, and Two-Timescale Snap-Back ($L_\infty$ drift $= 0.0000$). \textbf{{Bottom:}} Explicit scope separation between the implemented \emph{{Cell}} / single-ring \emph{{Region}} ($K=100$) modules validated in this paper and the conceptual \emph{{Organ}} ($10^4$--$10^8$ tasks) future work roadmap.}}
+  \caption{{\textbf{{DTRA v3.0 end-to-end architecture and implementation scope boundary.}} \textbf{{Top:}} Strict-parity multimodal perception (\texttt{{Frozen ResNet-18}} + proprioception + \texttt{{LightweightTextEncoder}}), two-stage Top-$M$ 3-modality common-mode cancellation with No-Encroachment keys on $\mathbb{{S}}^{{63}}$, active hypertube + \texttt{{SharedBasisBank}} ($K=100 \to 27$ frozen bases), $C^2$ cubic B-Spline decoding, and episode-boundary state reset ($L_\infty$ optimizer drift $= 0.0$). Elliptical ring basis and active chunk snap-back apply to Meta-World; LIBERO-100 uses \texttt{{theta\_head}} and episode-boundary inertia reset with write-only diagnostic buffers (Sections~\ref{{sec:node_arch}} \&~\ref{{sec:state_reset}}). \textbf{{Bottom:}} Explicit scope separation between the implemented \emph{{Cell}} / single-ring \emph{{Region}} ($K=100$) modules validated in this paper and the conceptual \emph{{Organ}} ($10^4$--$10^8$ tasks) future work roadmap.}}
   \label{{fig:dtra_v3_arch}}
 \end{{figure}}
 
@@ -1327,6 +1373,7 @@ Let $\{{\mathbf{{k}}_j\}}_{{j=1}}^{{K}} \subset \mathbb{{S}}^{{63}}$ denote cons
 % ==========================================================================
 
 \subsection{{Hypertube Node Architecture (Meta-World v2.1 vs.\ LIBERO-100 v3.0)}}
+\label{{sec:node_arch}}
 Each consolidated task $i \in \{{1,\dots,K\}}$ owns an isolated node on $\mathbb{{S}}^{{63}}$ with unit routing anchor $\mathbf{{k}}_i \in \mathbb{{S}}^{{63}}$ and bounded elastic compliance $\alpha_i = \sigma(\omega_i) \in (0,1)$:
 \begin{{itemize}}[leftmargin=*,itemsep=1.5pt]
   \item \textbf{{Meta-World (\texttt{{HypertubeNode}}):}} Stores explicit first-order Fourier ring coefficients $\mathbf{{r}}_i(\theta) = \mathbf{{a}}_{{i,0}} + \mathbf{{a}}_{{i,1}}\cos\theta + \mathbf{{a}}_{{i,2}}\sin\theta$ with a closed-form first-order \texttt{{atan2}} phase approximation and magnetic gate $\tau_i = \mathrm{{softplus}}(\beta_i)$.
@@ -1356,6 +1403,7 @@ When tasks share identical language commands (\texttt{{Dup-Lang}}) across distin
 DTRA maintains an expandable \texttt{{SharedBasisBank}} $\mathcal{{B}} = \{{\mathbf{{B}}_b\}}_{{b=1}}^{{B}}$ of frozen B-Spline knot-decoder slots ($37{{,}}016$ params / $0.141\,$MB per slot). During task-$k$ registration, if an existing primitive reconstructs task $k$'s B-Spline target within a cosine threshold, node $k$ binds to existing basis $\mathbf{{B}}_{{b_k}}$; otherwise a new basis is appended. On LIBERO-100, the bank saturates sub-linearly at $7 \to 13 \to 22 \to 24 \to \mathbf{{27}}$ bases across all three seeds---a \textbf{{73\% reduction in basis slot count}} ($3.81\,$MB vs.\ $14.12\,$MB unshared). Crucially, however, each task still instantiates an isolated \texttt{{LIBEROHypertubeNode}} adapter ($470\,$k params / $1.79\,$MB $\times 100 = 179.33\,$MB, $97.92\%$ of total policy memory). Thus \texttt{{SharedBasisBank}} yields a \textbf{{5.33\% total policy-parameter reduction}} ($193.45 \to 183.14\,$MB), leaving total memory $O(K)$ ($+20.75\%$ vs.\ Frozen MLP's $151.67\,$MB). Every consolidated basis and node receives \texttt{{requires\_grad = False}} and is excluded from downstream \texttt{{AdamW}} parameter groups ($L_\infty = 0.0$, Proposition~\ref{{prop:zero_drift}}).
 
 \subsection{{Episode-Boundary State Reset \& Diagnostic Logging}}
+\label{{sec:state_reset}}
 At episode termination, \texttt{{episode\_snap\_back()}} resets active routing inertia (\texttt{{prev\_selected}}, \texttt{{prev\_act\_vec}}) and diagnostic deformation buffers to exact $0.0000$ (\texttt{{post\_snap\_norm}}) so no state leaks across episodes. On Meta-World, elastic deformation operates directly on the ring phase residual; on LIBERO-100, \texttt{{LIBEROHypertubeNode}} is a 1-step Markov decoder whose \texttt{{episodic\_trace}} and \texttt{{delta\_z\_state}} buffers are write-only diagnostic tensors (logged and zeroed at chunk/episode boundaries without feeding back into \texttt{{forward()}}), so \texttt{{chunk\_snap\_back()}} does not alter LIBERO-100 control outputs.
 
 {ALGORITHM_1_BLOCK}
@@ -1379,14 +1427,14 @@ We evaluate all baselines and DTRA variants under strict encoder parity ($\mathc
 \begin{{figure}}[ht!]
   \centering
   \includegraphics[width=0.43\textwidth]{{../../outputs/figures/fig1_ood_perturbation_curves.png}}
-  \caption{{\textbf{{3D Meta-World 9-regime zero-shot OOD stress curves (Seed~42).}} Across Gaussian noise ($\sigma=0.05\text{{--}}0.30$), $15\%/30\%$ cutout occlusion, brightness, and harsh contrast, DTRA Full retains $100.0\%$ multimodal routing and $51.4 \pm 4.4\%$ severe OOD SR across 3 seeds, outperforming ABK DoG ($2.2\%$) and Frozen MLP ($23.6\%$).}}
+  \caption{{\textbf{{3D Meta-World 9-regime zero-shot OOD stress curves (Seed~42).}} Across Gaussian noise ($\sigma=0.05\text{{--}}0.30$), $15\%/30\%$ cutout occlusion, brightness, and harsh contrast, DTRA Full retains $100.0\%$ multimodal routing and $51.4 \pm 5.4\%$ severe OOD SR across 3 seeds (\texttt{{ddof=1}}), outperforming ABK DoG ($2.2\%$) and Frozen MLP ($23.6\%$).}}
   \label{{fig:mw_ood}}
 \end{{figure}}
 
 {mw_block}
 
 \subsection{{3D Meta-World 8-Task Continual Ablation, Causal Decomposition \& LIBERO-Goal Pilot}}
-Table~\ref{{tab:mw_3seed}}, Appendix~Table~\ref{{tab:mw_supp}}, and Figure~\ref{{fig:mw_ood}} demonstrate that shared-backbone and parameter-efficient continual baselines degrade under sequential 3D manipulation: across three seeds ($\sim 5.25\,$M matched capacity), \texttt{{DER++}}~\cite{{buzzega2020der}} reaches $73.3 \pm 3.6\%$ clean SR with $22.9 \pm 2.7\%$ forgetting and $13.6 \pm 7.3\%$ severe OOD SR, while \texttt{{L2P}}~\cite{{wang2022l2p}} ($16.7 \pm 3.6\%$ clean, $79.4 \pm 10.9\%$ FR) and \texttt{{O-LoRA}}~\cite{{wang2023olora}} ($7.2 \pm 1.4\%$ clean, $63.2 \pm 5.5\%$ FR) suffer severe trajectory interference as un-isolated readout updates overwrite continuous velocity fields (alongside Seed~42 \texttt{{Naive FT}} $98.1\%$ FR, \texttt{{EWC}} $100.0\%$ FR, and \texttt{{ER 5\%}} $20.0\%$ FR). Furthermore, a controlled three-seed causal ablation (Appendix~Table~\ref{{tab:mw_supp}}) resolves the clean-versus-OOD trade-off: disabling \texttt{{DenoisingFineHead}}'s Conv4 feature dropout ($p=0.30$) and Gaussian feature noise ($\sigma=0.05$) lifts \textbf{{DTRA Full (No Feat-Reg)}} clean SR by $+10.9\,$pp from $72.2 \pm 6.8\%$ to \textbf{{83.1 $\pm$ 5.1\%}} (matching Frozen MLP's $85.6 \pm 3.1\%$) while retaining \textbf{{45.0 $\pm$ 5.4\%}} severe OOD SR ($+21.4\,$pp over unregularized Frozen MLP's $23.6 \pm 3.9\%$, and $+1.7\,$pp over \texttt{{DTRA Rigid No Feat-Reg}} at $81.7 \pm 4.1\%$ clean / $43.3 \pm 1.8\%$ OOD). Conversely, applying identical Conv4 feature regularization to Frozen MLP yields $90.8 \pm 3.0\%$ clean and $49.2 \pm 8.3\%$ OOD SR on sparse $8$-task Meta-World, confirming that both manifold-bounded residuals and feature regularization contribute to OOD resilience, whereas DTRA's decisive structural advantage emerges at $K=100$ high-density duplicate-instruction scaling. DTRA maintains \textbf{{0.0\% forgetting}}, \textbf{{100.0\% routing}} across clean, severe OOD, and reverse ordering ($T_7 \to T_0$: $74.2\%$ clean SR, $64.2\%$ OOD SR), with flat $O(1)$ CPU active execution ($1.87 \to 1.87\,$ms from $K=1 \to 8$). On the sparse 5-task \texttt{{libero\_goal}} pilot (Appendix~Table~\ref{{tab:libero_goal_pilot}}), \texttt{{arm\_frozen\_mlp}} memorizes all 5 separated trajectories ($100.0\%$ SR), while \texttt{{arm\_dtra\_elastic}} reaches $92.0\%$ SR ($0.0\%$ BWT, $100.0\%$ routing) ahead of \texttt{{arm\_dtra\_rigid}} ($88.0\%$) and \texttt{{arm\_er\_5pct}} ($88.0\%$, $10.0\%$ FR).
+Table~\ref{{tab:mw_3seed}}, Appendix~Table~\ref{{tab:mw_supp}}, and Figure~\ref{{fig:mw_ood}} demonstrate that shared-backbone and parameter-efficient continual baselines degrade under sequential 3D manipulation: across three seeds (Mean $\pm$ Sample Std \texttt{{ddof=1}}, $\sim 5.25\,$M matched capacity), \texttt{{DER++}}~\cite{{buzzega2020der}} reaches $73.3 \pm 4.4\%$ clean SR with $22.9 \pm 3.3\%$ forgetting and $13.6 \pm 8.9\%$ severe OOD SR, while \texttt{{L2P}}~\cite{{wang2022l2p}} ($16.7 \pm 4.4\%$ clean, $79.4 \pm 13.3\%$ FR) and \texttt{{O-LoRA}}~\cite{{wang2023olora}} ($7.2 \pm 1.7\%$ clean, $63.2 \pm 6.8\%$ FR) suffer severe trajectory interference as un-isolated readout updates overwrite continuous velocity fields (alongside Seed~42 \texttt{{Naive FT}} $98.1\%$ FR, \texttt{{EWC}} $100.0\%$ FR, and \texttt{{ER 5\%}} $20.0\%$ FR). Furthermore, a controlled three-seed causal ablation (Appendix~Table~\ref{{tab:mw_supp}}) resolves the clean-versus-OOD trade-off: disabling \texttt{{DenoisingFineHead}}'s Conv4 feature dropout ($p=0.30$) and Gaussian feature noise ($\sigma=0.05$) lifts \textbf{{DTRA Full (No Feat-Reg)}} clean SR by $+10.9\,$pp from $72.2 \pm 8.3\%$ to \textbf{{83.1 $\pm$ 6.3\%}} (matching Frozen MLP's $85.6 \pm 3.8\%$) while retaining \textbf{{45.0 $\pm$ 6.6\%}} severe OOD SR ($+21.4\,$pp over unregularized Frozen MLP's $23.6 \pm 4.8\%$, and $+1.7\,$pp over \texttt{{DTRA Rigid No Feat-Reg}} at $81.7 \pm 5.1\%$ clean / $43.3 \pm 2.2\%$ OOD). Conversely, applying identical Conv4 feature regularization to Frozen MLP yields $90.8 \pm 3.6\%$ clean and $49.2 \pm 10.1\%$ OOD SR on sparse $8$-task Meta-World, confirming that both manifold-bounded residuals and feature regularization contribute to OOD resilience, whereas DTRA's decisive structural advantage emerges at $K=100$ high-density duplicate-instruction scaling. DTRA maintains \textbf{{0.0\% forgetting}}, \textbf{{100.0\% routing}} across clean, severe OOD, and reverse ordering ($T_7 \to T_0$: $74.2\%$ clean SR, $64.2\%$ OOD SR), with flat $O(1)$ CPU active execution ($1.87 \to 1.87\,$ms from $K=1 \to 8$). On the sparse 5-task \texttt{{libero\_goal}} pilot (Appendix~Table~\ref{{tab:libero_goal_pilot}}), \texttt{{arm\_frozen\_mlp}} memorizes all 5 separated trajectories ($100.0\%$ SR), while \texttt{{arm\_dtra\_elastic}} reaches $92.0\%$ SR ($0.0\%$ BWT, $100.0\%$ routing) ahead of \texttt{{arm\_dtra\_rigid}} ($88.0\%$) and \texttt{{arm\_er\_5pct}} ($88.0\%$, $10.0\%$ FR).
 
 \subsection{{LIBERO-100 (\texorpdfstring{{$K=10 \to 100$}}{{K=10 -> 100}}) High-Density Scaling Benchmark}}
 Scaling twenty-fold to $100$ sequential 7-DoF manipulation tasks (\texttt{{libero\_10}} + \texttt{{libero\_90}}, $50$ demos/task training, $n_{{\text{{eval}}}}=5$ rollouts/task per milestone totaling $1{{,}}775$ rollouts per arm, plus $n_{{\text{{eval}}}}=20$ final zero-retrain verification totaling $12{{,}}000$ rollouts) reverses the sparse baseline advantage completely (Tables~\ref{{tab:libero100_traj}}--\ref{{tab:libero100_neval20}}, Appendix~Table~\ref{{tab:libero100_milestones}}, Figure~\ref{{fig:libero100_scaling}}):
@@ -1424,7 +1472,7 @@ At evaluation checkpoints $K \in \{{10, 30, 50, 70, 100\}}$, Frozen MLP records 
 \end{{itemize}}
 
 \subsection{{Structural White-Box Interpretability \& Execution Cost}}
-DTRA exposes the selected node, shared basis index, routing margin, and episode reset state for inspection (Appendix~\ref{{app:whitebox_viz}}). Continual registration optimizes newly introduced modules and is distinct from control-time inference. At inference, broad key retrieval scans $K$ entries, followed by 3-modality candidate reranking and decoding of the selected node and basis. The selected decoding core has $O(1)$ cost, while the broad routing scan remains $O(K)$. The measured GPU policy-inference latency is $9.55 \pm 0.25\,$ms at $K=100$; the $1.87\,$ms CPU active-core result concerns the separate $K=1 \to 8$ Meta-World experiment (Figure~\ref{{fig:o1_latency}}). These timings exclude environment stepping and do not measure registration time.
+DTRA exposes the selected node, shared basis index, routing margin, and episode reset state for inspection (Appendix~\ref{{app:whitebox_viz}}). Continual registration optimizes newly introduced modules and is distinct from control-time inference. At inference, broad key retrieval scans $K$ entries, followed by 3-modality candidate reranking and decoding of the selected node and basis. The selected decoding core has $O(1)$ cost, while the broad routing scan remains $O(K)$. The measured GPU policy-inference latency is {el_lat_txt}\,ms at $K=100$; the $1.87\,$ms CPU active-core result concerns the separate $K=1 \to 8$ Meta-World experiment (Figure~\ref{{fig:o1_latency}}). These timings exclude environment stepping and do not measure registration time.
 
 \subsection{{Limitations \& Honest Methodological Caveats}}
 We highlight six important limitations and methodological caveats verified directly against our implementation:
@@ -1432,7 +1480,7 @@ We highlight six important limitations and methodological caveats verified direc
   \item \textbf{{Parameter Capacity Ratio ($88\times\text{{--}}108\times$) \& Linear $O(K)$ Node Growth:}} Although \texttt{{SharedBasisBank}} reduces knot-basis slots by $73\%$ ($100 \to 27$, $3.81\,$MB), per-task \texttt{{LIBEROHypertubeNode}} adapters occupy $179.33\,$MB ($97.92\%$ of total policy memory), yielding only a $5.33\%$ total parameter reduction ($183.14\,$MB vs.\ Frozen MLP $151.67\,$MB and monolithic ER/DER++/L2P/O-LoRA heads at $1.70\text{{--}}2.09\,$MB; Appendix~Table~\ref{{tab:libero_resources}}). True sub-linear total memory requires sharing spatial adapters across tasks (e.g., PackNet or TAIL-style lightweight adapters) in future work.
   \item \textbf{{Routing Feature Asymmetry \& Missing \texttt{{Frozen MLP + CMC}} Ablation:}} On LIBERO-100, DTRA's Stage-2 CMC uses a dedicated $6{{,}}400$-d $4\times 4+\text{{DoG}}$ visual signature bank plus $\le 96$ cached key-validation exemplars/task (\texttt{{\_val\_queries}}, $9{{,}}600$ unit vectors at $K=100$; no raw images/actions), whereas \texttt{{Frozen MLP}} used 1-stage $2\times 2$ key routing. Because \texttt{{Unique-Lang}} performance is nearly identical ($83.55\%$ vs.\ $83.17\%$), isolating \texttt{{Frozen MLP + No-Encroachment + CMC}} remains a key future ablation to decouple router gains from node architecture.
   \item \textbf{{External CL Adaptation Caveats (\texttt{{L2P}} / \texttt{{O-LoRA}} / \texttt{{DER++}}):}} Our matched-encoder LIBERO-100 external baselines evaluate Seed~42 (complemented by 3-seed Meta-World and an independent A6000 O-LoRA run at $0.40\%$) and represent straightforward non-transformer adaptations rather than upper bounds of those methods: \texttt{{L2P}} updates its shared MLP head without freezing across tasks (degrading toward naive fine-tuning), \texttt{{O-LoRA}} freezes its \texttt{{SpatialContextAdapter}} after Task~0 and saturates the $256$-d orthogonal subspace ($99 \times 8 = 792 > 256$), and \texttt{{DER++}} uses untuned $\alpha=\beta=0.5$ with $1.70\,$MB capacity (and exhibited cross-run variance of $68.3\text{{--}}84.2\%$ across separate Meta-World runs). Direct comparison against LIBERO-native \texttt{{PackNet}}, \texttt{{LOTUS}}, and \texttt{{TAIL}} at matched parameter budgets remains future work.
-  \item \textbf{{Meta-World Clean-vs-OOD Trade-Off, Paraphrase \& Official Test Split:}} Our 3-seed Meta-World causal ablation confirms that disabling Conv4 feature-noise regularization ($p=0,\sigma=0$) lifts DTRA Full from $72.2 \pm 6.8\%$ to $83.1 \pm 5.1\%$ clean SR while preserving $45.0 \pm 5.4\%$ severe OOD SR (whereas adding identical regularization to Frozen MLP yields $90.8\%$ clean / $49.2\%$ OOD on sparse $K=8$ tasks). Hashed text encoding severely limits free-form paraphrase generalization (3-seed Meta-World paraphrase SR: $26.1 \pm 4.2\%$ for DTRA Full vs.\ $61.1 \pm 4.5\%$ for Frozen MLP), and on the official \texttt{{ml1.test\_tasks}} split Frozen MLP outperforms DTRA Full ($87.5\%$ vs.\ $75.0\%$).
+  \item \textbf{{Meta-World Clean-vs-OOD Trade-Off, Paraphrase \& Official Test Split:}} Our 3-seed Meta-World causal ablation (\texttt{{ddof=1}}) confirms that disabling Conv4 feature-noise regularization ($p=0,\sigma=0$) lifts DTRA Full from $72.2 \pm 8.3\%$ to $83.1 \pm 6.3\%$ clean SR while preserving $45.0 \pm 6.6\%$ severe OOD SR (whereas adding identical regularization to Frozen MLP yields $90.8\%$ clean / $49.2\%$ OOD on sparse $K=8$ tasks). Hashed text encoding severely limits free-form paraphrase generalization (3-seed Meta-World paraphrase SR: $26.1 \pm 5.1\%$ for DTRA Full vs.\ $61.1 \pm 5.5\%$ for Frozen MLP), and on the official \texttt{{ml1.test\_tasks}} split Frozen MLP outperforms DTRA Full ($87.5\%$ vs.\ $75.0\%$).
   \item \textbf{{Statistical \& Evaluation Boundaries:}} Mid-stream LIBERO-100 checkpoints use $n_{{\text{{eval}}}}=5$; final $K=100$ generalization is verified at $n_{{\text{{eval}}}}=20$ ($12{{,}}000$ rollouts, Table~\ref{{tab:libero100_neval20}}), though pooled Wilson CIs are descriptive binomial intervals that ignore task/seed clustering. \texttt{{DTRA Rigid}} ($86.67\%$) and \texttt{{DTRA Elastic}} ($87.00\%$) are statistically indistinguishable at $K=100$.
   \item \textbf{{Simulation Scope \& Deterministic Regression:}} All experiments run in MuJoCo simulation with distinct-scene \texttt{{Dup-Lang}} pairs; intra-scene duplicate-instruction disambiguation, multimodal action distributions (where diffusion/CVAE policies excel), and real-world physical robot validation remain essential future work.
 \end{{enumerate}}
@@ -1508,7 +1556,12 @@ def update_tex_files() -> Tuple[int, int]:
     arxiv_text = v3_text
     arxiv_text = arxiv_text.replace('\\date{November 2026 (DTRA v3.0 Preprint)}', '\\date{November 2026}')
     arxiv_text = arxiv_text.replace('\\textit{DTRA v3.0: Dynamic Topology Ring Architecture}', '\\textit{DTRA: Dynamic Topology Ring Architecture}')
+    arxiv_text = arxiv_text.replace('(Meta-World v2.1 vs.\\ LIBERO-100 v3.0)', '(Meta-World vs.\\ LIBERO-100)')
     arxiv_text = arxiv_text.replace('(DTRA~v2.1)', '(an initial 8-task prototype)')
+    arxiv_text = arxiv_text.replace('Region (v3.0) vs.\\ Organ (Future Work / v4.0)', 'Region vs.\\ Organ (Future Work)')
+    arxiv_text = arxiv_text.replace('DTRA~v4.0 / Future Work', 'Future Work')
+    arxiv_text = arxiv_text.replace('Conceptual / v4.0 Track,', 'Conceptual Future Track,')
+    arxiv_text = arxiv_text.replace('not implemented in v3.0', 'not implemented in this work')
     arxiv_text = arxiv_text.replace('Future Work / v4.0', 'Future Work')
     arxiv_text = arxiv_text.replace('DTRA v3.0', 'DTRA')
     arxiv_text = arxiv_text.replace('DTRA~v3.0', 'DTRA')

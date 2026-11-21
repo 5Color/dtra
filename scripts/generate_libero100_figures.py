@@ -157,7 +157,7 @@ def generate_fig6_architecture_schematic(out_path: Path) -> None:
         0.21,
         0.33,
         "2-Stage Routing on S⁶³\n(Task-ID-Free)",
-        "Stage 1: O(K) Scan → Top-M\nStage 2: Top-M Common-Mode\n  Cancellation (Center/Whiten)\nNo-Encroachment Constraint:\n  cos(μ_j, k_i) ≤ s_jj − m_safe",
+        "Stage 1: O(K) Scan → Top-M (M=5)\nStage 2: 3-Modality CMC\n  (4×4+DoG Vis / Prop / Lang)\nNo-Encroachment Constraint:\n  cos(μ_j, k_i) ≤ s_jj − m_safe",
         fc="#EFF6FF",
         ec="#2563EB",
         title_color="#1E3A8A",
@@ -171,12 +171,12 @@ def generate_fig6_architecture_schematic(out_path: Path) -> None:
         0.22,
         0.33,
         "Active Hypertube & Basis\n(O(|A_t|) ≈ O(1))",
-        "Elliptical Ring Basis B_ring(θ)\nElastic Bend Δz* (α_i ∈ (0, 1))\nSharedBasisBank (K=100 → 27\n  frozen knot bases, ∇θ = 0)\n+ Micro-Residual & Conf Gate",
+        "LIBERO: theta_head + SpatialAdapter\n  (MW: Elliptical Ring B_ring(θ))\nSpherical Elastic Interp. α_i ∈ (0, 1)\nSharedBasisBank (K=100 → 27\n  frozen knot bases, ∇θ = 0)",
         fc="#ECFDF5",
         ec="#059669",
         title_color="#065F46",
         fontsize_title=9.5,
-        fontsize_body=8.2,
+        fontsize_body=8.0,
     )
 
     _draw_box(
@@ -184,13 +184,13 @@ def generate_fig6_architecture_schematic(out_path: Path) -> None:
         (0.695, 0.56),
         0.29,
         0.33,
-        "C² B-Spline & Two-Timescale\nSnap-Back (Zero Drift)",
-        "Clamped Cubic B-Spline (num_cp=8 → H=16)\n7-DoF Continuous Action Chunk\n1) chunk_snap_back(): Δz → 0.0000\n   (keeps episodic_trace & Conf Gate)\n2) episode_snap_back(): all buffers → 0.0",
+        "C² B-Spline & Episode-Boundary\nState Reset (Zero Drift)",
+        "Clamped Cubic B-Spline (N_cp=8 → H=16)\n7-DoF Continuous Action Chunk\n1) LIBERO: episode_snap_back() resets\n   routing inertia & diag. buffers → 0.0\n2) MW: active chunk + ep. snap-back",
         fc="#FFF7ED",
         ec="#EA580C",
         title_color="#9A3412",
         fontsize_title=9.5,
-        fontsize_body=8.1,
+        fontsize_body=8.0,
     )
 
     _draw_arrow(ax, (0.19, 0.725), (0.215, 0.725), "#334155")
@@ -258,8 +258,8 @@ def generate_fig6_architecture_schematic(out_path: Path) -> None:
         (0.362, 0.065),
         0.275,
         0.29,
-        "[IMPLEMENTED] Region Level\nDTRA v3.0 Single-Ring (K=100)",
-        "Single Cortical Column Module\nK=100 LIBERO Tasks Validated\n27 Shared Bases (73% Compression)\nO(1) Active Kernel & White-Box Stack",
+        "[IMPLEMENTED] Region Level\nDTRA Single-Ring (K=100)",
+        "Single Cortical Column Module\nK=100 LIBERO Tasks Validated\n27 Shared Bases (73% Slot / 5.3% Tot.)\nO(1) Active Kernel & White-Box Stack",
         fc="#DBEAFE",
         ec="#2563EB",
         title_color="#1E3A8A",
@@ -272,7 +272,7 @@ def generate_fig6_architecture_schematic(out_path: Path) -> None:
         0.275,
         0.29,
         "[FUTURE ROADMAP] Organ Level\nConceptual Multi-Ring (10⁴–10⁸)",
-        "Not Implemented in DTRA v3.0\nMulti-Region Hierarchical Routing\nIsometric Zero-Padding [v; 0]\nSub-linear O(log K) Lookup Vision",
+        "Not Implemented in Current DTRA\nMulti-Region Hierarchical Routing\nIsometric Zero-Padding [v; 0]\nSub-linear O(log K) Lookup Vision",
         fc="#F3F4F6",
         ec="#6B7280",
         title_color="#374151",
@@ -354,7 +354,7 @@ def aggregate_milestone_series(
         if vals:
             ks.append(k)
             means.append(float(np.mean(vals)))
-            stds.append(float(np.std(vals, ddof=0)) if len(vals) > 1 else 0.0)
+            stds.append(float(np.std(vals, ddof=1)) if len(vals) > 1 else 0.0)
     return ks, means, stds
 
 
